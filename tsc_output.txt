@@ -1,0 +1,37 @@
+src/app/(brand)/dashboard/settings/page.tsx(52,34): error TS2339: Property 'id' does not exist on type 'never'.
+src/app/(brand)/dashboard/settings/page.tsx(54,33): error TS2339: Property 'name' does not exist on type 'never'.
+src/app/(brand)/dashboard/settings/page.tsx(55,33): error TS2339: Property 'slug' does not exist on type 'never'.
+src/app/(brand)/dashboard/settings/page.tsx(56,40): error TS2339: Property 'description' does not exist on type 'never'.
+src/app/(brand)/dashboard/settings/page.tsx(57,37): error TS2339: Property 'logo_url' does not exist on type 'never'.
+src/app/(brand)/dashboard/settings/page.tsx(58,38): error TS2339: Property 'settings' does not exist on type 'never'.
+src/app/(brand)/dashboard/settings/page.tsx(70,21): error TS2353: Object literal may only specify known properties, and 'variant' does not exist in type 'Toast'.
+src/app/(brand)/dashboard/settings/page.tsx(88,25): error TS2345: Argument of type '{ name: string; description: string; logo_url: string; settings: { theme: { primaryColor: string; layout: string; }; }; }' is not assignable to parameter of type 'never'.
+src/app/(brand)/dashboard/settings/page.tsx(107,17): error TS2353: Object literal may only specify known properties, and 'variant' does not exist in type 'Toast'.
+src/app/(brand)/dashboard/support/page.tsx(36,43): error TS2339: Property 'id' does not exist on type 'never'.
+src/app/(marketplace)/chat/[id]/page.tsx(110,68): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(values: never, options?: { count?: "exact" | "planned" | "estimated" | undefined; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "chat_messages", never, "POST">', gave the following error.
+    Argument of type '{ conversation_id: string; sender_id: string; sender_type: string; message: string; }' is not assignable to parameter of type 'never'.
+  Overload 2 of 2, '(values: never[], options?: { count?: "exact" | "planned" | "estimated" | undefined; defaultToNull?: boolean | undefined; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "chat_messages", never, "POST">', gave the following error.
+    Object literal may only specify known properties, and 'conversation_id' does not exist in type 'never[]'.
+src/app/(marketplace)/chat/[id]/page.tsx(124,17): error TS2353: Object literal may only specify known properties, and 'variant' does not exist in type 'Toast'.
+src/components/marketplace/chat-button.tsx(14,8): error TS2307: Cannot find module '@/components/ui/dialog' or its corresponding type declarations.
+src/components/marketplace/chat-button.tsx(43,21): error TS2353: Object literal may only specify known properties, and 'variant' does not exist in type 'Toast'.
+src/components/marketplace/chat-button.tsx(66,49): error TS2339: Property 'id' does not exist on type 'never'.
+src/components/marketplace/chat-button.tsx(71,22): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(values: never, options?: { count?: "exact" | "planned" | "estimated" | undefined; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "chat_conversations", never, "POST">', gave the following error.
+    Argument of type '{ user_id: string; store_id: string; product_id: string; }' is not assignable to parameter of type 'never'.
+  Overload 2 of 2, '(values: never[], options?: { count?: "exact" | "planned" | "estimated" | undefined; defaultToNull?: boolean | undefined; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "chat_conversations", never, "POST">', gave the following error.
+    Object literal may only specify known properties, and 'user_id' does not exist in type 'never[]'.
+src/components/marketplace/chat-button.tsx(80,43): error TS2339: Property 'id' does not exist on type 'never'.
+src/components/marketplace/chat-button.tsx(83,54): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(values: never, options?: { count?: "exact" | "planned" | "estimated" | undefined; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "chat_messages", never, "POST">', gave the following error.
+    Argument of type '{ conversation_id: any; sender_id: string; sender_type: string; message: string; is_read: boolean; }' is not assignable to parameter of type 'never'.
+  Overload 2 of 2, '(values: never[], options?: { count?: "exact" | "planned" | "estimated" | undefined; defaultToNull?: boolean | undefined; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "chat_messages", never, "POST">', gave the following error.
+    Object literal may only specify known properties, and 'conversation_id' does not exist in type 'never[]'.
+src/components/marketplace/chat-button.tsx(107,17): error TS2353: Object literal may only specify known properties, and 'variant' does not exist in type 'Toast'.
+src/components/ui/toaster.tsx(20,22): error TS2322: Type '{ children: (Element | ReactNode)[]; style?: CSSProperties | undefined; defaultChecked?: boolean | undefined; defaultValue?: string | number | readonly string[] | undefined; ... 273 more ...; key: Key | null; }' is not assignable to type 'LiHTMLAttributes<HTMLLIElement>'.
+  Types of property 'onCopy' are incompatible.
+    Type 'ClipboardEventHandler<HTMLDivElement> | undefined' is not assignable to type 'ClipboardEventHandler<HTMLLIElement> | undefined'.
+      Type 'ClipboardEventHandler<HTMLDivElement>' is not assignable to type 'ClipboardEventHandler<HTMLLIElement>'.
+        Type 'HTMLDivElement' is missing the following properties from type 'HTMLLIElement': type, value
+src/hooks/use-toast.ts(156,13): error TS2353: Object literal may only specify known properties, and 'open' does not exist in type 'ToasterToast'.
