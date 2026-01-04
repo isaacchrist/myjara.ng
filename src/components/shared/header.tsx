@@ -52,12 +52,10 @@ export function Header() {
             <div className="container mx-auto px-4">
                 <div className="flex h-16 items-center justify-between">
                     {/* Logo */}
+                    {/* Logo */}
                     <Link href="/" className="flex items-center gap-2">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500">
-                            <span className="text-lg font-bold text-white">M</span>
-                        </div>
-                        <span className="text-xl font-bold text-gray-900 dark:text-white">
-                            My<span className="text-emerald-600">Jara</span>
+                        <span className="text-3xl font-bold text-emerald-600" style={{ fontFamily: '"Kaushan Script", cursive' }}>
+                            MyJara
                         </span>
                     </Link>
 
