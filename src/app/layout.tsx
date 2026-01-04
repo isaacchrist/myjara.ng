@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -21,16 +22,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className="flex min-h-screen flex-col font-sans antialiased"
       >
-        <Header />
-        <main className="flex-1">
-          {children}
-        </main>
-        <Footer />
-        <Toaster />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Header />
+          <main className="flex-1">
+            {children}
+          </main>
+          <Footer />
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );
