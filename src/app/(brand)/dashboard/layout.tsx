@@ -1,4 +1,9 @@
+'use client'
+
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import Image from 'next/image'
 import {
     LayoutDashboard,
     Package,
@@ -30,6 +35,25 @@ export default function DashboardLayout({
 }: {
     children: React.ReactNode
 }) {
+    const [store, setStore] = useState<any>(null)
+    const supabase = createClient()
+
+    useEffect(() => {
+        const fetchStore = async () => {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) return
+
+            const { data } = await supabase
+                .from('stores')
+                .select('name, logo_url')
+                .eq('owner_id', user.id)
+                .single()
+
+            if (data) setStore(data)
+        }
+
+        fetchStore()
+    }, [supabase])
     return (
         <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300 relative overflow-hidden">
             {/* Background Animation */}
@@ -40,7 +64,7 @@ export default function DashboardLayout({
             </div>
 
             {/* Sidebar */}
-            <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 border-r border-gray-200 bg-white/80 backdrop-blur-md md:block dark:bg-gray-950/80 dark:border-gray-800">
+            <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 border-r border-gray-200 bg-white/95 backdrop-blur-xl shadow-sm md:block dark:bg-gray-950/95 dark:border-gray-800">
                 {/* Logo */}
                 <div className="flex h-16 items-center border-b border-gray-100 px-6 dark:border-gray-800">
                     <Link href="/" className="flex items-center gap-2">
@@ -53,12 +77,24 @@ export default function DashboardLayout({
                 {/* Store Info */}
                 <div className="border-b border-gray-100 p-4 dark:border-gray-800">
                     <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-lg dark:bg-emerald-900/30">
-                            🏪
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-lg dark:bg-emerald-900/30 overflow-hidden">
+                            {store?.logo_url ? (
+                                <Image
+                                    src={store.logo_url}
+                                    alt={store.name}
+                                    width={40}
+                                    height={40}
+                                    className="object-cover"
+                                />
+                            ) : (
+                                '🏪'
+                            )}
                         </div>
                         <div className="flex-1 overflow-hidden">
-                            <p className="truncate font-medium text-gray-900 dark:text-gray-100">FoodMart Nigeria</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Brand Dashboard</p>
+                            <p className="truncate font-medium text-gray-900 dark:text-gray-100">
+                                {store?.name || 'My Store'}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Wholesaler Dashboard</p>
                         </div>
                     </div>
                 </div>
@@ -70,9 +106,9 @@ export default function DashboardLayout({
                             <li key={item.href}>
                                 <Link
                                     href={item.href}
-                                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-900 dark:hover:text-gray-100"
+                                    className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition-all duration-300 hover:bg-gradient-to-r hover:from-amber-50 hover:to-yellow-50 hover:text-amber-900 hover:shadow-md hover:scale-[1.02] dark:text-gray-400 dark:hover:from-amber-950/20 dark:hover:to-yellow-950/20 dark:hover:text-amber-400 dark:hover:shadow-amber-900/20"
                                 >
-                                    <item.icon className="h-5 w-5" />
+                                    <item.icon className="h-5 w-5 transition-transform duration-300 group-hover:scale-110 group-hover:text-amber-600 dark:group-hover:text-amber-400" />
                                     {item.label}
                                     {item.badge && (
                                         <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-xs text-white">
@@ -87,15 +123,15 @@ export default function DashboardLayout({
 
                 {/* Logout */}
                 <div className="border-t border-gray-100 p-4 dark:border-gray-800">
-                    <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-900 dark:hover:text-gray-100">
-                        <LogOut className="h-5 w-5" />
+                    <button className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition-all duration-300 hover:bg-gradient-to-r hover:from-red-50 hover:to-rose-50 hover:text-red-900 hover:shadow-md dark:text-gray-400 dark:hover:from-red-950/20 dark:hover:to-rose-950/20 dark:hover:text-red-400">
+                        <LogOut className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
                         Sign Out
                     </button>
                 </div>
             </aside>
 
             {/* Main Content */}
-            <div className="flex-1 md:ml-64 relative z-10">
+            <div className="flex-1 ml-0 md:ml-64 lg:ml-64 relative z-10">
                 {/* Top Bar */}
                 <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-gray-200 bg-white/80 backdrop-blur-sm px-6 dark:bg-gray-950/80 dark:border-gray-800">
                     <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">

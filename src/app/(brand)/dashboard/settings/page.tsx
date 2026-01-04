@@ -9,11 +9,13 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
-import { Save } from "lucide-react"
+import { Save, Upload, X } from "lucide-react"
+import Image from "next/image"
 
 export default function BrandSettingsPage() {
     const [isLoading, setIsLoading] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
+    const [isUploading, setIsUploading] = useState(false)
     const [storeId, setStoreId] = useState<string | null>(null)
     const [formData, setFormData] = useState({
         name: "",
@@ -152,6 +154,80 @@ export default function BrandSettingsPage() {
                                 <span className="font-medium text-gray-900">{formData.slug}</span>
                             </div>
                             <p className="text-xs text-gray-500">Contact support to change your store URL.</p>
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="logo">Store Logo</Label>
+                            <div className="flex flex-col gap-3">
+                                {formData.logo_url && (
+                                    <div className="relative inline-block w-32 h-32 rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700">
+                                        <Image
+                                            src={formData.logo_url}
+                                            alt="Store logo"
+                                            fill
+                                            className="object-cover"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData({ ...formData, logo_url: "" })}
+                                            className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                                        >
+                                            <X className="h-3 w-3" />
+                                        </button>
+                                    </div>
+                                )}
+                                <div className="flex gap-2">
+                                    <Input
+                                        id="logo"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={async (e) => {
+                                            const file = e.target.files?.[0]
+                                            if (!file || !storeId) return
+
+                                            try {
+                                                setIsUploading(true)
+                                                const fileExt = file.name.split(".").pop()
+                                                const filePath = `${storeId}/logo.${fileExt}`
+
+                                                const { error: uploadError, data } = await supabase.storage
+                                                    .from("store-assets")
+                                                    .upload(filePath, file, { upsert: true })
+
+                                                if (uploadError) throw uploadError
+
+                                                const { data: { publicUrl } } = supabase.storage
+                                                    .from("store-assets")
+                                                    .getPublicUrl(filePath)
+
+                                                setFormData({ ...formData, logo_url: publicUrl })
+                                                toast({
+                                                    title: "Success",
+                                                    description: "Logo uploaded successfully."
+                                                })
+                                            } catch (error) {
+                                                console.error("Error uploading logo:", error)
+                                                toast({
+                                                    title: "Error",
+                                                    description: "Failed to upload logo.",
+                                                    variant: "destructive"
+                                                })
+                                            } finally {
+                                                setIsUploading(false)
+                                            }
+                                        }}
+                                        disabled={isUploading}
+                                        className="flex-1"
+                                    />
+                                    {isUploading && (
+                                        <div className="flex items-center text-sm text-gray-500">
+                                            <Upload className="mr-2 h-4 w-4 animate-bounce" />
+                                            Uploading...
+                                        </div>
+                                    )}
+                                </div>
+                                <p className="text-xs text-gray-500">Recommended: Square image, at least 200x200px</p>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
