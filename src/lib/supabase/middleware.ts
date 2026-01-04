@@ -36,7 +36,9 @@ export async function updateSession(request: NextRequest) {
 
     // Check if this is a brand subdomain (e.g., brandname.myjara.com)
     const isLocalhost = hostname.includes('localhost')
-    const mainDomain = isLocalhost ? 'localhost:3000' : 'myjara.com'
+    const mainDomain = process.env.NEXT_PUBLIC_APP_URL
+        ? new URL(process.env.NEXT_PUBLIC_APP_URL).host
+        : (isLocalhost ? 'localhost:3000' : 'myjara.com')
 
     if (!hostname.includes(mainDomain) || hostname.split('.').length > (isLocalhost ? 1 : 2)) {
         // This might be a brand subdomain - extract brand slug
