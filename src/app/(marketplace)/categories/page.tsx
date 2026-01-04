@@ -30,7 +30,7 @@ export default async function CategoriesPage() {
                 <div className="mb-12 text-center">
                     <h1 className="mb-4 text-4xl font-bold text-gray-900 md:text-5xl">Browse Categories</h1>
                     <p className="mx-auto max-w-2xl text-lg text-gray-500">
-                        Explore thousands of products across all brand categories on MyJara.
+                        Explore thousands of products across all categories on MyJara.
                     </p>
                 </div>
 

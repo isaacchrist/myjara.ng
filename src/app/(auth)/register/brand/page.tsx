@@ -104,11 +104,11 @@ export default function BrandRegisterPage() {
         <div className="flex min-h-[calc(100vh-200px)] items-center justify-center px-4 py-12">
             <div className="w-full max-w-lg space-y-8">
                 <div className="text-center">
-                    <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+                    <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
                         Start Selling on <span className="text-emerald-600">MyJara</span>
-                    </h1>
-                    <p className="mt-2 text-gray-600">
-                        Create your brand account and reach millions of customers.
+                    </h2>
+                    <p className="mt-2 text-gray-600 dark:text-gray-400">
+                        Create your Wholesaler or Retailer account and reach millions of customers.
                     </p>
                 </div>
 
@@ -125,10 +125,10 @@ export default function BrandRegisterPage() {
                                     <span className={step === 2 ? 'font-bold text-emerald-600' : ''}>2</span>
                                 </div>
                             </div>
-                            <CardDescription>
+                            <CardDescription className="dark:text-gray-400">
                                 {step === 1
                                     ? 'First, let\'s create your seller account.'
-                                    : 'Now, tell us about your brand.'}
+                                    : 'Now, tell us about your business.'}
                             </CardDescription>
                         </CardHeader>
 
@@ -204,8 +204,8 @@ export default function BrandRegisterPage() {
                             {step === 2 && (
                                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                            Store Name
+                                        <label className="text-sm font-medium leading-none text-gray-700 dark:text-gray-300">
+                                            Store or Business Name
                                         </label>
                                         <div className="relative">
                                             <Store className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />

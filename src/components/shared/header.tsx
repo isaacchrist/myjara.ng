@@ -52,7 +52,6 @@ export function Header() {
             <div className="container mx-auto px-4">
                 <div className="flex h-16 items-center justify-between">
                     {/* Logo */}
-                    {/* Logo */}
                     <Link href="/" className="flex items-center gap-2">
                         <span className="text-4xl font-bold text-red-600 tracking-wide" style={{ fontFamily: '"Lobster", cursive' }}>
                             MyJara
@@ -83,16 +82,6 @@ export function Header() {
 
                     {/* Desktop Actions */}
                     <div className="hidden items-center gap-3 md:flex">
-                        {/* Theme Toggle */}
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={toggleTheme}
-                            className="text-gray-600 dark:text-gray-400"
-                        >
-                            {mounted && (theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />)}
-                        </Button>
-
                         <Button variant="ghost" size="icon" asChild>
                             <Link href="/search">
                                 <Search className="h-5 w-5" />
@@ -131,14 +120,6 @@ export function Header() {
 
                     {/* Mobile Menu Button */}
                     <div className="flex items-center gap-2 md:hidden">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={toggleTheme}
-                            className="text-gray-600 dark:text-gray-400"
-                        >
-                            {mounted && (theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />)}
-                        </Button>
                         <button
                             className="p-2"
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
