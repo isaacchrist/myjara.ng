@@ -37,7 +37,7 @@ export function ProductCard({
             <Card className={`group h-full cursor-pointer overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${variant === 'list' ? 'flex flex-row' : ''
                 }`}>
                 {/* Image */}
-                <div className={`relative overflow-hidden bg-gray-100 dark:bg-gray-800 ${variant === 'list' ? 'h-full w-48 shrink-0' : 'aspect-square w-full'
+                <div className={`relative overflow-hidden bg-gray-100 ${variant === 'list' ? 'h-full w-48 shrink-0' : 'aspect-square w-full'
                     }`}>
                     {imageUrl ? (
                         <Image
@@ -65,7 +65,7 @@ export function ProductCard({
                 {/* Content */}
                 <div className={`p-4 ${variant === 'list' ? 'flex flex-1 flex-col justify-between' : ''}`}>
                     <div>
-                        <h3 className="line-clamp-2 text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-500">
+                        <h3 className="line-clamp-2 text-sm font-medium text-gray-900 group-hover:text-emerald-600">
                             {name}
                         </h3>
 
@@ -76,7 +76,7 @@ export function ProductCard({
 
                     <div>
                         <div className="mt-3 flex items-end justify-between">
-                            <span className="text-lg font-bold text-gray-900 dark:text-white">
+                            <span className="text-lg font-bold text-gray-900">
                                 {formatPrice(price)}
                             </span>
                         </div>

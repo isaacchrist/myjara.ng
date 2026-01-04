@@ -66,25 +66,25 @@ export default function HomePage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-teal-50 dark:from-emerald-950 dark:via-gray-950 dark:to-teal-950">
-        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-30 dark:opacity-5" />
+      <section className="relative overflow-hidden bg-gradient-to-br from-emerald-950 via-gray-950 to-teal-950">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-10" />
 
         <div className="container relative mx-auto px-4 py-16 md:py-24">
           <div className="mx-auto max-w-3xl text-center">
-            <Badge variant="jara" className="mb-6 text-sm">
+            <Badge variant="jara" className="mb-6 text-sm border-emerald-800 bg-emerald-950/50 text-emerald-100 hover:bg-emerald-900/50">
               🎁 Buy More, Get More — It's Jara!
             </Badge>
 
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white md:text-5xl lg:text-6xl">
+            <h1 className="text-4xl font-bold tracking-tight text-white md:text-5xl lg:text-6xl">
               Discover Products.
-              <span className="block bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
                 Enjoy More.
               </span>
             </h1>
 
-            <p className="mt-6 text-lg text-gray-600 dark:text-gray-300 md:text-xl">
+            <p className="mt-6 text-lg text-gray-300 md:text-xl">
               Nigeria's marketplace where you always get extra.
-              Shop across hundreds of brands and enjoy <strong className="text-emerald-600 dark:text-emerald-500">Jara</strong> —
+              Shop across hundreds of brands and enjoy <strong className="text-emerald-400">Jara</strong> —
               bonus products with every qualifying purchase.
             </p>
 
