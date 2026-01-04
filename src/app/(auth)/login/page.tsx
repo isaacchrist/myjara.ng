@@ -46,20 +46,20 @@ export default function LoginPage() {
             <Card className="w-full max-w-md">
                 <CardHeader className="text-center">
                     <CardTitle className="text-2xl">Welcome Back</CardTitle>
-                    <CardDescription>
+                    <CardDescription className="dark:text-gray-400">
                         Sign in to your MyJara account
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleLogin} className="space-y-4">
                         {error && (
-                            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+                            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
                                 {error}
                             </div>
                         )}
 
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-700">
+                            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Email
                             </label>
                             <div className="relative">
@@ -76,7 +76,7 @@ export default function LoginPage() {
                         </div>
 
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-700">
+                            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Password
                             </label>
                             <div className="relative">

@@ -41,9 +41,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     const resultsCount = products?.length || 0
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
             {/* Search Header */}
-            <div className="border-b border-gray-200 bg-white">
+            <div className="border-b border-gray-200 bg-white dark:bg-gray-900 dark:border-gray-800">
                 <div className="container mx-auto px-4 py-6">
                     <Suspense fallback={<div>Loading...</div>}>
                         <SearchBar
@@ -59,15 +59,15 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 {/* Results Header */}
                 <div className="mb-6 flex items-center justify-between">
                     <div>
-                        <h1 className="text-xl font-semibold text-gray-900">
+                        <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
                             {query ? `Results for "${query}"` : 'All Products'}
                         </h1>
-                        <p className="mt-1 text-sm text-gray-500">
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                             {resultsCount} products found
                             {city && ` in ${city}`}
                         </p>
                     </div>
-                    <select className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm">
+                    <select className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
                         <option>Most Relevant</option>
                         <option>Price: Low to High</option>
                         <option>Price: High to Low</option>
@@ -104,7 +104,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 {/* Load More */}
                 {resultsCount >= 20 && (
                     <div className="mt-12 text-center">
-                        <button className="rounded-lg border border-gray-200 bg-white px-8 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50">
+                        <button className="rounded-lg border border-gray-200 bg-white px-8 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800">
                             Load More Products
                         </button>
                     </div>

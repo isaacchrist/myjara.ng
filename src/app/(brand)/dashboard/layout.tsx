@@ -44,7 +44,7 @@ export default function DashboardLayout({
                 {/* Logo */}
                 <div className="flex h-16 items-center border-b border-gray-100 px-6 dark:border-gray-800">
                     <Link href="/" className="flex items-center gap-2">
-                        <span className="text-2xl font-bold text-emerald-600" style={{ fontFamily: '"Kaushan Script", cursive' }}>
+                        <span className="text-3xl font-bold text-red-600 tracking-wide" style={{ fontFamily: '"Lobster", cursive' }}>
                             MyJara
                         </span>
                     </Link>
