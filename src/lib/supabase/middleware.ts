@@ -34,17 +34,17 @@ export async function updateSession(request: NextRequest) {
     const hostname = request.headers.get('host') || ''
     const url = request.nextUrl.clone()
 
-    // Check if this is a brand subdomain (e.g., brandname.myjara.com)
+    // Skip subdomain logic entirely for Vercel preview/production URLs and localhost
+    const isVercelUrl = hostname.includes('.vercel.app') || hostname.includes('.vercel.sh')
     const isLocalhost = hostname.includes('localhost')
-    const mainDomain = process.env.NEXT_PUBLIC_APP_URL
-        ? new URL(process.env.NEXT_PUBLIC_APP_URL).host
-        : (isLocalhost ? 'localhost:3000' : 'myjara.com')
 
-    if (!hostname.includes(mainDomain) || hostname.split('.').length > (isLocalhost ? 1 : 2)) {
-        // This might be a brand subdomain - extract brand slug
-        const subdomain = hostname.split('.')[0]
-
-        if (subdomain && subdomain !== 'www' && subdomain !== 'admin') {
+    // Only attempt subdomain routing for actual custom domains (e.g., brandname.myjara.com)
+    // This requires the hostname to be a subdomain of myjara.com (not Vercel URLs)
+    if (!isVercelUrl && !isLocalhost && hostname.includes('myjara.com')) {
+        const parts = hostname.split('.')
+        // e.g., brandname.myjara.com has 3 parts, www.myjara.com should be skipped
+        if (parts.length > 2 && parts[0] !== 'www' && parts[0] !== 'admin') {
+            const subdomain = parts[0]
             // Rewrite to brand store page
             url.pathname = `/store/${subdomain}${url.pathname}`
             return NextResponse.rewrite(url, {
