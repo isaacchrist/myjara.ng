@@ -111,7 +111,7 @@ export function Header() {
                                 <Button variant="outline" size="sm" asChild>
                                     <Link href="/login">Sign In</Link>
                                 </Button>
-                                <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" asChild>
+                                <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 transition-all duration-300 hover:shadow-md hover:scale-105" asChild>
                                     <Link href="/register/brand">Sell on MyJara</Link>
                                 </Button>
                             </>
