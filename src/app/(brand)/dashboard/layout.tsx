@@ -66,7 +66,7 @@ export default function DashboardLayout({
 
             if (userData) {
                 // If the user has a store but is pending, they are in PREVIEW mode
-                setVerificationStatus(userData.verification_status as any || 'pending')
+                setVerificationStatus((userData as any).verification_status || 'pending')
             }
             setLoading(false)
         }
