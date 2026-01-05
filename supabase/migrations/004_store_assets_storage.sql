@@ -4,7 +4,7 @@ VALUES ('store-assets', 'store-assets', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Allow authenticated users to upload to their own store folder
-CREATE POLICY \"Users can upload to own store folder\"
+CREATE POLICY "Users can upload to own store folder"
 ON storage.objects FOR INSERT
 TO authenticated
 WITH CHECK (
@@ -15,13 +15,13 @@ WITH CHECK (
 );
 
 -- Allow public read access
-CREATE POLICY \"Public can view store assets\"
+CREATE POLICY "Public can view store assets"
 ON storage.objects FOR SELECT
 TO public
 USING (bucket_id = 'store-assets');
 
 -- Allow users to update their own store assets
-CREATE POLICY \"Users can update own store assets\"
+CREATE POLICY "Users can update own store assets"
 ON storage.objects FOR UPDATE
 TO authenticated
 USING (
@@ -32,7 +32,7 @@ USING (
 );
 
 -- Allow users to delete their own store assets
-CREATE POLICY \"Users can delete own store assets\"
+CREATE POLICY "Users can delete own store assets"
 ON storage.objects FOR DELETE
 TO authenticated
 USING (

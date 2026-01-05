@@ -51,14 +51,19 @@ export default function BrandRegisterPage() {
         try {
             const supabase = createClient()
 
-            // 1. Sign Up User
+            // 1. Sign Up User AND Create Store (Atomic via Trigger)
+            // We pass store details in metadata so the database trigger can create the store record immediately.
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: formData.email,
                 password: formData.password,
                 options: {
                     data: {
                         full_name: formData.fullName,
-                        role: 'brand_admin', // Custom metadata to trigger role assignment if needed
+                        role: 'brand_admin',
+                        // Pass store details for the trigger
+                        store_name: formData.storeName,
+                        store_slug: formData.storeSlug,
+                        store_description: formData.storeDescription,
                     },
                 },
             })
@@ -66,36 +71,20 @@ export default function BrandRegisterPage() {
             if (authError) throw authError
             if (!authData.user) throw new Error('Failed to create user account')
 
-            // 2. Create Store
-            // Note: In a real app, you might want to wait for email verification
-            // or use a database trigger/function to handle this safely.
-            // For this implementation, we'll insert directly via RLS assuming the user is authenticated.
-            // However, since email confirmation is likely on, the user won't be signed in yet in production.
-            // For development/demo with email confirmation disabled or auto-login:
-
-            const { error: storeError } = await supabase
-                .from('stores')
-                .insert({
-                    owner_id: authData.user.id,
-                    name: formData.storeName,
-                    slug: formData.storeSlug,
-                    description: formData.storeDescription,
-                    status: 'pending',
-                } as any)
-
-            if (storeError) {
-                // If store creation fails, we technically have an orphaned user.
-                // In a robust system, we'd handle this transactionally or via edge functions.
-                console.error('Store creation failed:', storeError)
-                throw new Error('Failed to create store profile. Please try again.')
-            }
+            // Store is created automatically by the database trigger now.
+            // No need for a separate insert call which might fail RLS if email isn't confirmed.
 
             // Success!
             router.push('/dashboard?welcome=true')
 
         } catch (err) {
             console.error(err)
-            setError(err instanceof Error ? err.message : 'Something went wrong')
+            // Handle unique violation errors that might come from the trigger (e.g. duplicate slug)
+            if (err instanceof Error && err.message.includes('stores_slug_key')) {
+                setError('This Store URL is already taken. Please choose another.')
+            } else {
+                setError(err instanceof Error ? err.message : 'Something went wrong')
+            }
             setLoading(false)
         }
     }
