@@ -30,30 +30,52 @@ const sidebarItems = [
     { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
 ]
 
+
+// Protected Items only accessible to APPROVED users
+const protectedItems = ['/dashboard/products', '/dashboard/orders', '/dashboard/wallet', '/dashboard/jara', '/dashboard/logistics', '/dashboard/messages', '/dashboard/operations', '/dashboard/analytics']
+
 export default function DashboardLayout({
     children,
 }: {
     children: React.ReactNode
 }) {
     const [store, setStore] = useState<any>(null)
+    const [verificationStatus, setVerificationStatus] = useState<'pending' | 'approved' | 'unverified' | 'rejected'>('approved') // Default approved to avoid flicker, or protect properly
+    const [loading, setLoading] = useState(true)
     const supabase = createClient()
 
     useEffect(() => {
-        const fetchStore = async () => {
+        const fetchData = async () => {
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) return
 
-            const { data } = await supabase
+            // Fetch Store
+            const { data: storeData } = await supabase
                 .from('stores')
                 .select('name, logo_url')
                 .eq('owner_id', user.id)
                 .single()
+            if (storeData) setStore(storeData)
 
-            if (data) setStore(data)
+            // Fetch Verification Status
+            const { data: userData } = await supabase
+                .from('users')
+                .select('verification_status')
+                .eq('id', user.id)
+                .single()
+
+            if (userData) {
+                // If the user has a store but is pending, they are in PREVIEW mode
+                setVerificationStatus(userData.verification_status as any || 'pending')
+            }
+            setLoading(false)
         }
 
-        fetchStore()
+        fetchData()
     }, [supabase])
+
+    const isRestricted = verificationStatus !== 'approved'
+
     return (
         <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300 relative overflow-hidden">
             {/* Background Animation */}
@@ -94,7 +116,12 @@ export default function DashboardLayout({
                             <p className="truncate font-medium text-gray-900 dark:text-gray-100">
                                 {store?.name || 'My Store'}
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Wholesaler Dashboard</p>
+                            <div className="flex items-center gap-1.5">
+                                <span className={`h-1.5 w-1.5 rounded-full ${isRestricted ? 'bg-yellow-500' : 'bg-emerald-500'}`} />
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    {isRestricted ? 'Verification Pending' : 'Verified Wholesaler'}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -102,22 +129,33 @@ export default function DashboardLayout({
                 {/* Navigation */}
                 <nav className="flex-1 p-4">
                     <ul className="space-y-1">
-                        {sidebarItems.map((item) => (
-                            <li key={item.href}>
-                                <Link
-                                    href={item.href}
-                                    className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition-all duration-300 hover:bg-gradient-to-r hover:from-amber-50 hover:to-yellow-50 hover:text-amber-900 hover:shadow-md hover:scale-[1.02] dark:text-gray-400 dark:hover:from-amber-950/20 dark:hover:to-yellow-950/20 dark:hover:text-amber-400 dark:hover:shadow-amber-900/20"
-                                >
-                                    <item.icon className="h-5 w-5 transition-transform duration-300 group-hover:scale-110 group-hover:text-amber-600 dark:group-hover:text-amber-400" />
-                                    {item.label}
-                                    {item.badge && (
-                                        <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-xs text-white">
-                                            {item.badge}
-                                        </span>
+                        {sidebarItems.map((item) => {
+                            const disabled = isRestricted && protectedItems.includes(item.href)
+                            return (
+                                <li key={item.href}>
+                                    {disabled ? (
+                                        <div className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-400 cursor-not-allowed opacity-60">
+                                            <item.icon className="h-5 w-5" />
+                                            {item.label}
+                                            <LogOut className="ml-auto h-3 w-3 opacity-50 rotate-90" /> {/* Simulating Lock icon */}
+                                        </div>
+                                    ) : (
+                                        <Link
+                                            href={item.href}
+                                            className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition-all duration-300 hover:bg-gradient-to-r hover:from-amber-50 hover:to-yellow-50 hover:text-amber-900 hover:shadow-md hover:scale-[1.02] dark:text-gray-400 dark:hover:from-amber-950/20 dark:hover:to-yellow-950/20 dark:hover:text-amber-400 dark:hover:shadow-amber-900/20"
+                                        >
+                                            <item.icon className="h-5 w-5 transition-transform duration-300 group-hover:scale-110 group-hover:text-amber-600 dark:group-hover:text-amber-400" />
+                                            {item.label}
+                                            {item.badge && (
+                                                <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-xs text-white">
+                                                    {item.badge}
+                                                </span>
+                                            )}
+                                        </Link>
                                     )}
-                                </Link>
-                            </li>
-                        ))}
+                                </li>
+                            )
+                        })}
                     </ul>
                 </nav>
 
@@ -131,7 +169,20 @@ export default function DashboardLayout({
             </aside>
 
             {/* Main Content */}
-            <div className="flex-1 ml-0 md:ml-64 lg:ml-64 relative z-10">
+            <div className="flex-1 ml-0 md:ml-64 lg:ml-64 relative z-10 flex flex-col">
+                {/* Verification Banner */}
+                {isRestricted && (
+                    <div className="bg-amber-50 border-b border-amber-200 px-6 py-2 flex items-center justify-between shadow-sm z-20">
+                        <div className="flex items-center gap-2 text-amber-900 text-sm">
+                            <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                            <strong>Preview Mode Active:</strong> Your account is pending verification (24hrs). Payments and products are locked.
+                        </div>
+                        <Link href="/dashboard/settings" className="text-xs font-semibold text-amber-900 underline hover:text-amber-700">
+                            Complete Profile →
+                        </Link>
+                    </div>
+                )}
+
                 {/* Top Bar */}
                 <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-gray-200 bg-white/80 backdrop-blur-sm px-6 dark:bg-gray-950/80 dark:border-gray-800">
                     <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
@@ -151,7 +202,7 @@ export default function DashboardLayout({
                 </header>
 
                 {/* Page Content */}
-                <main className="p-6">
+                <main className="p-6 flex-1">
                     {children}
                 </main>
             </div>
