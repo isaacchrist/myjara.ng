@@ -47,20 +47,39 @@ export default function GlobalAdminDashboard() {
     const handleVerification = async (userId: string, status: 'approved' | 'rejected') => {
         setActionLoading(userId)
 
-        // Update user status
+        // 1. Update User Status
         const { error: userError } = await supabase
             .from('users')
             .update({ verification_status: status })
             .eq('id', userId)
 
-        // If approved, also activate their store?
-        // Let's assume store status is linked or updated separately.
-        // For simplicity, just updating user allows them access.
-
-        if (!userError) {
-            // Remove from list
-            setPendingUsers(prev => prev.filter(u => u.id !== userId))
+        if (userError) {
+            console.error("Error updating user:", userError)
+            setActionLoading(null)
+            return
         }
+
+        // 2. If Approved, Activate Store
+        if (status === 'approved') {
+            const { error: storeError } = await supabase
+                .from('stores')
+                .update({ status: 'active' })
+                .eq('owner_id', userId)
+
+            if (storeError) {
+                console.error("Error activating store:", storeError)
+                // Optional: Revert user status? For now just log.
+            }
+        } else if (status === 'rejected') {
+            // Optional: Set store to rejected or banned?
+            const { error: storeError } = await supabase
+                .from('stores')
+                .update({ status: 'inactive' }) // or rejected
+                .eq('owner_id', userId)
+        }
+
+        // Remove from list
+        setPendingUsers(prev => prev.filter(u => u.id !== userId))
         setActionLoading(null)
     }
 
