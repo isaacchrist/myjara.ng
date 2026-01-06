@@ -50,7 +50,7 @@ export default function GlobalAdminDashboard() {
         // 1. Update User Status
         const { error: userError } = await supabase
             .from('users')
-            .update({ verification_status: status })
+            .update({ verification_status: status } as any)
             .eq('id', userId)
 
         if (userError) {
@@ -63,7 +63,7 @@ export default function GlobalAdminDashboard() {
         if (status === 'approved') {
             const { error: storeError } = await supabase
                 .from('stores')
-                .update({ status: 'active' })
+                .update({ status: 'active' } as any)
                 .eq('owner_id', userId)
 
             if (storeError) {
@@ -74,7 +74,7 @@ export default function GlobalAdminDashboard() {
             // Optional: Set store to rejected or banned?
             const { error: storeError } = await supabase
                 .from('stores')
-                .update({ status: 'inactive' }) // or rejected
+                .update({ status: 'inactive' } as any) // or rejected
                 .eq('owner_id', userId)
         }
 
