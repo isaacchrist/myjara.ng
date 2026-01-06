@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatPrice } from '@/lib/utils'
+import { getAdminSession } from '@/app/actions/admin-auth'
+import { AdminKeyForm } from '@/components/admin/admin-key-form'
 
 const stats = [
     { label: 'Active Stores', value: '156', change: '+8', icon: Store, color: 'emerald' },
@@ -25,9 +27,27 @@ const recentTransactions = [
     { id: 'TX-8888', store: 'StyleHub', amount: 35000, status: 'failed' },
 ]
 
-export default function AdminPage() {
+export default async function AdminPage() {
+    const isAdmin = await getAdminSession()
+
+    if (!isAdmin) {
+        return (
+            <div className="min-h-[80vh] flex flex-col items-center justify-center">
+                <div className="mb-12 text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <h1 className="text-4xl font-extrabold text-white mb-2 tracking-tight">Access Restricted</h1>
+                    <p className="text-gray-400">Please provide your credentials below.</p>
+                </div>
+                <AdminKeyForm
+                    title="Platform Administrator"
+                    description="Enter your master key to unlock global controls."
+                />
+            </div>
+        )
+    }
+
+    // Dashboard Content
     return (
-        <div className="space-y-8 text-white">
+        <div className="space-y-8 text-white animate-in fade-in duration-500">
             {/* Header */}
             <div>
                 <h1 className="text-2xl font-bold">Platform Overview</h1>
@@ -64,7 +84,7 @@ export default function AdminPage() {
                             <AlertCircle className="h-5 w-5 text-amber-400" />
                             Pending Store Approvals
                         </CardTitle>
-                        <Link href="/admin/stores?status=pending" className="text-sm text-emerald-400 hover:underline">
+                        <Link href="/admin/dashboard" className="text-sm text-emerald-400 hover:underline">
                             View all
                         </Link>
                     </CardHeader>

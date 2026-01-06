@@ -34,7 +34,7 @@ const sidebarItems = [
 // Protected Items only accessible to APPROVED users
 const protectedItems = ['/dashboard/products', '/dashboard/orders', '/dashboard/wallet', '/dashboard/jara', '/dashboard/logistics', '/dashboard/messages', '/dashboard/operations', '/dashboard/analytics']
 
-import { getStoreSession, logoutAdmin } from '@/app/actions/admin-auth'
+import { getStoreSession, logoutAdmin, getAdminSession } from '@/app/actions/admin-auth'
 
 export default function DashboardLayout({
     children,
@@ -54,16 +54,14 @@ export default function DashboardLayout({
 
             if (user) {
                 // Fetch Store for User
-                const { data: storeData } = await supabase
-                    .from('stores')
+                const { data: storeData } = await (supabase.from('stores') as any)
                     .select('name, logo_url')
                     .eq('owner_id', user.id)
                     .single()
                 if (storeData) setStore(storeData)
 
                 // Fetch Verification Status
-                const { data: userData } = await supabase
-                    .from('users')
+                const { data: userData } = await (supabase.from('users') as any)
                     .select('verification_status')
                     .eq('id', user.id)
                     .single()
@@ -72,20 +70,26 @@ export default function DashboardLayout({
                     setVerificationStatus((userData as any).verification_status || 'pending')
                 }
             } else {
-                // 2. Try Admin Key Session
-                const storeId = await getStoreSession()
+                // 2. Try Admin Key Sessions
+                const [storeId, isGlobalAdmin] = await Promise.all([
+                    getStoreSession(),
+                    getAdminSession()
+                ])
+
+                if (isGlobalAdmin) {
+                    setIsAdminMode(true)
+                    setVerificationStatus('approved')
+                }
+
                 if (storeId) {
                     setIsAdminMode(true)
-                    // Fetch Store by ID
-                    const { data: storeData } = await supabase
-                        .from('stores')
+                    const { data: storeData } = await (supabase.from('stores') as any)
                         .select('name, logo_url')
                         .eq('id', storeId)
                         .single()
 
                     if (storeData) {
                         setStore(storeData)
-                        // Admins via Key are always "Approved" access-wise
                         setVerificationStatus('approved')
                     }
                 }

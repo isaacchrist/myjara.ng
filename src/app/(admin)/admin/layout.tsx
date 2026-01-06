@@ -11,9 +11,11 @@ import {
     LogOut,
     ChevronRight
 } from 'lucide-react'
+import { getAdminSession, logoutAdmin } from '@/app/actions/admin-auth'
 
 const sidebarItems = [
     { icon: LayoutDashboard, label: 'Overview', href: '/admin' },
+    { icon: Shield, label: 'Applications', href: '/admin/dashboard' },
     { icon: Store, label: 'Stores', href: '/admin/stores', badge: 5 },
     { icon: FolderTree, label: 'Categories', href: '/admin/categories' },
     { icon: CreditCard, label: 'Transactions', href: '/admin/transactions' },
@@ -22,11 +24,25 @@ const sidebarItems = [
     { icon: Settings, label: 'Settings', href: '/admin/settings' },
 ]
 
-export default function AdminLayout({
+export default async function AdminLayout({
     children,
 }: {
     children: React.ReactNode
 }) {
+    const isAdmin = await getAdminSession()
+
+    // If no admin session, we only allow access to the base /admin page (which shows the login form)
+    // For now, we'll let the layout render but keep it minimal or hidden if not admin.
+
+    if (!isAdmin) {
+        return (
+            <div className="min-h-screen bg-gray-900 flex flex-col">
+                <main className="flex-1">
+                    {children}
+                </main>
+            </div>
+        )
+    }
     return (
         <div className="flex min-h-screen bg-gray-900">
             {/* Sidebar */}
@@ -67,10 +83,18 @@ export default function AdminLayout({
 
                 {/* Logout */}
                 <div className="border-t border-gray-800 p-4">
-                    <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-400 transition-colors hover:bg-gray-800 hover:text-white">
-                        <LogOut className="h-5 w-5" />
-                        Sign Out
-                    </button>
+                    <form action={async () => {
+                        'use server'
+                        await logoutAdmin()
+                    }}>
+                        <button
+                            type="submit"
+                            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-400 transition-colors hover:bg-gray-800 hover:text-white"
+                        >
+                            <LogOut className="h-5 w-5" />
+                            Sign Out
+                        </button>
+                    </form>
                 </div>
             </aside>
 
