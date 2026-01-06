@@ -34,7 +34,7 @@ const sidebarItems = [
 // Protected Items only accessible to APPROVED users
 const protectedItems = ['/dashboard/products', '/dashboard/orders', '/dashboard/wallet', '/dashboard/jara', '/dashboard/logistics', '/dashboard/messages', '/dashboard/operations', '/dashboard/analytics']
 
-import { getStoreSession } from '@/app/actions/admin-auth'
+import { getStoreSession, logoutAdmin } from '@/app/actions/admin-auth'
 
 export default function DashboardLayout({
     children,
@@ -97,6 +97,14 @@ export default function DashboardLayout({
     }, [supabase])
 
     const isRestricted = verificationStatus !== 'approved'
+
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut()
+        if (isAdminMode) {
+            await logoutAdmin()
+        }
+    }
 
     return (
         <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300 relative overflow-hidden">
@@ -183,7 +191,10 @@ export default function DashboardLayout({
 
                 {/* Logout */}
                 <div className="border-t border-gray-100 p-4 dark:border-gray-800">
-                    <button className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition-all duration-300 hover:bg-gradient-to-r hover:from-red-50 hover:to-rose-50 hover:text-red-900 hover:shadow-md dark:text-gray-400 dark:hover:from-red-950/20 dark:hover:to-rose-950/20 dark:hover:text-red-400">
+                    <button
+                        onClick={handleLogout}
+                        className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition-all duration-300 hover:bg-gradient-to-r hover:from-red-50 hover:to-rose-50 hover:text-red-900 hover:shadow-md dark:text-gray-400 dark:hover:from-red-950/20 dark:hover:to-rose-950/20 dark:hover:text-red-400"
+                    >
                         <LogOut className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
                         Sign Out
                     </button>
