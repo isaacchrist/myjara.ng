@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { SearchBar } from '@/components/marketplace/search-bar'
 import { ProductCard } from '@/components/marketplace/product-card'
 import { Badge } from '@/components/ui/badge'
+import { MarketDayBanner } from '@/components/marketplace/market-day-banner'
 
 // Mock data for featured products
 const featuredProducts = [
@@ -65,6 +66,7 @@ const categories = [
 export default function HomePage() {
   return (
     <div>
+      <MarketDayBanner />
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-emerald-950 via-gray-950 to-teal-950">
         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-10" />

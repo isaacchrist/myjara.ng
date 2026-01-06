@@ -14,10 +14,45 @@ interface SearchPageProps {
     }>
 }
 
+const sortProducts = (products: any[], sort: string) => {
+    if (!products) return []
+    const sorted = [...products]
+    switch (sort) {
+        case 'price_asc':
+            return sorted.sort((a, b) => a.price - b.price)
+        case 'price_desc':
+            return sorted.sort((a, b) => b.price - a.price)
+        case 'jara_desc':
+            return sorted.sort((a, b) => {
+                const ratioA = a.jara_buy_quantity ? (a.jara_get_quantity / a.jara_buy_quantity) : 0
+                const ratioB = b.jara_buy_quantity ? (b.jara_get_quantity / b.jara_buy_quantity) : 0
+                return ratioB - ratioA
+            })
+        case 'hybrid':
+            return sorted.sort((a, b) => {
+                // Heuristic: Lower Price is good, Higher Jara is good.
+                // Score = Price * (1 - JaraRatio). Lower score is "better value".
+                // Capped JaraRatio at 0.5 to prevent free items (though logic holds).
+                const ratioA = a.jara_buy_quantity ? (a.jara_get_quantity / a.jara_buy_quantity) : 0
+                const ratioB = b.jara_buy_quantity ? (b.jara_get_quantity / b.jara_buy_quantity) : 0
+                const scoreA = a.price * (1 - Math.min(ratioA, 0.8))
+                const scoreB = b.price * (1 - Math.min(ratioB, 0.8))
+                return scoreA - scoreB
+            })
+        default:
+            return sorted
+    }
+}
+
 export default async function SearchPage({ searchParams }: SearchPageProps) {
     const params = await searchParams
     const query = params.q || ''
     const city = params.city || ''
+    const market = params.market || null
+    const sort = params.sort || 'relevance'
+    const compareMode = params.compare === 'true'
+
+    // Filters
     const categoryId = params.category || null
     const minPrice = params.minPrice ? parseFloat(params.minPrice) : null
     const maxPrice = params.maxPrice ? parseFloat(params.maxPrice) : null
@@ -25,7 +60,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
     const supabase = await createClient()
 
-    const { data: products, error } = await (supabase as any).rpc('search_products', {
+    // Base Search
+    const { data: rawProducts, error } = await (supabase as any).rpc('search_products', {
         search_query: query || null,
         filter_city: city || null,
         filter_category_id: categoryId,
@@ -38,7 +74,24 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         console.error('Search error:', error)
     }
 
-    const resultsCount = products?.length || 0
+    // Client-side Market Filter (Mock Logic for MVP unless we add market column to products)
+    // Assuming product has 'market_days' or we check against Constants if we had store market data linked.
+    // For now, if market is selected, we perform text search on store name or location if available, 
+    // or just assume the user wants to see the UI state.
+    // Enhanced: We filter by name/description containing market name if no direct relation.
+    let products = rawProducts || []
+    if (market) {
+        // Simple text filter for MVP demo
+        products = products.filter((p: any) =>
+            p.store_name?.toLowerCase().includes(market.toLowerCase()) ||
+            p.description?.toLowerCase().includes(market.toLowerCase())
+        )
+    }
+
+    // Apply Sorting
+    products = sortProducts(products, sort)
+
+    const resultsCount = products.length
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -51,6 +104,39 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                             initialCity={city}
                         />
                     </Suspense>
+
+                    {/* Comparison Controls */}
+                    {(compareMode || market) && (
+                        <div className="mt-4 p-4 bg-blue-50 border border-blue-100 rounded-lg flex flex-wrap items-center gap-4 animate-in slide-in-from-top-2">
+                            {market && (
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-bold text-blue-900">Current Market:</span>
+                                    <Badge variant="secondary" className="bg-white text-blue-700 hover:bg-white">{market}</Badge>
+                                </div>
+                            )}
+
+                            <div className="flex items-center gap-2 ml-auto">
+                                <span className="text-sm text-blue-800 font-medium">Compare by:</span>
+                                <div className="flex gap-2">
+                                    <Link href={`/search?${new URLSearchParams({ ...params, sort: 'price_asc' })}`}>
+                                        <Badge className={`cursor-pointer ${sort === 'price_asc' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50'}`}>
+                                            Cheapest
+                                        </Badge>
+                                    </Link>
+                                    <Link href={`/search?${new URLSearchParams({ ...params, sort: 'jara_desc' })}`}>
+                                        <Badge className={`cursor-pointer ${sort === 'jara_desc' ? 'bg-orange-500 hover:bg-orange-600' : 'bg-white text-orange-600 border-orange-200 hover:bg-orange-50'}`}>
+                                            Best Jara
+                                        </Badge>
+                                    </Link>
+                                    <Link href={`/search?${new URLSearchParams({ ...params, sort: 'hybrid' })}`}>
+                                        <Badge className={`cursor-pointer ${sort === 'hybrid' ? 'bg-purple-600 hover:bg-purple-700' : 'bg-white text-purple-600 border-purple-200 hover:bg-purple-50'}`}>
+                                            Best Value (Hybrid)
+                                        </Badge>
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -60,26 +146,24 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 <div className="mb-6 flex items-center justify-between">
                     <div>
                         <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                            {query ? `Results for "${query}"` : 'All Products'}
+                            {market ? `${market} Listings` : (query ? `Results for "${query}"` : 'All Products')}
                         </h1>
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                             {resultsCount} products found
                             {city && ` in ${city}`}
                         </p>
                     </div>
-                    <select className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
-                        <option>Most Relevant</option>
-                        <option>Price: Low to High</option>
-                        <option>Price: High to Low</option>
-                        <option>Best Jara</option>
-                        <option>Newest</option>
-                    </select>
+
+                    {/* Standard Sort Dropdown (Hidden if in Compare/Market mode to avoid conflict? Or kept logic specific) */}
+                    {!compareMode && !market && (
+                        <ClientSortSelect currentSort={sort} />
+                    )}
                 </div>
 
                 {/* Product Grid */}
                 {resultsCount > 0 ? (
                     <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-                        {products?.map((product: any) => (
+                        {products.map((product: any) => (
                             <ProductCard
                                 key={product.id}
                                 id={product.id}
@@ -96,20 +180,38 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     </div>
                 ) : (
                     <div className="py-20 text-center">
-                        <p className="text-lg text-gray-500">No products found matching your search.</p>
+                        <p className="text-lg text-gray-500">No products found matching your criteria.</p>
                         <p className="mt-2 text-gray-400">Try adjusting your filters or search term.</p>
-                    </div>
-                )}
-
-                {/* Load More */}
-                {resultsCount >= 20 && (
-                    <div className="mt-12 text-center">
-                        <button className="rounded-lg border border-gray-200 bg-white px-8 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800">
-                            Load More Products
-                        </button>
                     </div>
                 )}
             </div>
         </div>
+    )
+}
+
+// Helper Client Component for Select (to avoid cluttering server component with client event handlers)
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+function ClientSortSelect({ currentSort }: { currentSort: string }) {
+    const router = useRouter()
+    const searchParams = useSearchParams()
+
+    const h = (e: any) => {
+        const params = new URLSearchParams(searchParams as any)
+        params.set('sort', e.target.value)
+        router.push(`?${params.toString()}`)
+    }
+
+    return (
+        <select
+            value={currentSort}
+            onChange={h}
+            className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200"
+        >
+            <option value="relevance">Most Relevant</option>
+            <option value="price_asc">Price: Low to High</option>
+            <option value="price_desc">Price: High to Low</option>
+            <option value="jara_desc">Best Jara</option>
+            <option value="hybrid">Best Value</option>
+        </select>
     )
 }

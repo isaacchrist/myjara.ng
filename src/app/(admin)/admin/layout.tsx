@@ -16,7 +16,7 @@ import { getAdminSession, logoutAdmin } from '@/app/actions/admin-auth'
 const sidebarItems = [
     { icon: LayoutDashboard, label: 'Overview', href: '/admin' },
     { icon: Shield, label: 'Applications', href: '/admin/dashboard' },
-    { icon: Store, label: 'Stores', href: '/admin/stores', badge: 5 },
+    { icon: Store, label: 'Stores', href: '/admin/stores' },
     { icon: FolderTree, label: 'Categories', href: '/admin/categories' },
     { icon: CreditCard, label: 'Transactions', href: '/admin/transactions' },
     { icon: Users, label: 'Users', href: '/admin/users' },

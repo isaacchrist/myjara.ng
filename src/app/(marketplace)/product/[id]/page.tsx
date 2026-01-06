@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowLeft, MapPin, MessageCircle, ShoppingCart, Store, Truck } from 'lucide-react'
 import { ChatButton } from '@/components/marketplace/chat-button'
+import { AddToCartButton } from '@/components/marketplace/add-to-cart-button'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
@@ -181,10 +182,21 @@ export default async function ProductPage({ params }: ProductPageProps) {
                                 storeId={product.store.id}
                                 className="flex-1"
                             />
-                            <Button className="flex-1">
-                                <ShoppingCart className="mr-2 h-5 w-5" />
-                                Buy Now
-                            </Button>
+                            <div className="flex-1 flex gap-2">
+                                <AddToCartButton
+                                    product={{
+                                        ...product,
+                                        store_id: product.store.id // normalize for cart
+                                    }}
+                                    className="flex-1 bg-white border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+                                    variant="outline"
+                                />
+                                <Button asChild className="flex-1 bg-emerald-600 hover:bg-emerald-700">
+                                    <Link href={`/checkout/${product.id}`}>
+                                        Buy Now
+                                    </Link>
+                                </Button>
+                            </div>
                         </div>
 
                         {/* Stock Status */}

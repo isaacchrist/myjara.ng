@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Gift, MapPin, Truck, ChevronRight, Package, Calendar, User, Mail, Phone } from "lucide-react"
 import { formatPrice } from "@/lib/utils"
+import { OrderActions } from "../order-actions"
 
 export default async function BrandOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -203,7 +204,7 @@ export default async function BrandOrderDetailPage({ params }: { params: Promise
                             <p className="text-xs text-emerald-700 mb-4">
                                 Make sure to include all {order.order_items.reduce((sum: number, i: any) => sum + i.jara_quantity, 0)} Jara gift items in the package!
                             </p>
-                            {/* In a real app we'd add the status change buttons here too, but they are in the list view for now */}
+                            <OrderActions orderId={order.id} currentStatus={order.status} />
                         </CardContent>
                     </Card>
                 </div>
