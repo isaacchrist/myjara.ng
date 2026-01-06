@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Check, X, Building, User, FileText, Loader2, LogOut } from 'lucide-react'
 import { logoutAdmin } from '@/app/actions/admin-auth'
+import { approveWholesalerAction, rejectWholesalerAction } from '@/app/actions/verification'
 
 // Interface for Pending User
 interface PendingUser {
@@ -47,40 +48,22 @@ export default function GlobalAdminDashboard() {
     const handleVerification = async (userId: string, status: 'approved' | 'rejected') => {
         setActionLoading(userId)
 
-        // 1. Update User Status
-        const { error: userError } = await supabase
-            .from('users')
-            .update({ verification_status: status } as any)
-            .eq('id', userId)
+        try {
+            const result = status === 'approved'
+                ? await approveWholesalerAction(userId)
+                : await rejectWholesalerAction(userId)
 
-        if (userError) {
-            console.error("Error updating user:", userError)
-            setActionLoading(null)
-            return
-        }
-
-        // 2. If Approved, Activate Store
-        if (status === 'approved') {
-            const { error: storeError } = await supabase
-                .from('stores')
-                .update({ status: 'active' } as any)
-                .eq('owner_id', userId)
-
-            if (storeError) {
-                console.error("Error activating store:", storeError)
-                // Optional: Revert user status? For now just log.
+            if (result.success) {
+                // Remove from list
+                setPendingUsers(prev => prev.filter(u => u.id !== userId))
+            } else {
+                console.error("Verification failed:", result.error)
             }
-        } else if (status === 'rejected') {
-            // Optional: Set store to rejected or banned?
-            const { error: storeError } = await supabase
-                .from('stores')
-                .update({ status: 'inactive' } as any) // or rejected
-                .eq('owner_id', userId)
+        } catch (err) {
+            console.error("Unexpected error during verification:", err)
+        } finally {
+            setActionLoading(null)
         }
-
-        // Remove from list
-        setPendingUsers(prev => prev.filter(u => u.id !== userId))
-        setActionLoading(null)
     }
 
     return (

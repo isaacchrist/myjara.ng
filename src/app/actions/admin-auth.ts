@@ -10,7 +10,8 @@ const STORE_ADMIN_COOKIE = 'myjara_store_admin_session'
 export async function loginWithKey(key: string) {
     // 1. Check Global Admin Key
     if (process.env.ADMIN_SECRET_KEY && key === process.env.ADMIN_SECRET_KEY) {
-        cookies().set(ADMIN_COOKIE, 'true', {
+        const cookieStore = await cookies()
+        cookieStore.set(ADMIN_COOKIE, 'true', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             path: '/',
@@ -34,13 +35,12 @@ export async function loginWithKey(key: string) {
     // We will query the table. If RLS blocks it, we need to adjust RLS or use Service Role.
     // Let's assume we have read access to verify.
 
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // Note: This query might fail if RLS prevents reading 'admin_access_key'.
     // Ideally, we'd have a Postgres function `check_store_key(key)` that returns the store_id.
     // Let's try direct query first.
-    const { data: store, error } = await supabase
-        .from('stores')
+    const { data: store, error } = await (supabase.from('stores') as any)
         .select('id, owner_id, slug')
         .eq('admin_access_key', key)
         .single()
@@ -51,7 +51,8 @@ export async function loginWithKey(key: string) {
         // SO, we will set a special cookie that our middleware/layout respects.
 
         // We'll store the store_id in the cookie
-        cookies().set(STORE_ADMIN_COOKIE, store.id, {
+        const cookieStore = await cookies()
+        cookieStore.set(STORE_ADMIN_COOKIE, store.id, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             path: '/',
@@ -73,12 +74,14 @@ export async function loginWithKey(key: string) {
 
 
 export async function logoutAdmin() {
-    cookies().delete(ADMIN_COOKIE)
-    cookies().delete(STORE_ADMIN_COOKIE)
+    const cookieStore = await cookies()
+    cookieStore.delete(ADMIN_COOKIE)
+    cookieStore.delete(STORE_ADMIN_COOKIE)
     redirect('/admin/login')
 }
 
 export async function getStoreSession() {
-    const storeId = cookies().get(STORE_ADMIN_COOKIE)?.value
+    const cookieStore = await cookies()
+    const storeId = cookieStore.get(STORE_ADMIN_COOKIE)?.value
     return storeId || null
 }

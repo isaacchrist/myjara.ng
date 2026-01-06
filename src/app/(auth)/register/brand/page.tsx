@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
 import { slugify } from '@/lib/utils'
+import { sendPolicyEmailAction } from '@/app/actions/verification'
 
 export default function BrandRegisterPage() {
     const router = useRouter()
@@ -107,6 +108,11 @@ export default function BrandRegisterPage() {
 
             if (authError) throw authError
             if (!authData.user) throw new Error('Failed to create user account')
+
+            // Send Policy email
+            if (formData.agreedToPolicy) {
+                await sendPolicyEmailAction(formData.email, formData.fullName)
+            }
 
             // Redirect based on outcome
             if (role === 'brand_admin') {

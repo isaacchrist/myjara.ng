@@ -1,14 +1,13 @@
 'use server'
 
 import { createClient } from "@/lib/supabase/server"
-import { sendAccountApprovedEmail } from "@/lib/resend"
+import { sendAccountApprovedEmail, sendPolicyAcceptedEmail } from "@/lib/resend"
 
 export async function approveWholesalerAction(userId: string) {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // 1. Check if user exists and fetch email/name for notification
-    const { data: user, error: fetchError } = await supabase
-        .from('users')
+    const { data: user, error: fetchError } = await (supabase.from('users') as any)
         .select('email, full_name')
         .eq('id', userId)
         .single()
@@ -18,9 +17,8 @@ export async function approveWholesalerAction(userId: string) {
     }
 
     // 2. Update User Status
-    const { error: userError } = await supabase
-        .from('users')
-        .update({ verification_status: 'approved' } as any) // Casting as any to avoid TS issues if schemas are outdated
+    const { error: userError } = await (supabase.from('users') as any)
+        .update({ verification_status: 'approved' } as any)
         .eq('id', userId)
 
     if (userError) {
@@ -28,8 +26,7 @@ export async function approveWholesalerAction(userId: string) {
     }
 
     // 3. Activate Store
-    const { error: storeError } = await supabase
-        .from('stores')
+    const { error: storeError } = await (supabase.from('stores') as any)
         .update({ status: 'active' } as any)
         .eq('owner_id', userId)
 
@@ -51,21 +48,35 @@ export async function approveWholesalerAction(userId: string) {
 }
 
 export async function rejectWholesalerAction(userId: string) {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // Update User Status
-    const { error: userError } = await supabase
-        .from('users')
+    const { error: userError } = await (supabase.from('users') as any)
         .update({ verification_status: 'rejected' } as any)
         .eq('id', userId)
 
     if (userError) return { success: false, error: userError.message }
 
     // Deactivate Store
-    await supabase
-        .from('stores')
+    await (supabase.from('stores') as any)
         .update({ status: 'inactive' } as any)
         .eq('owner_id', userId)
 
     return { success: true }
+}
+
+export async function sendPolicyEmailAction(email: string, fullName: string) {
+    const date = new Date().toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+
+    return await sendPolicyAcceptedEmail({
+        email,
+        fullName,
+        date
+    });
 }
