@@ -28,7 +28,7 @@ export default function BrandSupportPage() {
             setUserId(user.id)
 
             // Get store for this user (Simplified: assumes 1 store for now)
-            const { data: store } = await supabase
+            const { data: store } = await (supabase as any)
                 .from('stores')
                 .select('id')
                 .eq('owner_id', user.id)

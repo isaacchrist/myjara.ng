@@ -179,3 +179,46 @@ export async function sendPolicyAcceptedEmail({
         return { error };
     }
 }
+
+export async function sendUnreadMessageEmail({
+    email,
+    recipientName,
+    senderName,
+    messagePreview,
+    actionLink
+}: {
+    email: string;
+    recipientName: string;
+    senderName: string;
+    messagePreview: string;
+    actionLink: string;
+}) {
+    try {
+        const { data, error } = await resend.emails.send({
+            from: 'MyJara <notifications@myjara.ng>',
+            to: [email],
+            subject: `New message from ${senderName}`,
+            html: `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    <h2 style="color: #1f2937; margin-bottom: 20px;">New Message</h2>
+                    <p style="font-size: 16px; color: #4b5563;">Hi ${recipientName},</p>
+                    <p style="font-size: 16px; color: #4b5563;">You have a new message from <strong>${senderName}</strong>:</p>
+                    
+                    <div style="background-color: #f3f4f6; padding: 16px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #059669;">
+                        <p style="margin: 0; font-style: italic; color: #374151;">"${messagePreview}"</p>
+                    </div>
+
+                    <a href="${actionLink}" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Reply Now</a>
+                    
+                    <div style="margin-top: 30px; font-size: 12px; color: #9ca3af; text-align: center;">
+                        <p>© 2026 MyJara. All rights reserved.</p>
+                    </div>
+                </div>
+            `
+        });
+        return { data, error };
+    } catch (error) {
+        console.error('Notification email error:', error);
+        return { error };
+    }
+}

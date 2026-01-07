@@ -22,7 +22,7 @@ export async function getOrCreateChatRoomAction(storeId: string) {
     }
 
     // Create new room
-    const { data: newRoom, error } = await supabase
+    const { data: newRoom, error } = await (supabase as any)
         .from('chat_rooms')
         .insert({
             user_id: user.id,
@@ -46,7 +46,7 @@ export async function sendMessageAction(roomId: string, content: string) {
 
     if (!user) return { error: "Unauthorized" }
 
-    const { error } = await supabase
+    const { error } = await (supabase as any)
         .from('messages')
         .insert({
             room_id: roomId,
@@ -179,7 +179,7 @@ export async function markMessagesReadAction(roomId: string) {
     if (!user) return
 
     // Mark all messages in room NOT sent by me as read
-    await supabase
+    await (supabase as any)
         .from('messages')
         .update({ is_read: true })
         .eq('room_id', roomId)

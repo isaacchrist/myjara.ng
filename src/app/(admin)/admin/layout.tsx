@@ -13,16 +13,22 @@ import {
 } from 'lucide-react'
 import { getAdminSession, logoutAdmin } from '@/app/actions/admin-auth'
 
-const sidebarItems = [
-    { icon: LayoutDashboard, label: 'Overview', href: '/admin' },
-    { icon: Shield, label: 'Applications', href: '/admin/dashboard' },
-    { icon: Store, label: 'Stores', href: '/admin/stores' },
-    { icon: FolderTree, label: 'Categories', href: '/admin/categories' },
-    { icon: CreditCard, label: 'Transactions', href: '/admin/transactions' },
-    { icon: Users, label: 'Users', href: '/admin/users' },
-    { icon: BarChart3, label: 'Analytics', href: '/admin/analytics' },
-    { icon: Settings, label: 'Settings', href: '/admin/settings' },
-]
+
+const sidebarItems: Array<{
+    icon: React.ComponentType<{ className?: string }>
+    label: string
+    href: string
+    badge?: number | string
+}> = [
+        { icon: LayoutDashboard, label: 'Overview', href: '/admin' },
+        { icon: Shield, label: 'Applications', href: '/admin/dashboard' },
+        { icon: Store, label: 'Stores', href: '/admin/stores' },
+        { icon: FolderTree, label: 'Categories', href: '/admin/categories' },
+        { icon: CreditCard, label: 'Transactions', href: '/admin/transactions' },
+        { icon: Users, label: 'Users', href: '/admin/users' },
+        { icon: BarChart3, label: 'Analytics', href: '/admin/analytics' },
+        { icon: Settings, label: 'Settings', href: '/admin/settings' },
+    ]
 
 export default async function AdminLayout({
     children,

@@ -2,6 +2,9 @@ import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { SearchBar } from '@/components/marketplace/search-bar'
 import { ProductCard } from '@/components/marketplace/product-card'
+import { ClientSortSelect } from '@/components/marketplace/client-sort-select'
+import { Badge } from '@/components/ui/badge'
+import Link from 'next/link'
 
 interface SearchPageProps {
     searchParams: Promise<{
@@ -11,6 +14,9 @@ interface SearchPageProps {
         minPrice?: string
         maxPrice?: string
         minJara?: string
+        market?: string
+        sort?: string
+        compare?: string
     }>
 }
 
@@ -186,32 +192,5 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 )}
             </div>
         </div>
-    )
-}
-
-// Helper Client Component for Select (to avoid cluttering server component with client event handlers)
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-function ClientSortSelect({ currentSort }: { currentSort: string }) {
-    const router = useRouter()
-    const searchParams = useSearchParams()
-
-    const h = (e: any) => {
-        const params = new URLSearchParams(searchParams as any)
-        params.set('sort', e.target.value)
-        router.push(`?${params.toString()}`)
-    }
-
-    return (
-        <select
-            value={currentSort}
-            onChange={h}
-            className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200"
-        >
-            <option value="relevance">Most Relevant</option>
-            <option value="price_asc">Price: Low to High</option>
-            <option value="price_desc">Price: High to Low</option>
-            <option value="jara_desc">Best Jara</option>
-            <option value="hybrid">Best Value</option>
-        </select>
     )
 }

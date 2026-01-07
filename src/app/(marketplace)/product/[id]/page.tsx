@@ -180,6 +180,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                                 productId={product.id}
                                 productName={product.name}
                                 storeId={product.store.id}
+                                storeName={product.store.name}
                                 className="flex-1"
                             />
                             <div className="flex-1 flex gap-2">
