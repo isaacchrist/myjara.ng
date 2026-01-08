@@ -37,3 +37,33 @@ export const SUBSCRIPTION_PLANS = [
         features: ['Top Visibility', 'Dedicated Manager', 'Premium Jara Offers', 'Instant Notifications']
     }
 ]
+
+export const ABUJA_LOCATIONS = [
+    {
+        lga: 'Abaji',
+        districts: ['Abaji Central', 'Agyana', 'Bagido', 'Nuku', 'Pandagi', 'Rimba', 'Yaba']
+    },
+    {
+        lga: 'Bwari',
+        districts: ['Bwari Central', 'Dawaki', 'Dutse-Alhaji', 'Kubwa', 'Mpape', 'Ushafa', 'Zhiko']
+    },
+    {
+        lga: 'Gwagwalada',
+        districts: ['Gwagwalada Central', 'Ibwa', 'Kutunku', 'Paiko', 'Tunga', 'Zuba']
+    },
+    {
+        lga: 'Kuje',
+        districts: ['Kuje Central', 'Chibiri', 'Gaube', 'Gwagwalada', 'Kwali', 'Rubochi']
+    },
+    {
+        lga: 'AMAC (Municipal)',
+        districts: [
+            'Asokoro', 'Central Area', 'Garki', 'Gwarinpa', 'Jabi', 'Maitama',
+            'Utako', 'Wuse', 'Wuse II', 'Gudu', 'Durumi', 'Lokogoma', 'Gillmore', 'Jahi'
+        ]
+    },
+    {
+        lga: 'Kwali',
+        districts: ['Kwali Central', 'Ashara', 'Dafa', 'Gumbo', 'Kilankwa', 'Pai', 'Wako']
+    }
+]

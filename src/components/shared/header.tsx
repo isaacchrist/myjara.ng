@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Menu, X, Search, ShoppingBag, User, Sun, Moon, LogOut, LayoutDashboard, MessageSquare } from 'lucide-react'
+import { Menu, X, Search, ShoppingBag, User, LogOut, LayoutDashboard, MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
     Sheet,
@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sheet"
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
-import { useTheme } from 'next-themes'
+
 import { useCart } from '@/context/cart-context'
 import { Badge } from '@/components/ui/badge'
 
@@ -20,7 +20,7 @@ export function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const [user, setUser] = useState<any>(null)
     const [mounted, setMounted] = useState(false)
-    const { theme, setTheme } = useTheme()
+
     const { count } = useCart()
     const supabase = createClient()
     const router = useRouter()
@@ -54,9 +54,7 @@ export function Header() {
         router.push('/')
     }
 
-    const toggleTheme = () => {
-        setTheme(theme === 'dark' ? 'light' : 'dark')
-    }
+
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/80 backdrop-blur-lg dark:border-gray-800 dark:bg-gray-950/80">
@@ -163,9 +161,7 @@ export function Header() {
                                 <Menu className="h-6 w-6 text-gray-700 dark:text-gray-300" />
                             )}
                         </button>
-                        <Button variant="ghost" size="icon" onClick={toggleTheme}>
-                            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-                        </Button>
+
                     </div>
                 </div>
             </div>
@@ -227,14 +223,7 @@ export function Header() {
                                 </Link>
                             )}
 
-                            <hr className="my-2 dark:border-gray-800" />
 
-                            <div className="flex items-center justify-between px-3">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Theme</span>
-                                <Button variant="ghost" size="icon" onClick={toggleTheme}>
-                                    {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-                                </Button>
-                            </div>
 
                             {user ? (
                                 <Button variant="outline" className="w-full mt-2" onClick={handleLogout}>

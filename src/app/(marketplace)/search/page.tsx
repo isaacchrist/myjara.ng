@@ -3,7 +3,10 @@ import { createClient } from '@/lib/supabase/server'
 import { SearchBar } from '@/components/marketplace/search-bar'
 import { ProductCard } from '@/components/marketplace/product-card'
 import { ClientSortSelect } from '@/components/marketplace/client-sort-select'
+import ClientFilterSidebar from '@/components/marketplace/client-filter-sidebar'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Search } from 'lucide-react'
 import Link from 'next/link'
 
 interface SearchPageProps {

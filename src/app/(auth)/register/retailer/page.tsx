@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Store, User, Mail, Lock, ArrowRight, Loader2, CheckCircle2, MapPin, Calendar, ShoppingBag, Truck, Globe, CreditCard, Ticket } from 'lucide-react'
+import { Store, User, Mail, Lock, ArrowRight, Loader2, CheckCircle2, MapPin, Calendar, ShoppingBag, Truck, Globe, CreditCard, Ticket, Phone } from 'lucide-react'
+import { PhoneDialpad } from '@/components/shared/phone-dialpad'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
@@ -14,16 +15,19 @@ import { useToast } from '@/hooks/use-toast'
 
 export default function RetailerRegisterPage() {
     const router = useRouter()
+    const searchParams = useSearchParams()
     const { toast } = useToast()
-    // Steps: 0=ShopType, 1=Details, 2=Plan, 3=Payment
-    const [step, setStep] = useState<0 | 1 | 2 | 3>(0)
+
+    // Steps: 1=Details, 2=Plan, 3=Payment
+    // We skip Step 0 (Shop Type) as it's passed via URL now
+    const [step, setStep] = useState<1 | 2 | 3 | 'phone_entry'>('phone_entry')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
 
     // Form State
     const [formData, setFormData] = useState({
-        // Shop Type
-        shopType: '' as 'physical' | 'online' | 'market_day' | '',
+        // Shop Type (from URL)
+        shopType: (searchParams.get('type') as 'physical' | 'online' | 'market_day' | '') || 'physical',
         choosenMarkets: [] as string[],
 
         // Personal
@@ -88,9 +92,7 @@ export default function RetailerRegisterPage() {
                     formData.promoCode
                 )
             } else {
-                // Flutterwave placeholder: In reality, we'd redirect to payment link here
-                // For MVP Registration, we assume success or handle inline.
-                // Let's create a "pending" or just active default for now to satisfy flow.
+                // Flutterwave placeholder
                 subResult = await createSubscriptionAction(
                     authData.user.id,
                     formData.selectedPlan,
@@ -128,48 +130,22 @@ export default function RetailerRegisterPage() {
         }
     }
 
-    // ... Render Logic (Simplified for artifact brevity, actual write will be full)
-    // Writing full component below
+    const handlePhoneSubmit = (phone: string) => {
+        setFormData(prev => ({ ...prev, phone }))
+        setStep(1) // Move to Details
+    }
 
-    const renderStep0 = () => (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4">
-            {[
-                { id: 'physical', label: 'Physical Store', icon: Store, desc: 'I have a permanent shop location.' },
-                { id: 'online', label: 'Online Store', icon: Globe, desc: 'I sell primarily via social media.' },
-                { id: 'market_day', label: 'Market Day Shop', icon: ShoppingBag, desc: 'I sell at major markets on specific days.' },
-            ].map((type) => (
-                <div
-                    key={type.id}
-                    onClick={() => setFormData(p => ({ ...p, shopType: type.id as any }))}
-                    className={`cursor-pointer border-2 rounded-xl p-6 flex flex-col items-center text-center transition-all hover:scale-105 ${formData.shopType === type.id ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-200' : 'border-gray-200 hover:border-emerald-200'}`}
-                >
-                    <div className="h-12 w-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-4">
-                        <type.icon className="h-6 w-6" />
-                    </div>
-                    <h3 className="font-bold text-gray-900">{type.label}</h3>
-                    <p className="text-sm text-gray-500 mt-2">{type.desc}</p>
-                </div>
-            ))}
+    if (step === 'phone_entry') {
+        return (
+            <PhoneDialpad
+                title="Enter Your Phone Number"
+                subtitle="We need this to verify your account"
+                onSubmit={handlePhoneSubmit}
+            />
+        )
+    }
 
-            {formData.shopType === 'market_day' && (
-                <div className="col-span-1 md:col-span-3 mt-6 bg-gray-50 p-6 rounded-xl border border-dashed border-gray-300">
-                    <h4 className="font-semibold text-gray-900 mb-4">Select Markets you frequent:</h4>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        {ABUJA_MARKETS.map(m => (
-                            <div
-                                key={m.name}
-                                onClick={() => toggleMarket(m.name)}
-                                className={`text-sm p-2 rounded border cursor-pointer select-none transition-colors ${formData.choosenMarkets.includes(m.name) ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-gray-700 hover:border-emerald-400'}`}
-                            >
-                                {m.name} <span className="opacity-70 text-xs block">{m.days.join(', ')}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-        </div>
-    )
-
+    // Helper Renders
     const renderStep1 = () => (
         <div className="space-y-4 max-w-md mx-auto animate-in fade-in slide-in-from-right-4">
             <div className="space-y-2">
@@ -189,6 +165,24 @@ export default function RetailerRegisterPage() {
                 <label className="text-sm font-medium">Password</label>
                 <Input name="password" type="password" value={formData.password} onChange={handleChange} placeholder="••••••••" />
             </div>
+
+            {/* Market Days Selection if applicable */}
+            {formData.shopType === 'market_day' && (
+                <div className="mt-6 bg-gray-50 p-6 rounded-xl border border-dashed border-gray-300">
+                    <h4 className="font-semibold text-gray-900 mb-4">Select Markets you frequent:</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                        {ABUJA_MARKETS.map(m => (
+                            <div
+                                key={m.name}
+                                onClick={() => toggleMarket(m.name)}
+                                className={`text-sm p-2 rounded border cursor-pointer select-none transition-colors ${formData.choosenMarkets.includes(m.name) ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-gray-700 hover:border-emerald-400'}`}
+                            >
+                                {m.name}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     )
 
@@ -229,7 +223,7 @@ export default function RetailerRegisterPage() {
                     <CreditCard className="h-8 w-8" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900">Pay with Card</h3>
-                <p className="text-gray-500 text-center mt-2">Secure payment via Flutterwave. Supports Cards, Transfers, and USSD.</p>
+                <p className="text-gray-500 text-center mt-2">Secure payment via Flutterwave.</p>
             </div>
 
             {/* Promo Code Card */}
@@ -249,11 +243,11 @@ export default function RetailerRegisterPage() {
                             <Input
                                 placeholder="ENTER CODE"
                                 value={formData.promoCode}
-                                onChange={e => setFormData(p => ({ ...p, promoCode: e.target.value.toUpperCase() }))}
-                                className="text-center font-mono tracking-widest uppercase"
+                                onChange={(e) => setFormData(p => ({ ...p, promoCode: e.target.value.toUpperCase() }))}
+                                className="text-center font-mono font-bold tracking-widest"
                             />
-                            <Button size="sm" onClick={validatePromo} disabled={!formData.promoCode || loading}>
-                                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Apply'}
+                            <Button size="icon" onClick={validatePromo} disabled={loading}>
+                                <CheckCircle2 className="h-4 w-4" />
                             </Button>
                         </div>
                     </div>
@@ -262,75 +256,86 @@ export default function RetailerRegisterPage() {
         </div>
     )
 
+    // Progress Bar
+    const progress = step === 1 ? 33 : step === 2 ? 66 : 100
+
     return (
-        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 flex justify-center">
-            <div className="max-w-5xl w-full space-y-8">
-                <div className="text-center">
-                    <h2 className="text-3xl font-extrabold text-gray-900">Retailer Registration</h2>
-                    <p className="mt-2 text-gray-600">Join the MyJara network to access premium wholesale deals.</p>
+        <div className="min-h-screen bg-gray-50 flex flex-col">
+            {/* Header */}
+            <div className="bg-white border-b py-4">
+                <div className="container mx-auto px-4 flex items-center justify-between">
+                    <Link href="/" className="font-bold text-2xl text-emerald-600" style={{ fontFamily: '"Lobster", cursive' }}>MyJara</Link>
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <span>Already have an account?</span>
+                        <Link href="/login" className="text-emerald-600 font-medium hover:underline">Sign in</Link>
+                    </div>
+                </div>
+            </div>
+
+            <div className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
+                {/* Progress */}
+                <div className="mb-8 max-w-xl mx-auto">
+                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                            className="h-full bg-emerald-600 transition-all duration-500 ease-out"
+                            style={{ width: `${progress}%` }}
+                        />
+                    </div>
+                    <div className="flex justify-between mt-2 text-xs font-medium text-gray-500">
+                        <span className={step >= 1 ? 'text-emerald-600' : ''}>Details</span>
+                        <span className={step >= 2 ? 'text-emerald-600' : ''}>Plan</span>
+                        <span className={step >= 3 ? 'text-emerald-600' : ''}>Payment</span>
+                    </div>
                 </div>
 
-                <div className="relative">
-                    {/* Progress Steps */}
-                    <div className="flex justify-center gap-4 mb-8">
-                        {['Shop Type', 'Details', 'Plan', 'Payment'].map((label, idx) => (
-                            <div key={idx} className={`flex items-center gap-2 text-sm font-medium ${step >= idx ? 'text-emerald-600' : 'text-gray-400'}`}>
-                                <div className={`h-8 w-8 rounded-full flex items-center justify-center border-2 ${step >= idx ? 'border-emerald-600 bg-emerald-50' : 'border-gray-300'}`}>
-                                    {idx + 1}
-                                </div>
-                                <span className="hidden sm:inline">{label}</span>
+                <Card className="border-0 shadow-lg">
+                    <CardHeader>
+                        <CardTitle className="text-2xl">
+                            {step === 1 && 'Personal Details'}
+                            {step === 2 && 'Choose Your Plan'}
+                            {step === 3 && 'Payment Method'}
+                        </CardTitle>
+                        <CardDescription>
+                            {step === 1 && 'Tell us a bit about yourself'}
+                            {step === 2 && 'Select a subscription plan that fits your needs'}
+                            {step === 3 && 'Complete your registration'}
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {step === 1 && renderStep1()}
+                        {step === 2 && renderStep2()}
+                        {step === 3 && renderStep3()}
+
+                        {error && (
+                            <div className="mt-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm flex items-center gap-2 animate-in shake">
+                                <span className="font-bold">Error:</span> {error}
                             </div>
-                        ))}
-                    </div>
-
-                    <Card className="border-none shadow-xl bg-white/80 backdrop-blur-sm">
-                        <CardContent className="p-8">
-                            {error && (
-                                <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-lg flex items-center gap-2">
-                                    <span className="h-2 w-2 bg-red-600 rounded-full" /> {error}
-                                </div>
-                            )}
-
-                            {step === 0 && renderStep0()}
-                            {step === 1 && renderStep1()}
-                            {step === 2 && renderStep2()}
-                            {step === 3 && renderStep3()}
-                        </CardContent>
-                        <CardFooter className="flex justify-between p-8 bg-gray-50/50 rounded-b-xl">
-                            <Button
-                                variant="outline"
-                                onClick={() => setStep(s => Math.max(0, s - 1) as any)}
-                                disabled={step === 0 || loading}
-                            >
+                        )}
+                    </CardContent>
+                    <CardFooter className="flex justify-between border-t p-6 bg-gray-50">
+                        {step > 1 ? (
+                            <Button variant="outline" onClick={() => setStep(prev => (prev - 1) as any)}>
                                 Back
                             </Button>
+                        ) : (
+                            // Step 1 Back goes to Phone Entry
+                            <Button variant="outline" onClick={() => setStep('phone_entry')}>
+                                Change Number
+                            </Button>
+                        )}
 
-                            {step === 3 ? (
-                                <Button
-                                    className="bg-emerald-600 hover:bg-emerald-700 min-w-[200px]"
-                                    onClick={handleRegister}
-                                    disabled={loading || (formData.paymentMethod === 'promo_code' && !formData.promoCode) || !formData.paymentMethod}
-                                >
-                                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Complete Registration'}
-                                </Button>
-                            ) : (
-                                <Button
-                                    className="bg-gray-900 text-white hover:bg-gray-800"
-                                    onClick={() => {
-                                        if (step === 0 && !formData.shopType) return setError('Please select a shop type')
-                                        if (step === 0 && formData.shopType === 'market_day' && formData.choosenMarkets.length === 0) return setError('Select at least one market')
-                                        if (step === 1 && (!formData.email || !formData.password || !formData.fullName)) return setError('Fill all fields')
-                                        if (step === 2 && !formData.selectedPlan) return setError('Select a plan')
-                                        setError('')
-                                        setStep(s => Math.min(3, s + 1) as any)
-                                    }}
-                                >
-                                    Continue <ArrowRight className="ml-2 h-4 w-4" />
-                                </Button>
-                            )}
-                        </CardFooter>
-                    </Card>
-                </div>
+                        {step < 3 ? (
+                            <Button onClick={() => setStep(prev => (prev + 1) as any)}>
+                                Continue <ArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
+                        ) : (
+                            <Button onClick={handleRegister} disabled={loading || !formData.paymentMethod} className="bg-emerald-600 hover:bg-emerald-700">
+                                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                Complete Registration
+                            </Button>
+                        )}
+                    </CardFooter>
+                </Card>
             </div>
         </div>
     )
