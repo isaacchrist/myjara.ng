@@ -13,8 +13,26 @@ import { formatPrice, generateOrderNumber } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 
 interface CheckoutFormProps {
-    product: any
-    logistics: any[]
+    product: {
+        id: string
+        name: string
+        price: number
+        jara_buy_quantity: number
+        jara_get_quantity: number
+        store_id: string
+        store: {
+            name: string
+        }
+        product_images?: { url: string; is_primary: boolean }[]
+    }
+    logistics: {
+        id: string
+        type: string
+        location_name: string
+        city: string
+        delivery_fee: number
+        delivery_timeline: string
+    }[]
     initialQty: number
     userId: string
     userEmail: string
@@ -118,7 +136,7 @@ export function CheckoutForm({ product, logistics, initialQty, userId, userEmail
         }
     }
 
-    const primaryImage = product.product_images?.find((img: any) => img.is_primary)?.url
+    const primaryImage = product.product_images?.find((img) => img.is_primary)?.url
         || product.product_images?.[0]?.url
 
     return (
@@ -193,8 +211,8 @@ export function CheckoutForm({ product, logistics, initialQty, userId, userEmail
                                     key={option.id}
                                     onClick={() => setSelectedLogisticsId(option.id)}
                                     className={`cursor-pointer rounded-xl border-2 p-4 transition-all ${selectedLogisticsId === option.id
-                                            ? 'border-emerald-600 bg-emerald-50'
-                                            : 'border-gray-100 hover:border-gray-200'
+                                        ? 'border-emerald-600 bg-emerald-50'
+                                        : 'border-gray-100 hover:border-gray-200'
                                         }`}
                                 >
                                     <div className="flex items-center justify-between mb-2">

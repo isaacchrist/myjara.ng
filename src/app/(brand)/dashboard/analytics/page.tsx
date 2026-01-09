@@ -25,8 +25,8 @@ export default function RetailerAnalyticsPage() {
         contactsReceived: 0,
         messagesCount: 0
     })
-    const [competitors, setCompetitors] = useState<any[]>([])
-    const [clients, setClients] = useState<any[]>([])
+    const [competitors, setCompetitors] = useState<{ name: string, price: number, jara: string, distance: string }[]>([])
+    const [clients, setClients] = useState<{ id: string, name: string, phone: string, lastActive: string }[]>([])
     const [storeId, setStoreId] = useState<string | null>(null)
 
     useEffect(() => {
@@ -36,7 +36,7 @@ export default function RetailerAnalyticsPage() {
 
             if (user) {
                 // Fetch store ID for the user
-                const { data: store } = await supabase.from('stores').select('id').eq('owner_id', user.id).single()
+                const { data: store } = await supabase.from('stores').select('id').eq('owner_id', user.id).single() as { data: { id: string } | null }
 
                 if (store) {
                     setStoreId(store.id)

@@ -8,11 +8,8 @@ export function Footer() {
                     {/* Brand */}
                     <div className="md:col-span-1">
                         <Link href="/" className="flex items-center gap-2">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500">
-                                <span className="text-lg font-bold text-white">M</span>
-                            </div>
-                            <span className="text-xl font-bold text-gray-900">
-                                My<span className="text-emerald-600">Jara</span>
+                            <span className="text-4xl font-bold text-emerald-600 tracking-wide" style={{ fontFamily: '"Lobster", cursive' }}>
+                                MyJara
                             </span>
                         </Link>
                         <p className="mt-4 text-sm text-gray-500">

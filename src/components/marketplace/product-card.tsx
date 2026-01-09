@@ -25,7 +25,6 @@ export function ProductCard({
     jaraBuyQty,
     jaraGetQty,
     storeName,
-    storeSlug,
     imageUrl,
     cities = [],
     variant = 'grid',

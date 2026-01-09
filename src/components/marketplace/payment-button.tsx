@@ -8,7 +8,15 @@ import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 
 interface PaymentButtonProps {
-    order: any
+    order: {
+        id: string
+        order_number: string
+        total: number
+        store_id: string
+        store: {
+            flutterwave_subaccount_id?: string
+        }
+    }
     userEmail: string
     userName: string
 }
@@ -59,7 +67,7 @@ export function PaymentButton({ order, userEmail, userName }: PaymentButtonProps
                         .from('orders') as any)
                         .update({
                             status: 'paid',
-                            flutterwave_tx_ref: response.transaction_id.toString()
+                            flutterwave_tx_ref: (response as any).transaction_id.toString()
                         })
                         .eq('id', order.id)
 
@@ -74,10 +82,15 @@ export function PaymentButton({ order, userEmail, userName }: PaymentButtonProps
                     // 2. Record transaction
                     const { error: txError } = await (supabase
                         .from('transactions') as any)
+
+                    if (txError) console.error("TX Record Error:", txError)
+
+                    await (supabase
+                        .from('transactions') as any)
                         .insert({
                             order_id: order.id,
                             store_id: order.store_id,
-                            flutterwave_tx_id: response.transaction_id.toString(),
+                            flutterwave_tx_id: (response as any).transaction_id.toString(),
                             amount: order.total,
                             status: 'success',
                             gateway_response: response

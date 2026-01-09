@@ -41,7 +41,7 @@ export default function DashboardLayout({
 }: {
     children: React.ReactNode
 }) {
-    const [store, setStore] = useState<any>(null)
+    const [store, setStore] = useState<{ name: string; logo_url: string | null } | null>(null)
     const [verificationStatus, setVerificationStatus] = useState<'pending' | 'approved' | 'unverified' | 'rejected'>('approved') // Default approved to avoid flicker
     const [isAdminMode, setIsAdminMode] = useState(false)
     const [loading, setLoading] = useState(true)
@@ -57,7 +57,7 @@ export default function DashboardLayout({
                 const { data: storeData } = await (supabase.from('stores') as any)
                     .select('name, logo_url')
                     .eq('owner_id', user.id)
-                    .single()
+                    .single() as { data: { name: string; logo_url: string | null } | null }
                 if (storeData) setStore(storeData)
 
                 // Fetch Verification Status

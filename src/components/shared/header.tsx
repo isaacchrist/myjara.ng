@@ -8,17 +8,14 @@ import { Button } from '@/components/ui/button'
 import {
     Sheet,
     SheetContent,
-    SheetTrigger,
 } from "@/components/ui/sheet"
-import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 
 import { useCart } from '@/context/cart-context'
-import { Badge } from '@/components/ui/badge'
 
 export function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-    const [user, setUser] = useState<any>(null)
+    const [user, setUser] = useState<import('@supabase/supabase-js').User | null>(null)
     const [mounted, setMounted] = useState(false)
 
     const { count } = useCart()
@@ -91,9 +88,7 @@ export function Header() {
 
                     {/* Desktop Actions */}
                     <div className="hidden items-center gap-3 md:flex">
-                        <Button variant="ghost" size="icon" onClick={toggleTheme} className="mr-2">
-                            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-                        </Button>
+
                         <Button variant="ghost" size="icon" asChild>
                             <Link href="/search">
                                 <Search className="h-5 w-5" />

@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Store, User, Mail, Lock, ArrowRight, Loader2, CheckCircle2, MapPin, Calendar, ShoppingBag, Truck, Globe, CreditCard, Ticket, Phone } from 'lucide-react'
+import { Store, User, Mail, Lock, ArrowRight, Loader2, CheckCircle2, MapPin, Calendar, ShoppingBag, CreditCard, Ticket, Phone } from 'lucide-react'
 import { PhoneDialpad } from '@/components/shared/phone-dialpad'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,7 +13,7 @@ import { ABUJA_MARKETS, SUBSCRIPTION_PLANS } from '@/lib/constants'
 import { validatePromoCodeAction, createSubscriptionAction } from '@/app/actions/subscription'
 import { useToast } from '@/hooks/use-toast'
 
-export default function RetailerRegisterPage() {
+function RetailerRegisterForm() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const { toast } = useToast()
@@ -35,6 +35,15 @@ export default function RetailerRegisterPage() {
         email: '',
         password: '',
         phone: '',
+        dateOfBirth: '',
+        residentialAddress: '',
+
+        // Business
+        businessName: '',
+        businessAddress: '',
+        hasPhysicalStore: 'no',
+        productRange: '',
+        agreedToPolicy: false,
 
         // Subscription
         selectedPlan: '' as 'basic' | 'pro' | 'exclusive' | '',
@@ -42,7 +51,7 @@ export default function RetailerRegisterPage() {
         promoCode: ''
     })
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
     }
 
@@ -65,13 +74,20 @@ export default function RetailerRegisterPage() {
             const supabase = createClient()
 
             // 1. Create User
-            const metaData: any = {
+            const metaData: Record<string, any> = {
                 full_name: formData.fullName,
                 role: 'retailer',
                 verification_status: 'pending', // Admins approve
                 shop_type: formData.shopType,
                 market_days: formData.shopType === 'market_day' ? formData.choosenMarkets : [],
-                phone_number: formData.phone
+                phone_number: formData.phone,
+                date_of_birth: formData.dateOfBirth,
+                residential_address: formData.residentialAddress,
+                business_name: formData.businessName,
+                business_address: formData.businessAddress,
+                has_physical_store: formData.hasPhysicalStore === 'yes',
+                product_range: formData.productRange.split(',').map(s => s.trim()).filter(Boolean),
+                policy_accepted_at: formData.agreedToPolicy ? new Date().toISOString() : null
             }
 
             const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -164,6 +180,51 @@ export default function RetailerRegisterPage() {
             <div className="space-y-2">
                 <label className="text-sm font-medium">Password</label>
                 <Input name="password" type="password" value={formData.password} onChange={handleChange} placeholder="••••••••" />
+            </div>
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Date of Birth</label>
+                <Input name="dateOfBirth" type="date" value={formData.dateOfBirth} onChange={handleChange} required />
+            </div>
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Residential Address</label>
+                <textarea name="residentialAddress" value={formData.residentialAddress} onChange={handleChange} className="w-full rounded-md border border-input px-3 py-2 text-sm min-h-[80px]" required placeholder="Your home address" />
+            </div>
+
+            <div className="pt-4 border-t border-gray-100">
+                <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <Store className="h-4 w-4 text-emerald-600" /> Business Details
+                </h4>
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Business / Shop Name</label>
+                        <Input name="businessName" value={formData.businessName} onChange={handleChange} placeholder="Chidi's Boutique" required />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Business Address</label>
+                        <textarea name="businessAddress" value={formData.businessAddress} onChange={handleChange} className="w-full rounded-md border border-input px-3 py-2 text-sm min-h-[80px]" required placeholder="Where is your shop located?" />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Do you have a physical store?</label>
+                        <select name="hasPhysicalStore" value={formData.hasPhysicalStore} onChange={handleChange} className="w-full rounded-md border border-input px-3 py-2 text-sm bg-white font-medium">
+                            <option value="no">No, Online Only</option>
+                            <option value="yes">Yes, I have a physical location</option>
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Product Range (Categories)</label>
+                        <Input name="productRange" value={formData.productRange} onChange={handleChange} placeholder="e.g. Grains, Spices, Textiles" required />
+                        <p className="text-xs text-gray-500">Separate with commas</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="pt-4 border-t border-gray-100">
+                <div className="flex items-start gap-2">
+                    <input type="checkbox" id="policy" name="agreedToPolicy" checked={formData.agreedToPolicy} onChange={(e) => setFormData(p => ({ ...p, agreedToPolicy: e.target.checked }))} className="mt-1 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600" required />
+                    <label htmlFor="policy" className="text-sm text-gray-600">
+                        I agree to the <a href="#" className="text-emerald-600 underline">MyJara Operations Policy</a> and understand that my account requires admin verification.
+                    </label>
+                </div>
             </div>
 
             {/* Market Days Selection if applicable */}
@@ -260,18 +321,7 @@ export default function RetailerRegisterPage() {
     const progress = step === 1 ? 33 : step === 2 ? 66 : 100
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
-            {/* Header */}
-            <div className="bg-white border-b py-4">
-                <div className="container mx-auto px-4 flex items-center justify-between">
-                    <Link href="/" className="font-bold text-2xl text-emerald-600" style={{ fontFamily: '"Lobster", cursive' }}>MyJara</Link>
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <span>Already have an account?</span>
-                        <Link href="/login" className="text-emerald-600 font-medium hover:underline">Sign in</Link>
-                    </div>
-                </div>
-            </div>
-
+        <div className="min-h-[calc(100vh-200px)] flex flex-col pt-8">
             <div className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
                 {/* Progress */}
                 <div className="mb-8 max-w-xl mx-auto">
@@ -314,7 +364,7 @@ export default function RetailerRegisterPage() {
                     </CardContent>
                     <CardFooter className="flex justify-between border-t p-6 bg-gray-50">
                         {step > 1 ? (
-                            <Button variant="outline" onClick={() => setStep(prev => (prev - 1) as any)}>
+                            <Button variant="outline" onClick={() => setStep(prev => typeof prev === 'number' ? (prev - 1) as any : prev)}>
                                 Back
                             </Button>
                         ) : (
@@ -325,7 +375,7 @@ export default function RetailerRegisterPage() {
                         )}
 
                         {step < 3 ? (
-                            <Button onClick={() => setStep(prev => (prev + 1) as any)}>
+                            <Button onClick={() => setStep(prev => typeof prev === 'number' ? (prev + 1) as any : prev)} disabled={step === 1 && !formData.agreedToPolicy}>
                                 Continue <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
                         ) : (
@@ -338,5 +388,17 @@ export default function RetailerRegisterPage() {
                 </Card>
             </div>
         </div>
+    )
+}
+
+export default function RetailerRegisterPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex min-h-screen items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+            </div>
+        }>
+            <RetailerRegisterForm />
+        </Suspense>
     )
 }

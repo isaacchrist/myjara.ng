@@ -111,6 +111,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                         <SearchBar
                             initialQuery={query}
                             initialCity={city}
+                            showFilters={false}
                         />
                     </Suspense>
 
@@ -151,48 +152,74 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
             {/* Results */}
             <div className="container mx-auto px-4 py-8">
-                {/* Results Header */}
-                <div className="mb-6 flex items-center justify-between">
-                    <div>
-                        <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                            {market ? `${market} Listings` : (query ? `Results for "${query}"` : 'All Products')}
-                        </h1>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            {resultsCount} products found
-                            {city && ` in ${city}`}
-                        </p>
-                    </div>
-
-                    {/* Standard Sort Dropdown (Hidden if in Compare/Market mode to avoid conflict? Or kept logic specific) */}
-                    {!compareMode && !market && (
-                        <ClientSortSelect currentSort={sort} />
-                    )}
-                </div>
-
-                {/* Product Grid */}
-                {resultsCount > 0 ? (
-                    <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-                        {products.map((product: any) => (
-                            <ProductCard
-                                key={product.id}
-                                id={product.id}
-                                name={product.name}
-                                price={product.price}
-                                jaraBuyQty={product.jara_buy_quantity}
-                                jaraGetQty={product.jara_get_quantity}
-                                storeName={product.store_name}
-                                storeSlug={product.store_slug}
-                                imageUrl={product.primary_image_url}
-                                cities={product.cities || []}
+                <div className="flex flex-col lg:flex-row gap-8">
+                    {/* Sidebar */}
+                    <div className="w-full lg:w-64 flex-shrink-0">
+                        <Suspense fallback={<div className="h-64 rounded-xl bg-gray-100 animate-pulse" />}>
+                            <ClientFilterSidebar
+                                currentParams={{
+                                    category: categoryId,
+                                    minPrice: minPrice,
+                                    maxPrice: maxPrice,
+                                    minJara: minJara,
+                                    city: city
+                                }}
                             />
-                        ))}
+                        </Suspense>
                     </div>
-                ) : (
-                    <div className="py-20 text-center">
-                        <p className="text-lg text-gray-500">No products found matching your criteria.</p>
-                        <p className="mt-2 text-gray-400">Try adjusting your filters or search term.</p>
+
+                    {/* Results Content */}
+                    <div className="flex-1">
+                        {/* Results Header */}
+                        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+                                    {market ? `${market} Listings` : (query ? `Results for "${query}"` : 'All Products')}
+                                </h1>
+                                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                    {resultsCount} products found
+                                    {city && ` in ${city}`}
+                                </p>
+                            </div>
+
+                            {/* Standard Sort Dropdown */}
+                            {!compareMode && !market && (
+                                <ClientSortSelect currentSort={sort} />
+                            )}
+                        </div>
+
+                        {/* Product Grid */}
+                        {resultsCount > 0 ? (
+                            <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                {products.map((product: any) => (
+                                    <ProductCard
+                                        key={product.id}
+                                        id={product.id}
+                                        name={product.name}
+                                        price={product.price}
+                                        jaraBuyQty={product.jara_buy_quantity}
+                                        jaraGetQty={product.jara_get_quantity}
+                                        storeName={product.store_name}
+                                        storeSlug={product.store_slug}
+                                        imageUrl={product.primary_image_url}
+                                        cities={product.cities || []}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="py-20 text-center bg-white rounded-xl border border-dashed border-gray-200 dark:bg-gray-900 dark:border-gray-800">
+                                <div className="mx-auto w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 text-gray-400">
+                                    <Search className="h-8 w-8" />
+                                </div>
+                                <p className="text-lg text-gray-500 font-medium">No products found matching your criteria.</p>
+                                <p className="mt-2 text-gray-400">Try adjusting your filters or search term.</p>
+                                <Button className="mt-6" variant="outline" onClick={() => window.location.href = '/search'}>
+                                    Clear all filters
+                                </Button>
+                            </div>
+                        )}
                     </div>
-                )}
+                </div>
             </div>
         </div>
     )

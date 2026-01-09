@@ -143,7 +143,7 @@ export default function ClientFilterSidebar({ currentParams }: FilterProps) {
                             placeholder="Min"
                             value={priceRange.min}
                             onChange={(e) => setPriceRange(p => ({ ...p, min: e.target.value }))}
-                            onBlur={() => updateFilter('minPrice', priceRange.min || null)}
+                            onBlur={() => updateFilter('minPrice', priceRange.min ? String(priceRange.min) : null)}
                             className="w-full rounded-lg border-gray-200 text-sm focus:border-emerald-500 focus:ring-emerald-500"
                         />
                         <input
@@ -151,7 +151,7 @@ export default function ClientFilterSidebar({ currentParams }: FilterProps) {
                             placeholder="Max"
                             value={priceRange.max}
                             onChange={(e) => setPriceRange(p => ({ ...p, max: e.target.value }))}
-                            onBlur={() => updateFilter('maxPrice', priceRange.max || null)}
+                            onBlur={() => updateFilter('maxPrice', priceRange.max ? String(priceRange.max) : null)}
                             className="w-full rounded-lg border-gray-200 text-sm focus:border-emerald-500 focus:ring-emerald-500"
                         />
                     </div>

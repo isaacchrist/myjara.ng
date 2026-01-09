@@ -39,7 +39,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         const saved = localStorage.getItem("myjara-cart")
         if (saved) {
             try {
-                setItems(JSON.parse(saved))
+                const parsed = JSON.parse(saved)
+                setItems(parsed)
             } catch (e) {
                 console.error("Failed to parse cart", e)
             }

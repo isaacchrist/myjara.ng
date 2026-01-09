@@ -10,13 +10,13 @@ export async function getRetailerStats(storeId: string) {
     const { count: totalClients } = await supabase
         .from('client_contacts')
         .select('client_identifier', { count: 'exact', head: true })
-        .eq('store_id', storeId)
+        .eq('store_id', storeId) as { count: number | null }
 
     // 2. Contacts (Total interactions)
     const { count: contactsReceived } = await supabase
         .from('client_contacts')
         .select('id', { count: 'exact', head: true })
-        .eq('store_id', storeId)
+        .eq('store_id', storeId) as { count: number | null }
 
     // 3. Logistics Opt-in (Mock for now, or check orders with delivery)
     // For MVP we'll query orders if we had that table structure fully populated with delivery details
@@ -45,13 +45,13 @@ export async function getRetailerStats(storeId: string) {
 export async function logClientContact(storeId: string, clientIdentifier: string, contactType: 'phone_copy' | 'whatsapp' | 'call') {
     const supabase = await createClient()
 
-    const { error } = await supabase
-        .from('client_contacts')
+    const { error } = await (supabase
+        .from('client_contacts') as any)
         .insert({
             store_id: storeId,
             client_identifier: clientIdentifier,
             contact_type: contactType
-        })
+        }) as { error: any }
 
     if (error) {
         console.error('Error logging contact:', error)
@@ -70,13 +70,13 @@ export async function getRecentClients(storeId: string) {
         .select('client_identifier, created_at, metadata')
         .eq('store_id', storeId)
         .order('created_at', { ascending: false })
-        .limit(10)
+        .limit(10) as { data: any[] | null, error: any }
 
     if (error || !data) return []
 
     // Deduplicate by client_identifier on client side if needed, 
     // or just return the recent interactions list
-    return data.map(contact => ({
+    return data.map((contact: any) => ({
         id: contact.client_identifier, // Using identifier as ID for display
         name: contact.metadata?.name || 'Unknown User',
         phone: contact.client_identifier,
