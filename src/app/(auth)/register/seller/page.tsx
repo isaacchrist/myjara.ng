@@ -38,18 +38,7 @@ const sellerTypes = [
 
 export default function SellerRegistrationPage() {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-emerald-50">
-            {/* Header */}
-            <div className="border-b bg-white/80 backdrop-blur-sm">
-                <div className="container mx-auto px-4 py-4">
-                    <Link href="/" className="inline-block">
-                        <span className="text-3xl font-bold text-emerald-600 tracking-wide" style={{ fontFamily: '"Lobster", cursive' }}>
-                            MyJara
-                        </span>
-                    </Link>
-                </div>
-            </div>
-
+        <div className="min-h-[calc(100vh-200px)] bg-gradient-to-br from-gray-50 via-white to-emerald-50">
             <div className="container mx-auto px-4 py-12">
                 {/* Title Section */}
                 <div className="text-center mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
