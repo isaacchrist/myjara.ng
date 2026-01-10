@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Search, MapPin, SlidersHorizontal } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { ABUJA_LOCATIONS } from '@/lib/constants'
 
 interface SearchBarProps {
     initialQuery?: string
@@ -30,17 +31,6 @@ export function SearchBar({
         router.push(`/search?${params.toString()}`)
     }
 
-    const cities = [
-        'Lagos',
-        'Abuja',
-        'Port Harcourt',
-        'Kano',
-        'Ibadan',
-        'Kaduna',
-        'Benin City',
-        'Enugu',
-    ]
-
     return (
         <div className="w-full">
             <form onSubmit={handleSearch}>
@@ -57,17 +47,22 @@ export function SearchBar({
                         />
                     </div>
 
-                    {/* City Filter */}
-                    <div className="relative sm:w-48">
+                    {/* Location Filter - Abuja Only */}
+                    <div className="relative sm:w-56">
                         <MapPin className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
                         <select
                             value={city}
                             onChange={(e) => setCity(e.target.value)}
                             className="flex h-12 w-full appearance-none rounded-lg border border-gray-200 bg-white pl-12 pr-4 text-base shadow-sm transition-all duration-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                         >
-                            <option value="">All Cities</option>
-                            {cities.map((c) => (
-                                <option key={c} value={c}>{c}</option>
+                            <option value="">All Abuja</option>
+                            {ABUJA_LOCATIONS.map((loc) => (
+                                <optgroup key={loc.lga} label={loc.lga}>
+                                    <option value={loc.lga}>{loc.lga} (All)</option>
+                                    {loc.districts.map((dist) => (
+                                        <option key={dist} value={dist}>{dist}</option>
+                                    ))}
+                                </optgroup>
                             ))}
                         </select>
                     </div>

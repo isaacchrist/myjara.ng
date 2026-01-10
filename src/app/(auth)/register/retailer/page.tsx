@@ -35,6 +35,7 @@ function RetailerRegisterForm() {
         email: '',
         password: '',
         phone: '',
+        sex: '' as 'male' | 'female' | '',
         dateOfBirth: '',
         residentialAddress: '',
 
@@ -77,6 +78,7 @@ function RetailerRegisterForm() {
             const metaData: Record<string, any> = {
                 full_name: formData.fullName,
                 role: 'retailer',
+                sex: formData.sex,
                 verification_status: 'pending', // Admins approve
                 shop_type: formData.shopType,
                 market_days: formData.shopType === 'market_day' ? formData.choosenMarkets : [],
@@ -180,6 +182,33 @@ function RetailerRegisterForm() {
             <div className="space-y-2">
                 <label className="text-sm font-medium">Password</label>
                 <Input name="password" type="password" value={formData.password} onChange={handleChange} placeholder="••••••••" />
+            </div>
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Sex</label>
+                <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                            type="radio"
+                            name="sex"
+                            value="male"
+                            checked={formData.sex === 'male'}
+                            onChange={handleChange}
+                            className="w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500"
+                        />
+                        <span className="text-sm">Male</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                            type="radio"
+                            name="sex"
+                            value="female"
+                            checked={formData.sex === 'female'}
+                            onChange={handleChange}
+                            className="w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500"
+                        />
+                        <span className="text-sm">Female</span>
+                    </label>
+                </div>
             </div>
             <div className="space-y-2">
                 <label className="text-sm font-medium">Date of Birth</label>

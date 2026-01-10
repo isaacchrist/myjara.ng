@@ -24,6 +24,7 @@ export default function BrandRegisterPage() {
     const [formData, setFormData] = useState({
         fullName: '',
         phone: '',
+        sex: '' as 'male' | 'female' | '',
         email: '',
         password: '',
         dateOfBirth: '',
@@ -83,6 +84,7 @@ export default function BrandRegisterPage() {
             const metaData: Record<string, any> = {
                 full_name: formData.fullName,
                 phone_number: formData.phone,
+                sex: formData.sex,
                 role: role,
                 date_of_birth: formData.dateOfBirth,
                 residential_address: formData.residentialAddress,
@@ -295,6 +297,33 @@ export default function BrandRegisterPage() {
                                                 <Calendar className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                                                 <Input name="dateOfBirth" type="date" value={formData.dateOfBirth} onChange={handleChange} className="pl-10" required />
                                             </div>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">Sex</label>
+                                        <div className="flex gap-4">
+                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                <input
+                                                    type="radio"
+                                                    name="sex"
+                                                    value="male"
+                                                    checked={formData.sex === 'male'}
+                                                    onChange={handleChange}
+                                                    className="w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500"
+                                                />
+                                                <span className="text-sm">Male</span>
+                                            </label>
+                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                <input
+                                                    type="radio"
+                                                    name="sex"
+                                                    value="female"
+                                                    checked={formData.sex === 'female'}
+                                                    onChange={handleChange}
+                                                    className="w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500"
+                                                />
+                                                <span className="text-sm">Female</span>
+                                            </label>
                                         </div>
                                     </div>
                                     <div className="space-y-2">
