@@ -47,16 +47,16 @@ export function PhoneDialpad({ onSubmit, onBack, title, subtitle }: PhoneDialpad
     const isValidNigerianNumber = phoneNumber.length === 11 && phoneNumber.startsWith('0')
 
     return (
-        <div className="fixed inset-0 z-50 bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 flex flex-col items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 flex flex-col items-center justify-start overflow-y-auto p-4 pt-8 md:justify-center md:pt-4">
             {/* Header */}
-            <div className="text-center mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
-                <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Phone className="h-10 w-10 text-white" />
+            <div className="text-center mb-6 md:mb-8 animate-in fade-in slide-in-from-top-4 duration-500 flex-shrink-0">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
+                    <Phone className="h-8 w-8 md:h-10 md:w-10 text-white" />
                 </div>
-                <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">
+                <h1 className="text-xl md:text-3xl font-bold text-white mb-2">
                     {title || 'Enter Your Phone Number'}
                 </h1>
-                <p className="text-emerald-100">
+                <p className="text-emerald-100 text-sm md:text-base">
                     {subtitle || 'We\'ll use this for order updates and verification'}
                 </p>
             </div>
@@ -119,8 +119,8 @@ export function PhoneDialpad({ onSubmit, onBack, title, subtitle }: PhoneDialpad
                     disabled={!isValidNigerianNumber}
                     className={cn(
                         "min-w-[200px] h-14 text-lg font-bold transition-all",
-                        isValidNigerianNumber 
-                            ? "bg-white text-emerald-700 hover:bg-emerald-50 shadow-xl" 
+                        isValidNigerianNumber
+                            ? "bg-white text-emerald-700 hover:bg-emerald-50 shadow-xl"
                             : "bg-white/20 text-white/50 cursor-not-allowed"
                     )}
                 >
@@ -138,9 +138,9 @@ export function PhoneDialpad({ onSubmit, onBack, title, subtitle }: PhoneDialpad
             {/* Validation Hint */}
             {phoneNumber.length > 0 && !isValidNigerianNumber && (
                 <p className="mt-4 text-emerald-200 text-sm animate-in fade-in">
-                    {phoneNumber.length < 11 
+                    {phoneNumber.length < 11
                         ? `${11 - phoneNumber.length} more digits needed`
-                        : !phoneNumber.startsWith('0') 
+                        : !phoneNumber.startsWith('0')
                             ? 'Number should start with 0'
                             : 'Invalid number format'
                     }
