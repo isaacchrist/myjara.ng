@@ -235,7 +235,7 @@ export function Header() {
                                         Sign In
                                     </Link>
                                     <Button className="w-full" asChild>
-                                        <Link href="/register/brand" onClick={() => setMobileMenuOpen(false)}>
+                                        <Link href="/register/seller" onClick={() => setMobileMenuOpen(false)}>
                                             Sell on MyJara
                                         </Link>
                                     </Button>

@@ -284,7 +284,7 @@ function RetailerRegisterForm() {
                     onClick={() => setFormData(p => ({ ...p, selectedPlan: plan.id as any }))}
                     className={`relative cursor-pointer border rounded-xl p-6 transition-all hover:shadow-lg ${formData.selectedPlan === plan.id ? 'border-emerald-500 ring-2 ring-emerald-500 shadow-xl scale-[1.02]' : 'border-gray-200'}`}
                 >
-                    {plan.id === 'pro' && <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs px-2 py-1 rounded-bl-lg rounded-tr-lg font-bold">POPULAR</div>}
+                    {plan.id === 'pro' && <div className="absolute top-0 right-0 bg-emerald-500 text-white text-xs px-2 py-1 rounded-bl-lg rounded-tr-lg font-bold">POPULAR</div>}
                     <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
                     <div className="mt-2 mb-4">
                         <span className="text-3xl font-bold">₦{plan.price.toLocaleString()}</span>

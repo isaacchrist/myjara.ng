@@ -128,17 +128,17 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                             <div className="flex items-center gap-2 ml-auto">
                                 <span className="text-sm text-blue-800 font-medium">Compare by:</span>
                                 <div className="flex gap-2">
-                                    <Link href={`/search?${new URLSearchParams({ ...params, sort: 'price_asc' })}`}>
+                                    <Link href={`/search?${new URLSearchParams(Object.fromEntries(Object.entries({ ...params, sort: 'price_asc' }).filter(([_, v]) => v != null)))}`}>
                                         <Badge className={`cursor-pointer ${sort === 'price_asc' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50'}`}>
                                             Cheapest
                                         </Badge>
                                     </Link>
-                                    <Link href={`/search?${new URLSearchParams({ ...params, sort: 'jara_desc' })}`}>
+                                    <Link href={`/search?${new URLSearchParams(Object.fromEntries(Object.entries({ ...params, sort: 'jara_desc' }).filter(([_, v]) => v != null)))}`}>
                                         <Badge className={`cursor-pointer ${sort === 'jara_desc' ? 'bg-orange-500 hover:bg-orange-600' : 'bg-white text-orange-600 border-orange-200 hover:bg-orange-50'}`}>
                                             Best Jara
                                         </Badge>
                                     </Link>
-                                    <Link href={`/search?${new URLSearchParams({ ...params, sort: 'hybrid' })}`}>
+                                    <Link href={`/search?${new URLSearchParams(Object.fromEntries(Object.entries({ ...params, sort: 'hybrid' }).filter(([_, v]) => v != null)))}`}>
                                         <Badge className={`cursor-pointer ${sort === 'hybrid' ? 'bg-purple-600 hover:bg-purple-700' : 'bg-white text-purple-600 border-purple-200 hover:bg-purple-50'}`}>
                                             Best Value (Hybrid)
                                         </Badge>
