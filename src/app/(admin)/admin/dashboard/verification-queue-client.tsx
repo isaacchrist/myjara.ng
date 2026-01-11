@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Check, X, Building, FileText, Loader2, LogOut, ShoppingBag, Store } from 'lucide-react'
 import { logoutAdmin } from '@/app/actions/admin-auth'
+import { getVerificationQueue } from '@/app/actions/admin'
 import { approveWholesalerAction, rejectWholesalerAction } from '@/app/actions/verification'
 
 // Interface for Pending User
@@ -40,15 +41,18 @@ export default function VerificationQueueClient() {
 
     const fetchPendingUsers = async () => {
         setLoading(true)
-        // Fetch users pending verification
-        const { data, error } = await supabase
-            .from('users')
-            .select('*')
-            .in('role', ['brand_admin', 'retailer'])
-            .eq('verification_status', 'pending')
-
-        if (data) setPendingUsers(data as any)
-        setLoading(false)
+        try {
+            const result = await getVerificationQueue()
+            if (result.success && result.data) {
+                setPendingUsers(result.data as any)
+            } else {
+                console.error('Failed to fetch queue:', result.error)
+            }
+        } catch (err) {
+            console.error('Error in fetchPendingUsers:', err)
+        } finally {
+            setLoading(false)
+        }
     }
 
     const handleVerification = async (userId: string, role: string, status: 'approved' | 'rejected') => {

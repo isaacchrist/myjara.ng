@@ -70,17 +70,27 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     const supabase = await createClient()
 
     // Base Search
-    const { data: rawProducts, error } = await (supabase as any).rpc('search_products', {
-        search_query: query || null,
-        filter_city: city || null,
-        filter_category_id: categoryId,
-        filter_min_price: minPrice,
-        filter_max_price: maxPrice,
-        filter_min_jara: minJara
-    })
+    let rawProducts: any[] | null = null
 
-    if (error) {
-        console.error('Search error:', error)
+    try {
+        const { data, error: rpcError } = await (supabase as any).rpc('search_products', {
+            search_query: query || null,
+            filter_city: city || null,
+            filter_category_id: categoryId,
+            filter_min_price: minPrice,
+            filter_max_price: maxPrice,
+            filter_min_jara: minJara
+        })
+
+        if (rpcError) {
+            console.error('Search RPC error:', rpcError)
+        } else {
+            rawProducts = data
+        }
+    } catch (e) {
+        console.error('Unexpected error fetching products:', e)
+        // Fallback to empty list so page doesn't crash
+        rawProducts = []
     }
 
     // Client-side Market Filter (Mock Logic for MVP unless we add market column to products)
