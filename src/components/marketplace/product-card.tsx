@@ -1,9 +1,11 @@
+'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
-import { MapPin } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { formatPrice, formatJara } from '@/lib/utils'
+import { LocationButton } from './location-button'
 
 interface ProductCardProps {
     id: string
@@ -32,38 +34,41 @@ export function ProductCard({
     const jaraText = formatJara(jaraBuyQty, jaraGetQty)
 
     return (
-        <Link href={`/product/${id}`} className={variant === 'list' ? 'block h-40 w-full' : ''}>
-            <Card className={`group h-full cursor-pointer overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${variant === 'list' ? 'flex flex-row' : ''
+        <div className={variant === 'list' ? 'block h-40 w-full' : ''}>
+            <Card className={`group h-full overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${variant === 'list' ? 'flex flex-row' : ''
                 }`}>
-                {/* Image */}
-                <div className={`relative overflow-hidden bg-gray-100 ${variant === 'list' ? 'h-full w-48 shrink-0' : 'aspect-square w-full'
-                    }`}>
-                    {imageUrl ? (
-                        <Image
-                            src={imageUrl}
-                            alt={name}
-                            fill
-                            className="object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                    ) : (
-                        <div className="flex h-full items-center justify-center">
-                            <span className="text-4xl text-gray-300 dark:text-gray-600">📦</span>
-                        </div>
-                    )}
+                {/* Clickable Product Link */}
+                <Link href={`/product/${id}`} className="contents">
+                    {/* Image */}
+                    <div className={`relative overflow-hidden bg-gray-100 cursor-pointer ${variant === 'list' ? 'h-full w-48 shrink-0' : 'aspect-square w-full'
+                        }`}>
+                        {imageUrl ? (
+                            <Image
+                                src={imageUrl}
+                                alt={name}
+                                fill
+                                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            />
+                        ) : (
+                            <div className="flex h-full items-center justify-center">
+                                <span className="text-4xl text-gray-300 dark:text-gray-600">📦</span>
+                            </div>
+                        )}
 
-                    {/* Jara Badge - Only show on top for grid, or adjust for list */}
-                    {jaraGetQty > 0 && (
-                        <div className="absolute left-3 top-3">
-                            <Badge variant="jara" className="shadow-md">
-                                🎁 {jaraText}
-                            </Badge>
-                        </div>
-                    )}
-                </div>
+                        {/* Jara Badge */}
+                        {jaraGetQty > 0 && (
+                            <div className="absolute left-3 top-3">
+                                <Badge variant="jara" className="shadow-md">
+                                    🎁 {jaraText}
+                                </Badge>
+                            </div>
+                        )}
+                    </div>
+                </Link>
 
                 {/* Content */}
                 <div className={`p-4 ${variant === 'list' ? 'flex flex-1 flex-col justify-between' : ''}`}>
-                    <div>
+                    <Link href={`/product/${id}`} className="block cursor-pointer">
                         <h3 className="line-clamp-2 text-sm font-medium text-gray-900 group-hover:text-emerald-600">
                             {name}
                         </h3>
@@ -71,28 +76,25 @@ export function ProductCard({
                         <p className="mt-1 text-xs text-gray-500">
                             by {storeName}
                         </p>
-                    </div>
+                    </Link>
 
                     <div>
                         <div className="mt-3 flex items-end justify-between">
-                            <span className="text-lg font-bold text-gray-900">
-                                {formatPrice(price)}
-                            </span>
+                            <Link href={`/product/${id}`}>
+                                <span className="text-lg font-bold text-gray-900 hover:text-emerald-600 cursor-pointer">
+                                    {formatPrice(price)}
+                                </span>
+                            </Link>
                         </div>
 
-                        {/* Location */}
-                        {cities.length > 0 && (
-                            <div className="mt-2 flex items-center gap-1 text-xs text-gray-400">
-                                <MapPin className="h-3 w-3" />
-                                <span className="truncate">
-                                    {cities.slice(0, 2).join(', ')}
-                                    {cities.length > 2 && ` +${cities.length - 2}`}
-                                </span>
-                            </div>
-                        )}
+                        {/* Location - Opens Google Maps */}
+                        <LocationButton
+                            cities={cities}
+                            storeName={storeName}
+                        />
                     </div>
                 </div>
             </Card>
-        </Link>
+        </div>
     )
 }
