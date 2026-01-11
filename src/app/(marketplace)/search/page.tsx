@@ -90,8 +90,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     let rawProducts: any[] | null = null
 
     try {
-        /* 
-        // TEMPORARILY DISABLED FOR DEBUGGING
         const { data, error: rpcError } = await (supabase as any).rpc('search_products', {
             search_query: query || null,
             filter_city: city || null,
@@ -106,8 +104,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         } else {
             rawProducts = data
         }
-        */
-        rawProducts = []
     } catch (e) {
         console.error('Unexpected error fetching products:', e)
         // Fallback to empty list so page doesn't crash
@@ -215,7 +211,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
                             {/* Standard Sort Dropdown */}
                             {!compareMode && !market && (
-                                <ClientSortSelect currentSort={sort} />
+                                <Suspense fallback={<div className="h-10 w-40 bg-gray-100 rounded animate-pulse" />}>
+                                    <ClientSortSelect currentSort={sort} />
+                                </Suspense>
                             )}
                         </div>
 
