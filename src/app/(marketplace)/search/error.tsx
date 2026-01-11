@@ -33,8 +33,13 @@ export default function Error({
                     Try again
                 </Button>
             </div>
+            {error.message && (
+                <p className="mt-4 text-xs text-red-500 font-mono bg-red-50 p-2 rounded max-w-lg overflow-auto">
+                    {error.message}
+                </p>
+            )}
             {error.digest && (
-                <p className="mt-8 text-xs text-gray-400 font-mono">
+                <p className="mt-2 text-xs text-gray-400 font-mono">
                     Error Digest: {error.digest}
                 </p>
             )}
