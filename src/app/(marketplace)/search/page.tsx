@@ -62,10 +62,27 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     const compareMode = params.compare === 'true'
 
     // Filters
+    // Helper for safe parsing
+    const safeFloat = (v: string | undefined) => { const n = parseFloat(v || ''); return isNaN(n) ? null : n; }
+    const safeInt = (v: string | undefined) => { const n = parseInt(v || ''); return isNaN(n) ? null : n; }
+
     const categoryId = params.category || null
-    const minPrice = params.minPrice ? parseFloat(params.minPrice) : null
-    const maxPrice = params.maxPrice ? parseFloat(params.maxPrice) : null
-    const minJara = params.minJara ? parseInt(params.minJara) : null
+    const minPrice = safeFloat(params.minPrice)
+    const maxPrice = safeFloat(params.maxPrice)
+    const minJara = safeInt(params.minJara)
+
+    // Helper for safe URL generation
+    const buildUrl = (overrides: Record<string, string | number | null | undefined>) => {
+        const p = new URLSearchParams()
+        // Merge current params with overrides
+        const merged = { ...params, ...overrides }
+        Object.entries(merged).forEach(([k, v]) => {
+            if (v !== null && v !== undefined && v !== '') {
+                p.set(k, String(v))
+            }
+        })
+        return `/search?${p.toString()}`
+    }
 
     const supabase = await createClient()
 
@@ -138,17 +155,17 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                             <div className="flex items-center gap-2 ml-auto">
                                 <span className="text-sm text-blue-800 font-medium">Compare by:</span>
                                 <div className="flex gap-2">
-                                    <Link href={`/search?${new URLSearchParams(Object.fromEntries(Object.entries({ ...params, sort: 'price_asc' }).filter(([_, v]) => v != null)))}`}>
+                                    <Link href={buildUrl({ sort: 'price_asc' })}>
                                         <Badge className={`cursor-pointer ${sort === 'price_asc' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50'}`}>
                                             Cheapest
                                         </Badge>
                                     </Link>
-                                    <Link href={`/search?${new URLSearchParams(Object.fromEntries(Object.entries({ ...params, sort: 'jara_desc' }).filter(([_, v]) => v != null)))}`}>
+                                    <Link href={buildUrl({ sort: 'jara_desc' })}>
                                         <Badge className={`cursor-pointer ${sort === 'jara_desc' ? 'bg-orange-500 hover:bg-orange-600' : 'bg-white text-orange-600 border-orange-200 hover:bg-orange-50'}`}>
                                             Best Jara
                                         </Badge>
                                     </Link>
-                                    <Link href={`/search?${new URLSearchParams(Object.fromEntries(Object.entries({ ...params, sort: 'hybrid' }).filter(([_, v]) => v != null)))}`}>
+                                    <Link href={buildUrl({ sort: 'hybrid' })}>
                                         <Badge className={`cursor-pointer ${sort === 'hybrid' ? 'bg-purple-600 hover:bg-purple-700' : 'bg-white text-purple-600 border-purple-200 hover:bg-purple-50'}`}>
                                             Best Value (Hybrid)
                                         </Badge>
