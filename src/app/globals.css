@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
 @import "tailwindcss";
-@variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   --background: #ffffff;
@@ -50,6 +50,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --font-heading: 'Lobster', cursive;
 
   /* Brand Colors */
   --color-emerald-50: #ecfdf5;
