@@ -42,11 +42,16 @@ export function Footer() {
 
                     {/* For Brands */}
                     <div>
-                        <h3 className="text-sm font-semibold text-gray-900">For Brands</h3>
+                        <h3 className="text-sm font-semibold text-gray-900">For Sellers</h3>
                         <ul className="mt-4 space-y-3">
                             <li>
-                                <Link href="/register/brand" className="text-sm text-gray-500 hover:text-emerald-600">
+                                <Link href="/register/seller" className="text-sm text-gray-500 hover:text-emerald-600">
                                     Sell on MyJara
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/support" className="text-sm text-gray-500 hover:text-emerald-600">
+                                    Retailer Plans
                                 </Link>
                             </li>
                             <li>

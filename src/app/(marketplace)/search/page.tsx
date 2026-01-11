@@ -92,8 +92,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     if (market) {
         // Simple text filter for MVP demo
         products = products.filter((p: any) =>
-            p.store_name?.toLowerCase().includes(market.toLowerCase()) ||
-            p.description?.toLowerCase().includes(market.toLowerCase())
+            (p.store_name?.toLowerCase() || '').includes(market.toLowerCase()) ||
+            (p.description?.toLowerCase() || '').includes(market.toLowerCase())
         )
     }
 
