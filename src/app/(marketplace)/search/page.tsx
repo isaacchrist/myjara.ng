@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button'
 import { Search } from 'lucide-react'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 interface SearchPageProps {
     searchParams: Promise<{
         q?: string
