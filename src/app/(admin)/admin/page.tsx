@@ -183,12 +183,17 @@ export default async function AdminPage() {
                             <p className="mt-1 text-xl font-bold text-green-400">99.9%</p>
                         </div>
                         <div className="rounded-lg bg-gray-800 p-4">
-                            <p className="text-sm text-gray-400">Payment Success Rate</p>
-                            <p className="mt-1 text-xl font-bold text-green-400">98.5%</p>
+                            <p className="text-sm text-gray-400">Active Issues</p>
+                            <div className="flex justify-between items-end">
+                                <p className="mt-1 text-xl font-bold text-yellow-400">3</p>
+                                <Link href="/admin/disputes" className="text-xs text-blue-400 hover:text-blue-300 underline">
+                                    Manage Disputes
+                                </Link>
+                            </div>
                         </div>
                         <div className="rounded-lg bg-gray-800 p-4">
-                            <p className="text-sm text-gray-400">Active Issues</p>
-                            <p className="mt-1 text-xl font-bold text-yellow-400">3</p>
+                            <p className="text-sm text-gray-400">Payment Success Rate</p>
+                            <p className="mt-1 text-xl font-bold text-green-400">98.5%</p>
                         </div>
                     </div>
                 </CardContent>
