@@ -36,18 +36,6 @@ export async function POST(req: Request) {
                 const supabase = await createAdminClient();
 
                 // 3. Find and verify order
-                // 3. Process Payment via RPC (Atomic Transaction)
-                // @ts-ignore - RPC types not generated
-                const { data: rpcResult, error: rpcError } = await supabase.rpc('process_order_payment', {
-                    p_order_id: null, // We need to find ID first? No, we have tx_ref = order_number
-                    // Actually, the RPC takes order_id. We only have order_number (tx_ref).
-                    // We should modify the RPC to take order_number OR look it up here.
-                    // Let's look it up quickly first, or better, modify RPC to accept order_number.
-                    // But for now, let's look up just the ID to be safe.
-                })
-
-                // Wait, optimizing: The RPC logic I wrote takes p_order_id.
-                // I should fetch the ID first.
 
                 // 3. Find Order ID by Number
                 const { data: order, error: orderError } = await (supabase
