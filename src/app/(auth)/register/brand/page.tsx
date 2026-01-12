@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Store, User, Mail, Lock, ArrowRight, Loader2, CheckCircle2, MapPin, Calendar, ShoppingBag, Briefcase, Phone } from 'lucide-react'
-import { PhoneDialpad } from '@/components/shared/phone-dialpad'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
@@ -14,8 +13,9 @@ import { sendPolicyEmailAction } from '@/app/actions/verification'
 
 export default function BrandRegisterPage() {
     const router = useRouter()
-    // Steps: 1=Role, 2=Account/Personal, 3=Business/KYC, 4=Store(Wholesaler only)
-    const [step, setStep] = useState<1 | 2 | 3 | 4 | 'phone_entry'>('phone_entry')
+    // Steps: 1=Role + Personal, 2=Business/KYC, 3=Store(Wholesaler only)
+    // Refactored: Removed separate phone entry. Now integrated.
+    const [step, setStep] = useState<1 | 2 | 3>(1) // Now 3 steps for Wholesaler (was 4), 2 for Retailer (was 3? logic below)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [role, setRole] = useState<'brand_admin' | 'retailer'>('brand_admin') // brand_admin = Wholesaler
@@ -160,40 +160,27 @@ export default function BrandRegisterPage() {
 
     const nextStep = () => {
         if (step === 1) {
-            setStep(2)
-        } else if (step === 2) {
-            if (formData.email && formData.password && formData.fullName && formData.dateOfBirth) setStep(3)
+            if (formData.email && formData.password && formData.fullName && formData.dateOfBirth) setStep(2)
             else setError("Please fill in all personal details")
-        } else if (step === 3) {
+        } else if (step === 2) {
             if (formData.businessAddress) {
-                // Skip step 4 if Retailer
+                // Retailer ends at step 2
                 if (role === 'retailer') {
-                    // Retailer flow ends at step 3 (Business Profile)
+                    // Ready to Submit
                 } else {
-                    setStep(4)
+                    // Wholesaler goes to Step 3 (Store Details)
+                    setStep(3)
                 }
             } else setError("Please fill in business details")
         }
     }
 
     const handlePhoneSubmit = (phone: string) => {
-        setFormData(prev => ({ ...prev, phone }))
-        setStep(1) // Move to Role Selection
-    }
-
-    if (step === 'phone_entry') {
-        return (
-            <PhoneDialpad
-                title="Enter Business Phone"
-                subtitle="We use this for important account updates"
-                onSubmit={handlePhoneSubmit}
-            />
-        )
+        // Legacy support or remove if completely unused
     }
 
     const getProgress = () => {
-        if (typeof step === 'string') return 5
-        const max = role === 'retailer' ? 3 : 4
+        const max = role === 'retailer' ? 2 : 3
         return (step / max) * 100
     }
 
@@ -225,13 +212,12 @@ export default function BrandRegisterPage() {
                         <CardHeader>
                             <div className="flex items-center justify-between mb-2">
                                 <CardTitle className="text-xl">
-                                    {step === 1 && 'Select User Role'}
-                                    {step === 2 && 'Personal Details'}
-                                    {step === 3 && 'Business Verification'}
-                                    {step === 4 && 'Store Profile'}
+                                    {step === 1 && 'Role & Personal Details'}
+                                    {step === 2 && 'Business Verification'}
+                                    {step === 3 && 'Store Profile'}
                                 </CardTitle>
                                 <div className="flex items-center gap-2 text-sm text-gray-400">
-                                    Step <span className="font-bold text-emerald-600">{step}</span> of {role === 'retailer' ? 3 : 4}
+                                    Step <span className="font-bold text-emerald-600">{step}</span> of {role === 'retailer' ? 2 : 3}
                                 </div>
                             </div>
                             {/* Progress Bar */}
@@ -251,102 +237,110 @@ export default function BrandRegisterPage() {
                                 </div>
                             )}
 
-                            {/* Step 1: Role Selection */}
+                            {/* Step 1: Role Selection & Personal Details */}
                             {step === 1 && (
-                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                    <div
-                                        className={`cursor-pointer rounded-xl border-2 p-6 transition-all ${role === 'brand_admin' ? 'border-emerald-500 bg-emerald-50/50 ring-2 ring-emerald-200' : 'border-gray-100 hover:border-emerald-200 hover:bg-gray-50'}`}
-                                        onClick={() => setRole('brand_admin')}
-                                    >
-                                        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
-                                            <Store className="h-6 w-6" />
+                                <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+                                    {/* Role Selection */}
+                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                        <div
+                                            className={`cursor-pointer rounded-xl border-2 p-4 transition-all ${role === 'brand_admin' ? 'border-emerald-500 bg-emerald-50/50 ring-2 ring-emerald-200' : 'border-gray-100 hover:border-emerald-200 hover:bg-gray-50'}`}
+                                            onClick={() => setRole('brand_admin')}
+                                        >
+                                            <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
+                                                <Store className="h-4 w-4" />
+                                            </div>
+                                            <h3 className="font-bold text-gray-900 text-sm">Wholesaler</h3>
                                         </div>
-                                        <h3 className="font-bold text-gray-900">Wholesaler</h3>
-                                        <p className="mt-1 text-sm text-gray-500">For suppliers and brands selling in bulk.</p>
+
+                                        <div
+                                            className={`cursor-pointer rounded-xl border-2 p-4 transition-all ${role === 'retailer' ? 'border-blue-500 bg-blue-50/50 ring-2 ring-blue-200' : 'border-gray-100 hover:border-blue-200 hover:bg-gray-50'}`}
+                                            onClick={() => setRole('retailer')}
+                                        >
+                                            <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                                                <ShoppingBag className="h-4 w-4" />
+                                            </div>
+                                            <h3 className="font-bold text-gray-900 text-sm">Retailer</h3>
+                                        </div>
                                     </div>
 
-                                    <div
-                                        className={`cursor-pointer rounded-xl border-2 p-6 transition-all ${role === 'retailer' ? 'border-blue-500 bg-blue-50/50 ring-2 ring-blue-200' : 'border-gray-100 hover:border-blue-200 hover:bg-gray-50'}`}
-                                        onClick={() => setRole('retailer')}
-                                    >
-                                        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
-                                            <ShoppingBag className="h-6 w-6" />
-                                        </div>
-                                        <h3 className="font-bold text-gray-900">Retailer</h3>
-                                        <p className="mt-1 text-sm text-gray-500">For shops and businesses buying stock.</p>
-                                    </div>
-                                </div>
-                            )}
+                                    <div className="h-px bg-gray-100" />
 
-                            {/* Step 2: Personal Details */}
-                            {step === 2 && (
-                                <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Full Name</label>
-                                        <div className="relative">
-                                            <User className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                                            <Input name="fullName" value={formData.fullName} onChange={handleChange} className="pl-10" required placeholder="John Doe" />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Email Address</label>
-                                        <div className="relative">
-                                            <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                                            <Input name="email" type="email" value={formData.email} onChange={handleChange} className="pl-10" required placeholder="john@example.com" />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Password</label>
-                                        <div className="relative">
-                                            <Lock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                                            <Input name="password" type="password" value={formData.password} onChange={handleChange} className="pl-10" required placeholder="••••••••" minLength={8} />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    {/* Personal Details */}
+                                    <div className="space-y-4">
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium">Date of Birth</label>
+                                            <label className="text-sm font-medium">Full Name</label>
                                             <div className="relative">
-                                                <Calendar className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                                                <Input name="dateOfBirth" type="date" value={formData.dateOfBirth} onChange={handleChange} className="pl-10" required />
+                                                <User className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                                                <Input name="fullName" value={formData.fullName} onChange={handleChange} className="pl-10" required placeholder="John Doe" />
                                             </div>
                                         </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Sex</label>
-                                        <div className="flex gap-4">
-                                            <label className="flex items-center gap-2 cursor-pointer">
-                                                <input
-                                                    type="radio"
-                                                    name="sex"
-                                                    value="male"
-                                                    checked={formData.sex === 'male'}
-                                                    onChange={handleChange}
-                                                    className="w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500"
-                                                />
-                                                <span className="text-sm">Male</span>
-                                            </label>
-                                            <label className="flex items-center gap-2 cursor-pointer">
-                                                <input
-                                                    type="radio"
-                                                    name="sex"
-                                                    value="female"
-                                                    checked={formData.sex === 'female'}
-                                                    onChange={handleChange}
-                                                    className="w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500"
-                                                />
-                                                <span className="text-sm">Female</span>
-                                            </label>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium">Email Address</label>
+                                            <div className="relative">
+                                                <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                                                <Input name="email" type="email" value={formData.email} onChange={handleChange} className="pl-10" required placeholder="john@example.com" />
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Residential Address</label>
-                                        <textarea name="residentialAddress" value={formData.residentialAddress} onChange={handleChange} className="w-full rounded-md border border-input px-3 py-2 text-sm min-h-[80px]" required placeholder="Your home address" />
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium">Phone</label>
+                                                <div className="relative">
+                                                    <Phone className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                                                    <Input name="phone" type="tel" value={formData.phone} onChange={handleChange} className="pl-10" required placeholder="080 1234 5678" />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium">Date of Birth</label>
+                                                <div className="relative">
+                                                    <Calendar className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                                                    <Input name="dateOfBirth" type="date" value={formData.dateOfBirth} onChange={handleChange} className="pl-10" required />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium">Password</label>
+                                            <div className="relative">
+                                                <Lock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                                                <Input name="password" type="password" value={formData.password} onChange={handleChange} className="pl-10" required placeholder="••••••••" minLength={8} />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium">Sex</label>
+                                            <div className="flex gap-4">
+                                                <label className="flex items-center gap-2 cursor-pointer">
+                                                    <input
+                                                        type="radio"
+                                                        name="sex"
+                                                        value="male"
+                                                        checked={formData.sex === 'male'}
+                                                        onChange={handleChange}
+                                                        className="w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500"
+                                                    />
+                                                    <span className="text-sm">Male</span>
+                                                </label>
+                                                <label className="flex items-center gap-2 cursor-pointer">
+                                                    <input
+                                                        type="radio"
+                                                        name="sex"
+                                                        value="female"
+                                                        checked={formData.sex === 'female'}
+                                                        onChange={handleChange}
+                                                        className="w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500"
+                                                    />
+                                                    <span className="text-sm">Female</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium">Residential Address</label>
+                                            <textarea name="residentialAddress" value={formData.residentialAddress} onChange={handleChange} className="w-full rounded-md border border-input px-3 py-2 text-sm min-h-[80px]" required placeholder="Your home address" />
+                                        </div>
                                     </div>
                                 </div>
                             )}
 
-                            {/* Step 3: Business/KYC Details */}
-                            {step === 3 && (
+                            {/* Step 2: Business/KYC Details */}
+                            {step === 2 && (
                                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
                                     <div className="space-y-2">
                                         <label className="text-sm font-medium">Business Address</label>
@@ -477,8 +471,8 @@ export default function BrandRegisterPage() {
                                 </div>
                             )}
 
-                            {/* Step 4: Store Details (Wholesaler Only) */}
-                            {step === 4 && role === 'brand_admin' && (
+                            {/* Step 3: Store Details (Wholesaler Only) */}
+                            {step === 3 && role === 'brand_admin' && (
                                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
                                     <div className="space-y-2">
                                         <label className="text-sm font-medium">Store Name</label>
@@ -504,12 +498,12 @@ export default function BrandRegisterPage() {
 
                         <CardFooter className="flex justify-between">
                             {step > 1 && (
-                                <Button type="button" variant="ghost" onClick={() => setStep(prev => typeof prev === 'number' ? (prev - 1) as any : prev)} disabled={loading}>
+                                <Button type="button" variant="ghost" onClick={() => setStep(prev => (prev - 1) as any)} disabled={loading}>
                                     Back
                                 </Button>
                             )}
 
-                            {(step === 4 || (step === 3 && role === 'retailer')) ? (
+                            {(step === 3 || (step === 2 && role === 'retailer')) ? (
                                 <Button type="submit" className="ml-auto bg-emerald-600 hover:bg-emerald-700" disabled={loading || !formData.agreedToPolicy}>
                                     {loading ? (
                                         <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...</>
