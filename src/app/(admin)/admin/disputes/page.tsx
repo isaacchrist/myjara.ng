@@ -82,7 +82,7 @@ export default function AdminDisputesPage() {
     })
 
     const handleResolve = async (id: string, newStatus: 'resolved' | 'closed') => {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
             .from('disputes')
             .update({ status: newStatus })
             .eq('id', id)
