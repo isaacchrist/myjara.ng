@@ -53,6 +53,13 @@ export default function BrandRegisterPage() {
         storeName: '',
         storeSlug: '',
         storeDescription: '',
+
+        // Extended Business Details
+        yearsInBusiness: '',
+        staffStrength: '',
+        estimatedMonthlyRevenue: '',
+        hasExportLicense: false,
+        websiteUrl: ''
     })
 
 
@@ -101,6 +108,11 @@ export default function BrandRegisterPage() {
                 account_name: formData.accountName,
                 business_doc_url: formData.businessDocUrl,
                 proof_of_ownership_url: formData.proofOfOwnershipUrl,
+                years_in_business: formData.yearsInBusiness,
+                staff_strength: formData.staffStrength,
+                estimated_monthly_revenue: formData.estimatedMonthlyRevenue,
+                has_export_license: formData.hasExportLicense,
+                website_url: formData.websiteUrl,
                 policy_accepted_at: formData.agreedToPolicy ? new Date().toISOString() : null
             }
 
@@ -395,6 +407,43 @@ export default function BrandRegisterPage() {
                                                 </div>
                                             </div>
 
+                                            <div className="space-y-4 pt-4 border-t border-gray-100">
+                                                <h4 className="font-semibold text-gray-900">Business Details</h4>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Years in Business</label>
+                                                        <Input name="yearsInBusiness" type="number" min="0" value={formData.yearsInBusiness} onChange={handleChange} placeholder="e.g. 5" />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Staff Strength</label>
+                                                        <select name="staffStrength" value={formData.staffStrength} onChange={handleChange} className="w-full rounded-md border border-input px-3 py-2 text-sm bg-white">
+                                                            <option value="">Select Range</option>
+                                                            <option value="1-5">1-5 Employees</option>
+                                                            <option value="6-20">6-20 Employees</option>
+                                                            <option value="21-50">21-50 Employees</option>
+                                                            <option value="50+">50+ Employees</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Est. Monthly Revenue (₦)</label>
+                                                        <select name="estimatedMonthlyRevenue" value={formData.estimatedMonthlyRevenue} onChange={handleChange} className="w-full rounded-md border border-input px-3 py-2 text-sm bg-white">
+                                                            <option value="">Select Range</option>
+                                                            <option value="<1M">Below 1 Million</option>
+                                                            <option value="1M-10M">1M - 10M</option>
+                                                            <option value="10M-50M">10M - 50M</option>
+                                                            <option value="50M+">Above 50 Million</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Website (Optional)</label>
+                                                        <Input name="websiteUrl" value={formData.websiteUrl} onChange={handleChange} placeholder="https://..." />
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <input type="checkbox" id="export" name="hasExportLicense" checked={formData.hasExportLicense} onChange={handleChange} className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-600" />
+                                                    <label htmlFor="export" className="text-sm font-medium text-gray-700">I have an Export/Import License</label>
+                                                </div>
+                                            </div>
                                         </>
                                     )}
 

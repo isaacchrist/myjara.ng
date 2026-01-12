@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, Suspense, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Store, User, Mail, Lock, ArrowRight, Loader2, CheckCircle2, MapPin, Calendar, ShoppingBag, CreditCard, Ticket, Phone } from 'lucide-react'
@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
-import { ABUJA_MARKETS, SUBSCRIPTION_PLANS } from '@/lib/constants'
+import { ABUJA_MARKETS, SUBSCRIPTION_PLANS, PRODUCT_CATEGORIES } from '@/lib/constants'
 import { validatePromoCodeAction, createSubscriptionAction } from '@/app/actions/subscription'
 import { useToast } from '@/hooks/use-toast'
 
@@ -18,9 +18,14 @@ function RetailerRegisterForm() {
     const searchParams = useSearchParams()
     const { toast } = useToast()
 
+    // URL Params
+    const urlPhone = searchParams.get('phone')
+    const urlCategory = searchParams.get('category')
+    const urlSubcategory = searchParams.get('subcategory')
+
     // Steps: 1=Details, 2=Plan, 3=Payment
-    // We skip Step 0 (Shop Type) as it's passed via URL now
-    const [step, setStep] = useState<1 | 2 | 3 | 'phone_entry'>('phone_entry')
+    // If phone is present (from previous steps), start at Step 1. Otherwise start at Phone Entry.
+    const [step, setStep] = useState<1 | 2 | 3 | 'phone_entry'>(urlPhone ? 1 : 'phone_entry')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
 
@@ -34,7 +39,7 @@ function RetailerRegisterForm() {
         fullName: '',
         email: '',
         password: '',
-        phone: '',
+        phone: urlPhone || '',
         sex: '' as 'male' | 'female' | '',
         dateOfBirth: '',
         residentialAddress: '',
@@ -42,8 +47,12 @@ function RetailerRegisterForm() {
         // Business
         businessName: '',
         businessAddress: '',
-        hasPhysicalStore: 'no',
-        productRange: '',
+        hasPhysicalStore: (searchParams.get('type') === 'physical' ? 'yes' : 'no'), // Auto-set based on type
+
+        // Category Data
+        categoryId: urlCategory || '',
+        subcategoryId: urlSubcategory || '',
+
         agreedToPolicy: false,
 
         // Subscription
@@ -51,6 +60,84 @@ function RetailerRegisterForm() {
         paymentMethod: '' as 'flutterwave' | 'promo_code' | '',
         promoCode: ''
     })
+
+    // Persistence Key
+    const STORAGE_KEY = 'myjara_retailer_registration_v1'
+
+    // Validate Flow: If User has phone but no category, redirect to Category Selection
+    useEffect(() => {
+        if (urlPhone && !urlCategory) {
+            const params = new URLSearchParams(searchParams.toString())
+            router.push(`/register/retailer/category?${params.toString()}`)
+        }
+    }, [urlPhone, urlCategory, router, searchParams])
+
+    // Load from Storage on Mount
+    useEffect(() => {
+        const saved = sessionStorage.getItem(STORAGE_KEY)
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved)
+                setFormData(prev => ({ ...prev, ...parsed }))
+                // If we have saved data, maybe we can assume step? 
+                // Let's not force step, but data is there.
+                toast({ title: 'Resumed', description: 'We restored your previous details.' })
+            } catch (e) {
+                console.error('Failed to parse saved registration data', e)
+            }
+        }
+    }, [])
+
+    // Save to Storage on Change
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(formData))
+        }, 500) // Debounce 500ms
+        return () => clearTimeout(timeout)
+    }, [formData])
+
+    // Dynamic Category State
+    const [categoryName, setCategoryName] = useState('')
+
+    // Fetch Category Name if ID exists (decoding UUID from URL)
+    useEffect(() => {
+        const fetchCategoryDetails = async () => {
+            if (!formData.categoryId) return
+
+            const supabase = createClient()
+            // Fetch Category
+            const { data: cat } = await supabase
+                .from('categories')
+                .select('name')
+                .eq('id', formData.categoryId)
+                .single()
+
+            // Fetch Subcategory
+            let subName = ''
+            if (formData.subcategoryId) {
+                const { data: sub } = await supabase
+                    .from('categories')
+                    .select('name')
+                    .eq('id', formData.subcategoryId)
+                    .single()
+                if (sub) subName = sub.name
+            }
+
+            if (cat) {
+                setCategoryName(`${cat.name}${subName ? ` - ${subName}` : ''}`)
+            } else {
+                setCategoryName('Unknown Category')
+            }
+        }
+        fetchCategoryDetails()
+    }, [formData.categoryId, formData.subcategoryId])
+
+    const getCategoryName = () => {
+        // Fallback for visual rendering if fetch hasn't finished or failed
+        // But mainly we use the state `categoryName`
+        if (!formData.categoryId) return 'No Category Selected'
+        return categoryName || 'Loading Category...'
+    }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
@@ -87,8 +174,10 @@ function RetailerRegisterForm() {
                 residential_address: formData.residentialAddress,
                 business_name: formData.businessName,
                 business_address: formData.businessAddress,
-                has_physical_store: formData.hasPhysicalStore === 'yes',
-                product_range: formData.productRange.split(',').map(s => s.trim()).filter(Boolean),
+                has_physical_store: formData.shopType === 'physical',
+                category_id: formData.categoryId,
+                subcategory_id: formData.subcategoryId,
+                product_range: [categoryName], // Use the fetched name
                 policy_accepted_at: formData.agreedToPolicy ? new Date().toISOString() : null
             }
 
@@ -126,6 +215,7 @@ function RetailerRegisterForm() {
             }
 
             toast({ title: 'Welcome!', description: 'Account created successfully.' })
+            sessionStorage.removeItem(STORAGE_KEY) // Clear storage
             router.push('/verification-pending')
 
         } catch (err: any) {
@@ -149,8 +239,11 @@ function RetailerRegisterForm() {
     }
 
     const handlePhoneSubmit = (phone: string) => {
-        setFormData(prev => ({ ...prev, phone }))
-        setStep(1) // Move to Details
+        // Redirect to category selection with phone and type preserved
+        const params = new URLSearchParams()
+        if (formData.shopType) params.set('type', formData.shopType)
+        params.set('phone', phone)
+        router.push(`/register/retailer/category?${params.toString()}`)
     }
 
     if (step === 'phone_entry') {
@@ -172,8 +265,12 @@ function RetailerRegisterForm() {
             </div>
             <div className="space-y-2">
                 <label className="text-sm font-medium">Phone Number</label>
-                <Input name="phone" value={formData.phone} onChange={handleChange} placeholder="080 1234 5678" />
-                <p className="text-xs text-gray-500">We prefer WhatsApp for quick updates.</p>
+                <div className="flex items-center justify-between p-3 bg-gray-50 border rounded-md">
+                    <span className="font-mono font-medium text-gray-700">{formData.phone}</span>
+                    <Button variant="link" size="sm" className="h-auto p-0 text-emerald-600" onClick={() => setStep('phone_entry')}>
+                        Change
+                    </Button>
+                </div>
             </div>
             <div className="space-y-2">
                 <label className="text-sm font-medium">Email Address</label>
@@ -233,16 +330,15 @@ function RetailerRegisterForm() {
                         <textarea name="businessAddress" value={formData.businessAddress} onChange={handleChange} className="w-full rounded-md border border-input px-3 py-2 text-sm min-h-[80px]" required placeholder="Where is your shop located?" />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-medium">Do you have a physical store?</label>
-                        <select name="hasPhysicalStore" value={formData.hasPhysicalStore} onChange={handleChange} className="w-full rounded-md border border-input px-3 py-2 text-sm bg-white font-medium">
-                            <option value="no">No, Online Only</option>
-                            <option value="yes">Yes, I have a physical location</option>
-                        </select>
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Product Range (Categories)</label>
-                        <Input name="productRange" value={formData.productRange} onChange={handleChange} placeholder="e.g. Grains, Spices, Textiles" required />
-                        <p className="text-xs text-gray-500">Separate with commas</p>
+                        <label className="text-sm font-medium">Selected Category</label>
+                        <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-md text-emerald-800 font-medium text-sm">
+                            {getCategoryName()}
+                        </div>
+                        <div className="flex justify-end">
+                            <Link href={`/register/retailer/category?phone=${formData.phone}&type=${formData.shopType}`} className="text-xs text-emerald-600 hover:underline">
+                                Change Category
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -393,9 +489,16 @@ function RetailerRegisterForm() {
                     </CardContent>
                     <CardFooter className="flex justify-between border-t p-6 bg-gray-50">
                         {step > 1 ? (
-                            <Button variant="outline" onClick={() => setStep(prev => typeof prev === 'number' ? (prev - 1) as any : prev)}>
-                                Back
-                            </Button>
+                            <div className="flex gap-2">
+                                <Button variant="outline" onClick={() => setStep(prev => typeof prev === 'number' ? (prev - 1) as any : prev)}>
+                                    Back
+                                </Button>
+                                {step === 1 && (
+                                    <Button variant="outline" onClick={() => router.push(`/register/retailer/category?phone=${formData.phone}&type=${formData.shopType}`)}>
+                                        Change Category
+                                    </Button>
+                                )}
+                            </div>
                         ) : (
                             // Step 1 Back goes to Phone Entry
                             <Button variant="outline" onClick={() => setStep('phone_entry')}>

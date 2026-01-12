@@ -1,43 +1,72 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Loader2, Upload, Plus, X, Info } from 'lucide-react'
+import { ArrowLeft, Loader2, Upload, X, Info, Image as ImageIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/client'
-import type { InsertTables } from '@/types/database'
+import { PRODUCT_CATEGORIES } from '@/lib/constants'
+import { useToast } from '@/hooks/use-toast'
 
 export default function NewProductPage() {
     const router = useRouter()
+    const { toast } = useToast()
+    const fileInputRef = useRef<HTMLInputElement>(null)
+
     const [loading, setLoading] = useState(false)
+    const [uploading, setUploading] = useState(false)
     const [error, setError] = useState('')
 
+    // Form State
     const [formData, setFormData] = useState({
         name: '',
         description: '',
         price: '',
         stockQuantity: '',
         category: '',
+        subcategory: '',
         jaraBuyQty: '0',
         jaraGetQty: '0',
+        status: 'active'
     })
 
-    // In a real app, this would be fetched from the DB
-    const categories = [
-        { id: 'cat-1', name: 'Electronics' },
-        { id: 'cat-2', name: 'Fashion' },
-        { id: 'cat-3', name: 'Food & Groceries' },
-        { id: 'cat-4', name: 'Health & Beauty' },
-        { id: 'cat-5', name: 'Home & Garden' },
-    ]
+    // Image State
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+    const [previews, setPreviews] = useState<string[]>([])
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target
         setFormData(prev => ({ ...prev, [name]: value }))
+    }
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            const newFiles = Array.from(e.target.files)
+
+            // Validate (max 4, size 2MB)
+            if (selectedFiles.length + newFiles.length > 4) {
+                toast({ title: 'Error', description: 'Maximum 4 images allowed', variant: 'destructive' })
+                return
+            }
+
+            // Create previews
+            const newPreviews = newFiles.map(file => URL.createObjectURL(file))
+
+            setSelectedFiles(prev => [...prev, ...newFiles])
+            setPreviews(prev => [...prev, ...newPreviews])
+        }
+    }
+
+    const removeImage = (index: number) => {
+        setSelectedFiles(prev => prev.filter((_, i) => i !== index))
+        setPreviews(prev => {
+            // Revoke URL to prevent memory leak
+            URL.revokeObjectURL(prev[index])
+            return prev.filter((_, i) => i !== index)
+        })
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -48,47 +77,93 @@ export default function NewProductPage() {
         try {
             const supabase = createClient()
 
-            // Get current user and their store
+            // 1. Auth & Store Check
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) throw new Error('Not authenticated')
 
             const { data: store, error: storeError } = await supabase
                 .from('stores')
-                .select('id')
+                .select('id, slug')
                 .eq('owner_id', user.id)
-                .single()
+                .single() as any
 
-            if (storeError || !store) throw new Error('Store not found')
+            if (storeError || !store) throw new Error('Store not found. Please create a store first.')
 
-            // Create product
-            const { error: productError } = await supabase
+            // 2. Create Product
+            const { data: product, error: productError } = await supabase
                 .from('products')
                 .insert({
-                    store_id: (store as any).id,
-                    category_id: formData.category || null, // Handle optional category
+                    store_id: store.id,
+                    category_id: formData.category,
                     name: formData.name,
                     description: formData.description,
                     price: parseFloat(formData.price),
                     stock_quantity: parseInt(formData.stockQuantity),
                     jara_buy_quantity: parseInt(formData.jaraBuyQty) || 0,
                     jara_get_quantity: parseInt(formData.jaraGetQty) || 0,
-                    status: 'active',
+                    status: formData.status,
+                    attributes: {
+                        subcategory_id: formData.subcategory
+                    }
                 } as any)
+                .select('id')
+                .single() as any
 
             if (productError) throw productError
+            if (!product) throw new Error('Product creation failed')
 
+            // 3. Upload Images
+            if (selectedFiles.length > 0) {
+                setUploading(true)
+                const imagePromises = selectedFiles.map(async (file, index) => {
+                    const ext = file.name.split('.').pop()
+                    const path = `${store.id}/${product.id}/${Date.now()}_${index}.${ext}`
+
+                    const { error: uploadError } = await supabase.storage
+                        .from('product-images')
+                        .upload(path, file)
+
+                    if (uploadError) throw uploadError
+
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('product-images')
+                        .getPublicUrl(path)
+
+                    return {
+                        product_id: product.id,
+                        url: publicUrl,
+                        sort_order: index,
+                        is_primary: index === 0
+                    }
+                })
+
+                const uploadedImages = await Promise.all(imagePromises)
+
+                const { error: imgDbError } = await supabase
+                    .from('product_images')
+                    .insert(uploadedImages as any)
+
+                if (imgDbError) throw imgDbError
+            }
+
+            toast({ title: 'Success', description: 'Product created successfully!' })
             router.push('/dashboard/products')
             router.refresh()
+
         } catch (err) {
             console.error(err)
             setError(err instanceof Error ? err.message : 'Failed to create product')
         } finally {
             setLoading(false)
+            setUploading(false)
         }
     }
 
+    // Derived Logic
+    const selectedCategory = PRODUCT_CATEGORIES.find(c => c.id === formData.category)
+
     return (
-        <div className="mx-auto max-w-4xl space-y-6">
+        <div className="mx-auto max-w-4xl space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
             <div className="flex items-center gap-4">
                 <Button variant="ghost" size="icon" asChild>
@@ -106,8 +181,8 @@ export default function NewProductPage() {
                 {/* Main Info */}
                 <div className="space-y-6 lg:col-span-2">
                     {error && (
-                        <div className="rounded-lg bg-red-50 p-4 text-sm text-red-600">
-                            {error}
+                        <div className="rounded-lg bg-red-50 p-4 text-sm text-red-600 border border-red-100 flex items-center gap-2">
+                            <Info className="h-4 w-4" /> {error}
                         </div>
                     )}
 
@@ -147,13 +222,32 @@ export default function NewProductPage() {
                                         className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                         value={formData.category}
                                         onChange={handleChange}
+                                        required
                                     >
                                         <option value="">Select Category</option>
-                                        {categories.map(c => (
+                                        {PRODUCT_CATEGORIES.map(c => (
                                             <option key={c.id} value={c.id}>{c.name}</option>
                                         ))}
                                     </select>
                                 </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Subcategory</label>
+                                    <select
+                                        name="subcategory"
+                                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                        value={formData.subcategory}
+                                        onChange={handleChange}
+                                        disabled={!selectedCategory}
+                                        required
+                                    >
+                                        <option value="">Select Subcategory</option>
+                                        {selectedCategory?.subcategories.map(s => (
+                                            <option key={s.id} value={s.id}>{s.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Stock Quantity</label>
                                     <Input
@@ -245,23 +339,56 @@ export default function NewProductPage() {
                 <div className="space-y-6">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Media</CardTitle>
+                            <CardTitle>Product Images</CardTitle>
+                            <CardDescription>Upload up to 4 images. First image is the cover.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid w-full cursor-pointer place-items-center rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 py-8 text-center transition-colors hover:border-emerald-500 hover:bg-emerald-50">
+                            <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                ref={fileInputRef}
+                                className="hidden"
+                                onChange={handleFileSelect}
+                            />
+
+                            <div
+                                onClick={() => fileInputRef.current?.click()}
+                                className="grid w-full cursor-pointer place-items-center rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 py-8 text-center transition-colors hover:border-emerald-500 hover:bg-emerald-50 mb-4"
+                            >
                                 <div>
                                     <Upload className="mx-auto h-8 w-8 text-gray-400" />
                                     <p className="mt-2 text-sm font-medium text-gray-600">
                                         Upload Images
                                     </p>
                                     <p className="text-xs text-gray-400">
-                                        Drag & drop or click
+                                        JPEG, PNG (Max 2MB)
                                     </p>
                                 </div>
                             </div>
-                            <div className="mt-4 grid grid-cols-4 gap-2">
-                                {[1, 2, 3, 4].map((i) => (
-                                    <div key={i} className="aspect-square rounded-md bg-gray-100" />
+
+                            <div className="grid grid-cols-2 gap-2">
+                                {previews.map((url, i) => (
+                                    <div key={i} className="relative aspect-square rounded-md overflow-hidden bg-gray-100 group border">
+                                        <img src={url} alt="Preview" className="h-full w-full object-cover" />
+                                        <button
+                                            type="button"
+                                            onClick={() => removeImage(i)}
+                                            className="absolute top-1 right-1 bg-white/80 p-1 rounded-full text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </button>
+                                        {i === 0 && (
+                                            <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] text-center py-1">
+                                                Cover
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                                {Array.from({ length: Math.max(0, 4 - previews.length) }).map((_, i) => (
+                                    <div key={i} className="aspect-square rounded-md bg-gray-50 border flex items-center justify-center">
+                                        <ImageIcon className="h-6 w-6 text-gray-200" />
+                                    </div>
                                 ))}
                             </div>
                         </CardContent>
@@ -274,19 +401,24 @@ export default function NewProductPage() {
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Status</label>
-                                <select className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                                <select
+                                    name="status"
+                                    value={formData.status}
+                                    onChange={handleChange}
+                                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                >
                                     <option value="active">Active</option>
                                     <option value="draft">Draft</option>
-                                    <option value="out_of_stock">Out of Stock</option>
+                                    <option value="archived">Archived</option>
                                 </select>
                             </div>
                         </CardContent>
                         <div className="p-4 pt-0">
-                            <Button type="submit" className="w-full" disabled={loading}>
+                            <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={loading}>
                                 {loading ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Saving...
+                                        {uploading ? 'Uploading...' : 'Saving...'}
                                     </>
                                 ) : (
                                     'Create Product'
