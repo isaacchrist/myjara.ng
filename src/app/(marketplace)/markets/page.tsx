@@ -113,13 +113,13 @@ export default function MarketsPage() {
                     </div>
                 </section>
 
-                <div className="bg-blue-50 border border-blue-100 rounded-2xl p-8 text-center">
-                    <h3 className="text-xl font-bold text-blue-900 mb-2">Compare Prices across Markets</h3>
-                    <p className="text-blue-700 mb-6 max-w-2xl mx-auto">
+                <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-8 text-center">
+                    <h3 className="text-xl font-bold text-emerald-900 mb-2">Compare Prices across Markets</h3>
+                    <p className="text-emerald-700 mb-6 max-w-2xl mx-auto">
                         Looking for the best deal? Use our comparison tool to find the cheapest source or the best Jara offer for valid products across all Abuja markets.
                     </p>
                     <Link href="/search?compare=true">
-                        <div className="inline-flex h-11 items-center justify-center rounded-md bg-blue-600 px-8 text-sm font-medium text-white shadow transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                        <div className="inline-flex h-11 items-center justify-center rounded-md bg-emerald-600 px-8 text-sm font-medium text-white shadow transition-colors hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
                             Start Comparing
                         </div>
                     </Link>
