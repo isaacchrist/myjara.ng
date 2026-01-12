@@ -110,7 +110,7 @@ function RetailerRegisterForm() {
                 .from('categories')
                 .select('name')
                 .eq('id', formData.categoryId)
-                .single()
+                .single() as any
 
             // Fetch Subcategory
             let subName = ''
@@ -119,7 +119,7 @@ function RetailerRegisterForm() {
                     .from('categories')
                     .select('name')
                     .eq('id', formData.subcategoryId)
-                    .single()
+                    .single() as any
                 if (sub) subName = sub.name
             }
 
