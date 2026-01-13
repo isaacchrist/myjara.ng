@@ -3,18 +3,21 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Menu, X, Search, ShoppingBag, User, LogOut, LayoutDashboard, MessageSquare } from 'lucide-react'
+import { Search, ShoppingBag, User, LogOut, LayoutDashboard, MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-    Sheet,
-    SheetContent,
-} from "@/components/ui/sheet"
 import { createClient } from '@/lib/supabase/client'
 
 import { useCart } from '@/context/cart-context'
+import dynamic from 'next/dynamic'
+
+// Lazy load MobileNav to reduce initial bundle size for mobile
+const MobileNav = dynamic(() => import('./mobile-nav').then(mod => mod.MobileNav), {
+    ssr: false,
+    loading: () => <div className="p-2"><div className="h-6 w-6 bg-gray-100 rounded animate-pulse" /></div>
+})
 
 export function Header() {
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+    // const [mobileMenuOpen, setMobileMenuOpen] = useState(false) // Removed
     const [user, setUser] = useState<import('@supabase/supabase-js').User | null>(null)
     const [mounted, setMounted] = useState(false)
 
@@ -50,6 +53,7 @@ export function Header() {
         router.refresh()
         router.push('/')
     }
+
 
 
 
@@ -136,114 +140,11 @@ export function Header() {
                         )}
                     </div>
 
-                    {/* Mobile Menu Button */}
-                    <div className="flex items-center gap-2 md:hidden">
-                        <Link href="/cart" className="relative p-2">
-                            <ShoppingBag className="h-6 w-6 text-gray-700 dark:text-gray-300" />
-                            {mounted && count > 0 && (
-                                <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-600 text-[10px] font-bold text-white">
-                                    {count}
-                                </span>
-                            )}
-                        </Link>
-                        <button
-                            className="p-2"
-                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                        >
-                            {mobileMenuOpen ? (
-                                <X className="h-6 w-6 text-gray-700 dark:text-gray-300" />
-                            ) : (
-                                <Menu className="h-6 w-6 text-gray-700 dark:text-gray-300" />
-                            )}
-                        </button>
-
+                    {/* Mobile Menu Button - REPLACED WITH ISOLATED COMPONENT */}
+                    <div className="md:hidden">
+                        <MobileNav user={user} count={mounted ? count : 0} onLogout={handleLogout} />
                     </div>
                 </div>
-            </div>
-
-            {/* Mobile Menu using Sheet */}
-            <div className="md:hidden">
-                <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-                    <SheetContent side="left" className="w-[300px] sm:w-[400px]">
-                        <nav className="flex flex-col gap-4 mt-8">
-                            <Link
-                                href="/"
-                                className="flex items-center gap-2 mb-4"
-                                onClick={() => setMobileMenuOpen(false)}
-                            >
-                                <span className="text-2xl font-bold text-emerald-600 tracking-wide" style={{ fontFamily: '"Lobster", cursive' }}>
-                                    MyJara
-                                </span>
-                            </Link>
-
-                            <Link
-                                href="/search"
-                                className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-900"
-                                onClick={() => setMobileMenuOpen(false)}
-                            >
-                                <Search className="h-5 w-5" />
-                                Explore Products
-                            </Link>
-                            <Link
-                                href="/categories"
-                                className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-900"
-                                onClick={() => setMobileMenuOpen(false)}
-                            >
-                                Categories
-                            </Link>
-                            <Link
-                                href="/inbox"
-                                className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-900"
-                                onClick={() => setMobileMenuOpen(false)}
-                            >
-                                <MessageSquare className="h-5 w-5" />
-                                Messages
-                            </Link>
-                            <Link
-                                href="/orders"
-                                className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-900"
-                                onClick={() => setMobileMenuOpen(false)}
-                            >
-                                <ShoppingBag className="h-5 w-5" />
-                                My Orders
-                            </Link>
-                            {user && (
-                                <Link
-                                    href="/dashboard"
-                                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-900"
-                                    onClick={() => setMobileMenuOpen(false)}
-                                >
-                                    <LayoutDashboard className="h-5 w-5" />
-                                    Dashboard
-                                </Link>
-                            )}
-
-
-
-                            {user ? (
-                                <Button variant="outline" className="w-full mt-2" onClick={handleLogout}>
-                                    Sign Out
-                                </Button>
-                            ) : (
-                                <div className="flex flex-col gap-2 mt-2">
-                                    <Link
-                                        href="/login"
-                                        className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-900"
-                                        onClick={() => setMobileMenuOpen(false)}
-                                    >
-                                        <User className="h-5 w-5" />
-                                        Sign In
-                                    </Link>
-                                    <Button className="w-full" asChild>
-                                        <Link href="/register/seller" onClick={() => setMobileMenuOpen(false)}>
-                                            Sell on MyJara
-                                        </Link>
-                                    </Button>
-                                </div>
-                            )}
-                        </nav>
-                    </SheetContent>
-                </Sheet>
             </div>
         </header>
     )

@@ -17,7 +17,8 @@ const sellerTypes = [
             'Set your own Jara (bonus) offers',
             'Dashboard to manage orders and inventory'
         ],
-        color: 'emerald',
+        colorBg: 'bg-emerald-100',
+        colorText: 'text-emerald-600',
         href: '/register/brand'
     },
     {
@@ -31,7 +32,8 @@ const sellerTypes = [
             'Subscription plans to boost visibility',
             'Connect with trusted wholesalers'
         ],
-        color: 'blue',
+        colorBg: 'bg-emerald-100',
+        colorText: 'text-emerald-600',
         href: '/register/retailer-type'
     }
 ]
@@ -60,8 +62,8 @@ export default function SellerRegistrationPage() {
                         >
                             <CardContent className="p-8">
                                 {/* Icon */}
-                                <div className={`w-20 h-20 rounded-2xl bg-${type.color}-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                                    <type.icon className={`h-10 w-10 text-${type.color}-600`} />
+                                <div className={`w-20 h-20 rounded-2xl ${type.colorBg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                                    <type.icon className={`h-10 w-10 ${type.colorText}`} />
                                 </div>
 
                                 {/* Title */}
