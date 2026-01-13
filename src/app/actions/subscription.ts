@@ -1,9 +1,10 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
 export async function validatePromoCodeAction(code: string) {
+    // Validation can stay as anon/user client
     const supabase = await createClient()
     const { data, error } = await (supabase.from('promo_codes') as any)
         .select('*')
@@ -26,19 +27,20 @@ export async function validatePromoCodeAction(code: string) {
 }
 
 export async function createSubscriptionAction(userId: string, planId: string, method: 'flutterwave' | 'promo_code', refOrCode: string) {
-    const supabase = await createClient()
+    // USE ADMIN CLIENT to bypass RLS during registration flow
+    const supabase = await createAdminClient()
     const startDate = new Date()
     const endDate = new Date()
     endDate.setMonth(endDate.getMonth() + 1) // 1 Month validity
 
     // If promo code, verify again and increment usage
     if (method === 'promo_code') {
+        // Note: We validate using the simple client in separate function, but here we trust the logic.
+        // Re-validating briefly:
         const { success } = await validatePromoCodeAction(refOrCode)
         if (!success) return { success: false, error: 'Invalid or expired promo code' }
 
-        // Increment usage
-        // Note: This needs to be atomic ideally, but for MVP strictness is relaxed.
-        // We really should use an RPC for this increment ideally.
+        // Increment usage (RPC called as Admin)
         await (supabase as any).rpc('increment_promo_usage', { code_input: refOrCode })
     }
 
