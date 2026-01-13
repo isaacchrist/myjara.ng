@@ -63,12 +63,13 @@ export async function updateSession(request: NextRequest) {
     }
 
     // Protect admin routes (except for the login page)
+    // Admin uses a separate cookie-based auth, not Supabase user auth
     if (url.pathname.startsWith('/admin') && url.pathname !== '/admin/login') {
-        if (!user) {
-            url.pathname = '/admin/login' // Redirect to admin login, not regular login
+        const adminCookie = request.cookies.get('myjara_admin_session')
+        if (!adminCookie || adminCookie.value !== 'true') {
+            url.pathname = '/admin/login'
             return NextResponse.redirect(url)
         }
-        // Additional admin role check would be done in the page/layout
     }
 
     return supabaseResponse
