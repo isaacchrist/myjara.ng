@@ -69,3 +69,58 @@ CREATE TRIGGER trigger_update_chat_room_on_message
 AFTER INSERT ON messages
 FOR EACH ROW
 EXECUTE FUNCTION update_chat_room_timestamp();
+
+
+-- ==========================================
+-- SUBSCRIPTIONS & PAYMENTS
+-- ==========================================
+
+-- 1. Subscriptions Table
+CREATE TABLE IF NOT EXISTS subscriptions (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id uuid REFERENCES auth.users(id) NOT NULL,
+    plan_type text NOT NULL, -- 'basic', 'pro', 'exclusive'
+    status text DEFAULT 'active', -- 'active', 'cancelled', 'expired'
+    current_period_start timestamptz DEFAULT now(),
+    current_period_end timestamptz,
+    payment_method text, -- 'flutterwave', 'promo_code'
+    flutterwave_ref text,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now()
+);
+
+-- RLS for Subscriptions
+ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own subscription" ON subscriptions
+    FOR SELECT USING (auth.uid() = user_id);
+
+-- 2. Promo Codes Table
+CREATE TABLE IF NOT EXISTS promo_codes (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    code text UNIQUE NOT NULL,
+    discount_percentage integer DEFAULT 100,
+    valid_until timestamptz,
+    max_uses integer,
+    uses_count integer DEFAULT 0,
+    created_at timestamptz DEFAULT now()
+);
+
+-- RLS for Promo Codes (Public read for validation, strictly controlled write)
+ALTER TABLE promo_codes ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can validate code" ON promo_codes
+    FOR SELECT USING (true); 
+
+-- 3. Promo Code Usage Increment RPC
+CREATE OR REPLACE FUNCTION increment_promo_usage(code_input text)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  UPDATE promo_codes
+  SET uses_count = uses_count + 1
+  WHERE code = code_input;
+END;
+$$;
