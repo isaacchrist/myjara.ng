@@ -6,26 +6,8 @@ import { Badge } from '@/components/ui/badge'
 import { formatPrice } from '@/lib/utils'
 import { getAdminSession } from '@/app/actions/admin-auth'
 import { AdminKeyForm } from '@/components/admin/admin-key-form'
-
-const stats = [
-    { label: 'Active Stores', value: '156', change: '+8', icon: Store, color: 'emerald' },
-    { label: 'Orders Today', value: '1,234', change: '+12%', icon: ShoppingCart, color: 'blue' },
-    { label: 'Revenue (MTD)', value: '₦12.4M', change: '+15%', icon: CreditCard, color: 'purple' },
-    { label: 'Active Users', value: '8,421', change: '+5%', icon: Users, color: 'amber' },
-]
-
-const pendingStores = [
-    { id: '1', name: 'TechGadgets NG', category: 'Electronics', appliedAt: '2 hours ago' },
-    { id: '2', name: 'FreshFoods Ltd', category: 'Groceries', appliedAt: '5 hours ago' },
-    { id: '3', name: 'StyleHub Africa', category: 'Fashion', appliedAt: '1 day ago' },
-]
-
-const recentTransactions = [
-    { id: 'TX-8891', store: 'FoodMart', amount: 48000, status: 'success' },
-    { id: 'TX-8890', store: 'AgroDeals', amount: 22500, status: 'success' },
-    { id: 'TX-8889', store: 'TechZone', amount: 150000, status: 'pending' },
-    { id: 'TX-8888', store: 'StyleHub', amount: 35000, status: 'failed' },
-]
+import { createAdminClient } from '@/lib/supabase/server'
+import { formatDistanceToNow } from 'date-fns'
 
 export default async function AdminPage() {
     const isAdmin = await getAdminSession()
@@ -45,6 +27,97 @@ export default async function AdminPage() {
         )
     }
 
+    const supabase = await createAdminClient()
+
+    // 1. Fetch Stats
+    // Active Stores
+    const { count: activeStoresCount } = await supabase
+        .from('stores')
+        .select('*', { count: 'exact', head: true })
+
+    // Total Orders (Today)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const { count: ordersTodayCount } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', today.toISOString())
+
+    // Active Users (Total users for now)
+    // Note: 'users' table access via admin client.
+    // Assuming we can query auth.users or a public profiles table?
+    // Using 'stores' owner_id count as proxy for sellers + checking if we have a profiles/users table.
+    // If no public users table, we might need to rely on other metrics or RPC.
+    // For MVP, let's count distinct buyer_ids in orders + store owners?
+    // Or just count stores as "Active Sellers".
+    // Let's check 'users' table if it exists (from my memory of previous user/profile queries).
+    // The previous audit showed no public 'users' table, but `client_contacts` exists.
+    // Let's use `client_contacts` count as "Total Clients" for now, or just stores.
+    // Better: Just use Store count for "Sellers" and maybe client_contacts for "Users".
+    const { count: totalUsersCount } = await supabase
+        .from('stores') // Using stores as primary user metric for now
+        .select('*', { count: 'exact', head: true })
+
+
+    // Revenue (MTD)
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString()
+    const { data: revenueData } = await supabase
+        .from('orders')
+        .select('total_amount')
+        .gte('created_at', startOfMonth)
+        .eq('status', 'completed') as any
+
+    const revenueMTD = (revenueData || []).reduce((sum: number, order: any) => sum + (order.total_amount || 0), 0)
+
+
+    const stats = [
+        { label: 'Active Stores', value: activeStoresCount || 0, change: '', icon: Store, color: 'emerald' },
+        { label: 'Orders Today', value: ordersTodayCount || 0, change: '', icon: ShoppingCart, color: 'blue' },
+        { label: 'Revenue (MTD)', value: formatPrice(revenueMTD), change: '', icon: CreditCard, color: 'purple' },
+        { label: 'Total Sellers', value: totalUsersCount || 0, change: '', icon: Users, color: 'amber' },
+    ]
+
+    // 2. Pending Stores
+    const { data: pendingStoresData } = await supabase
+        .from('stores')
+        .select('id, name, created_at, slug') // Category might be in a related table via store_product_categories?
+        // Simplifying for Overview: just show name and date
+        .eq('is_verified', false)
+        .order('created_at', { ascending: false })
+        .limit(5) as any
+
+    const pendingStores = (pendingStoresData || []).map((s: any) => ({
+        id: s.id,
+        name: s.name,
+        category: 'Pending Review', // Placeholder if category not directly on store
+        appliedAt: formatDistanceToNow(new Date(s.created_at), { addSuffix: true })
+    }))
+
+    // 3. Recent Transactions
+    const { data: recentTxData } = await supabase
+        .from('orders')
+        .select('id, total_amount, status, created_at, store_id') // Join store?
+        // .select('*, store:stores(name)') if relations set up?
+        // Let's assume store name fetch or just show store ID if relations tricky without testing.
+        .order('created_at', { ascending: false })
+        .limit(5) as any
+
+    // We might need to fetch store names separately if relation not obvious
+    const recentTransactions = await Promise.all((recentTxData || []).map(async (tx: any) => {
+        let storeName = 'Unknown Store'
+        if (tx.store_id) {
+            const { data: s } = await supabase.from('stores').select('name').eq('id', tx.store_id).single() as any
+            if (s) storeName = s.name
+        }
+        return {
+            id: tx.id.slice(0, 8).toUpperCase(),
+            store: storeName,
+            amount: tx.total_amount,
+            status: tx.status
+        }
+    }))
+
+
     // Dashboard Content
     return (
         <div className="space-y-8 text-white animate-in fade-in duration-500">
@@ -63,9 +136,6 @@ export default async function AdminPage() {
                                 <div className={`rounded-lg bg-${stat.color}-500/20 p-2`}>
                                     <stat.icon className={`h-5 w-5 text-${stat.color}-400`} />
                                 </div>
-                                <Badge className="border-0 bg-gray-700 text-emerald-400">
-                                    {stat.change}
-                                </Badge>
                             </div>
                             <div className="mt-4">
                                 <p className="text-2xl font-bold text-white">{stat.value}</p>
@@ -84,36 +154,32 @@ export default async function AdminPage() {
                             <AlertCircle className="h-5 w-5 text-amber-400" />
                             Pending Store Approvals
                         </CardTitle>
-                        <Link href="/admin/dashboard" className="text-sm text-emerald-400 hover:underline">
+                        <Link href="/admin/stores" className="text-sm text-emerald-400 hover:underline">
                             View all
                         </Link>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {pendingStores.map((store) => (
-                                <div
-                                    key={store.id}
-                                    className="flex items-center justify-between rounded-lg border border-gray-700 bg-gray-800 p-4"
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-700 text-lg">
-                                            🏪
-                                        </div>
-                                        <div>
-                                            <p className="font-medium text-white">{store.name}</p>
-                                            <p className="text-sm text-gray-400">{store.category} • {store.appliedAt}</p>
+                            {pendingStores.length === 0 ? (
+                                <p className="text-gray-500 text-center py-4">No pending approvals</p>
+                            ) : (
+                                pendingStores.map((store: any) => (
+                                    <div
+                                        key={store.id}
+                                        className="flex items-center justify-between rounded-lg border border-gray-700 bg-gray-800 p-4"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-700 text-lg">
+                                                🏪
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-white">{store.name}</p>
+                                                <p className="text-sm text-gray-400">{store.category} • {store.appliedAt}</p>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="flex gap-2">
-                                        <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-green-400 hover:bg-green-400/20 hover:text-green-300">
-                                            <Check className="h-4 w-4" />
-                                        </Button>
-                                        <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-400 hover:bg-red-400/20 hover:text-red-300">
-                                            <X className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                </div>
-                            ))}
+                                ))
+                            )}
                         </div>
                     </CardContent>
                 </Card>
@@ -131,34 +197,38 @@ export default async function AdminPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {recentTransactions.map((tx) => (
-                                <div
-                                    key={tx.id}
-                                    className="flex items-center justify-between rounded-lg border border-gray-700 bg-gray-800 p-4"
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-700 font-mono text-xs text-gray-300">
-                                            💳
+                            {recentTransactions.length === 0 ? (
+                                <p className="text-gray-500 text-center py-4">No recent transactions</p>
+                            ) : (
+                                recentTransactions.map((tx: any) => (
+                                    <div
+                                        key={tx.id}
+                                        className="flex items-center justify-between rounded-lg border border-gray-700 bg-gray-800 p-4"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-700 font-mono text-xs text-gray-300">
+                                                💳
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-white">#{tx.id}</p>
+                                                <p className="text-sm text-gray-400">{tx.store}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="font-medium text-white">{tx.id}</p>
-                                            <p className="text-sm text-gray-400">{tx.store}</p>
+                                        <div className="text-right">
+                                            <p className="font-medium text-white">{formatPrice(tx.amount)}</p>
+                                            <Badge
+                                                className={
+                                                    tx.status === 'success' || tx.status === 'completed' ? 'border-0 bg-green-500/20 text-green-400' :
+                                                        tx.status === 'pending' ? 'border-0 bg-yellow-500/20 text-yellow-400' :
+                                                            'border-0 bg-red-500/20 text-red-400'
+                                                }
+                                            >
+                                                {tx.status}
+                                            </Badge>
                                         </div>
                                     </div>
-                                    <div className="text-right">
-                                        <p className="font-medium text-white">{formatPrice(tx.amount)}</p>
-                                        <Badge
-                                            className={
-                                                tx.status === 'success' ? 'border-0 bg-green-500/20 text-green-400' :
-                                                    tx.status === 'pending' ? 'border-0 bg-yellow-500/20 text-yellow-400' :
-                                                        'border-0 bg-red-500/20 text-red-400'
-                                            }
-                                        >
-                                            {tx.status}
-                                        </Badge>
-                                    </div>
-                                </div>
-                            ))}
+                                ))
+                            )}
                         </div>
                     </CardContent>
                 </Card>

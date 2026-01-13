@@ -21,7 +21,7 @@ const sidebarItems: Array<{
     badge?: number | string
 }> = [
         { icon: LayoutDashboard, label: 'Overview', href: '/admin' },
-        { icon: Shield, label: 'Applications', href: '/admin/dashboard' },
+        { icon: Shield, label: 'Disputes', href: '/admin/disputes' },
         { icon: Store, label: 'Stores', href: '/admin/stores' },
         { icon: FolderTree, label: 'Categories', href: '/admin/categories' },
         { icon: CreditCard, label: 'Transactions', href: '/admin/transactions' },
