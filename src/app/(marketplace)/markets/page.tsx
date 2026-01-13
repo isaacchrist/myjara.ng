@@ -59,9 +59,17 @@ export default function MarketsPage() {
                                     <Card className="hover:shadow-lg transition-all border-emerald-500 border-l-4 cursor-pointer h-full group">
                                         <CardContent className="p-6">
                                             <div className="flex justify-between items-start mb-4">
-                                                <div className="h-12 w-12 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.preventDefault()
+                                                        e.stopPropagation()
+                                                        window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(market.name + ', Abuja')}`, '_blank')
+                                                    }}
+                                                    className="h-12 w-12 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 hover:bg-emerald-600 hover:text-white transition-colors"
+                                                    title="Get Directions"
+                                                >
                                                     <MapPin className="h-6 w-6" />
-                                                </div>
+                                                </button>
                                                 <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200">Open Now</Badge>
                                             </div>
                                             <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-emerald-700">{market.name}</h3>
@@ -90,9 +98,17 @@ export default function MarketsPage() {
                                     <Card className="hover:shadow-md transition-all cursor-pointer h-full border-gray-200 hover:border-emerald-200">
                                         <CardContent className="p-6">
                                             <div className="flex justify-between items-start mb-4">
-                                                <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.preventDefault()
+                                                        e.stopPropagation()
+                                                        window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(market.name + ', Abuja')}`, '_blank')
+                                                    }}
+                                                    className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-emerald-600 hover:text-white transition-colors"
+                                                    title="Get Directions"
+                                                >
                                                     <MapPin className="h-5 w-5" />
-                                                </div>
+                                                </button>
                                                 {market.days.includes(today) && (
                                                     <Badge variant="outline" className="text-emerald-600 border-emerald-200 bg-emerald-50">Open Today</Badge>
                                                 )}
