@@ -23,9 +23,11 @@ CREATE TABLE IF NOT EXISTS disputes (
 -- RLS: Users can see their own disputes
 ALTER TABLE disputes ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view own disputes" ON disputes;
 CREATE POLICY "Users can view own disputes" ON disputes
     FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can create disputes" ON disputes;
 CREATE POLICY "Users can create disputes" ON disputes
     FOR INSERT WITH CHECK (auth.uid() = user_id);
 
@@ -96,6 +98,7 @@ CREATE TABLE IF NOT EXISTS subscriptions (
 -- RLS for Subscriptions
 ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view own subscription" ON subscriptions;
 CREATE POLICY "Users can view own subscription" ON subscriptions
     FOR SELECT USING (auth.uid() = user_id);
 
@@ -113,6 +116,7 @@ CREATE TABLE IF NOT EXISTS promo_codes (
 -- RLS for Promo Codes (Public read for validation, strictly controlled write)
 ALTER TABLE promo_codes ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Anyone can validate code" ON promo_codes;
 CREATE POLICY "Anyone can validate code" ON promo_codes
     FOR SELECT USING (true); 
 
