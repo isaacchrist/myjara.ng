@@ -55,7 +55,7 @@ export async function createSubscriptionAction(userId: string, planId: string, m
 
     if (error) {
         console.error("Sub Error", error)
-        return { success: false, error: 'Failed to create subscription' }
+        return { success: false, error: error.message || 'Failed to create subscription' }
     }
 
     return { success: true }

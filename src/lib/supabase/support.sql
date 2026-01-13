@@ -102,6 +102,10 @@ DROP POLICY IF EXISTS "Users can view own subscription" ON subscriptions;
 CREATE POLICY "Users can view own subscription" ON subscriptions
     FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can create own subscription" ON subscriptions;
+CREATE POLICY "Users can create own subscription" ON subscriptions
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
 -- 2. Promo Codes Table
 CREATE TABLE IF NOT EXISTS promo_codes (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
