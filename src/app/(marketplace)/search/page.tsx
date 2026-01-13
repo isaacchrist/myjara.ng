@@ -218,28 +218,28 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
                     {/* Comparison Controls */}
                     {(compareMode || market) && (
-                        <div className="mt-4 p-4 bg-blue-50 border border-blue-100 rounded-lg flex flex-wrap items-center gap-4">
+                        <div className="mt-4 p-4 bg-emerald-50 border border-emerald-100 rounded-lg flex flex-wrap items-center gap-4">
                             {market && (
                                 <div className="flex items-center gap-2">
-                                    <span className="text-sm font-bold text-blue-900">Current Market:</span>
-                                    <Badge variant="secondary" className="bg-white text-blue-700">{market}</Badge>
+                                    <span className="text-sm font-bold text-emerald-900">Current Market:</span>
+                                    <Badge variant="secondary" className="bg-white text-emerald-700">{market}</Badge>
                                 </div>
                             )}
                             <div className="flex items-center gap-2 ml-auto">
-                                <span className="text-sm text-blue-800 font-medium">Compare by:</span>
+                                <span className="text-sm text-emerald-800 font-medium">Compare by:</span>
                                 <div className="flex gap-2">
                                     <Link href={buildUrl({ sort: 'price_asc' })}>
-                                        <Badge className={`cursor-pointer ${sort === 'price_asc' ? 'bg-blue-600' : 'bg-white text-blue-600 border-blue-200'}`}>
+                                        <Badge className={`cursor-pointer ${sort === 'price_asc' ? 'bg-emerald-600' : 'bg-white text-emerald-600 border-emerald-200'}`}>
                                             Cheapest
                                         </Badge>
                                     </Link>
                                     <Link href={buildUrl({ sort: 'jara_desc' })}>
-                                        <Badge className={`cursor-pointer ${sort === 'jara_desc' ? 'bg-orange-500' : 'bg-white text-orange-600 border-orange-200'}`}>
+                                        <Badge className={`cursor-pointer ${sort === 'jara_desc' ? 'bg-emerald-800' : 'bg-white text-emerald-800 border-emerald-200'}`}>
                                             Best Jara
                                         </Badge>
                                     </Link>
                                     <Link href={buildUrl({ sort: 'hybrid' })}>
-                                        <Badge className={`cursor-pointer ${sort === 'hybrid' ? 'bg-purple-600' : 'bg-white text-purple-600 border-purple-200'}`}>
+                                        <Badge className={`cursor-pointer ${sort === 'hybrid' ? 'bg-emerald-500' : 'bg-white text-emerald-500 border-emerald-200'}`}>
                                             Best Value
                                         </Badge>
                                     </Link>
