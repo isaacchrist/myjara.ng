@@ -2,7 +2,11 @@
 -- DISPUTES (Help Center)
 -- ==========================================
 
-CREATE TYPE dispute_status AS ENUM ('open', 'resolved', 'closed');
+DO $$ BEGIN
+    CREATE TYPE dispute_status AS ENUM ('open', 'resolved', 'closed');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 CREATE TABLE IF NOT EXISTS disputes (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
