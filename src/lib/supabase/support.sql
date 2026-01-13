@@ -124,3 +124,8 @@ BEGIN
   WHERE code = code_input;
 END;
 $$;
+
+-- 4. Seed Data: Default Promo Code
+INSERT INTO promo_codes (code, discount_percentage, max_uses, valid_until)
+VALUES ('MYJARA_LAUNCH', 100, 1000, now() + interval '1 year')
+ON CONFLICT (code) DO NOTHING;
