@@ -78,15 +78,19 @@ function RetailerRegisterForm() {
         if (saved) {
             try {
                 const parsed = JSON.parse(saved)
+
+                // Smart Merge: URL Params take precedence over stored stale data
+                if (urlCategory) parsed.categoryId = urlCategory
+                if (urlSubcategory) parsed.subcategoryId = urlSubcategory
+                if (urlPhone) parsed.phone = urlPhone
+
                 setFormData(prev => ({ ...prev, ...parsed }))
-                // If we have saved data, maybe we can assume step? 
-                // Let's not force step, but data is there.
                 toast({ title: 'Resumed', description: 'We restored your previous details.' })
             } catch (e) {
                 console.error('Failed to parse saved registration data', e)
             }
         }
-    }, [])
+    }, [urlCategory, urlSubcategory, urlPhone])
 
     // Save to Storage on Change
     useEffect(() => {
