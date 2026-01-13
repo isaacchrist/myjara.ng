@@ -4,6 +4,7 @@ import { Footer } from "@/components/shared/footer";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
 import { CartProvider } from "@/context/cart-context";
+import { RejectionBanner } from "@/components/shared/rejection-banner";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -39,6 +40,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <CartProvider>
+            <RejectionBanner />
             <Header />
             <main className="flex-1">
               {children}

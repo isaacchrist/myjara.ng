@@ -62,11 +62,10 @@ export async function updateSession(request: NextRequest) {
         }
     }
 
-    // Protect admin routes
-    if (url.pathname.startsWith('/admin')) {
+    // Protect admin routes (except for the login page)
+    if (url.pathname.startsWith('/admin') && url.pathname !== '/admin/login') {
         if (!user) {
-            url.pathname = '/login'
-            url.searchParams.set('redirect', request.nextUrl.pathname)
+            url.pathname = '/admin/login' // Redirect to admin login, not regular login
             return NextResponse.redirect(url)
         }
         // Additional admin role check would be done in the page/layout
