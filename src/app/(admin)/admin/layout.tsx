@@ -56,11 +56,11 @@ export default async function AdminLayout({
                 {/* Logo */}
                 <div className="flex h-16 items-center border-b border-gray-800 px-6">
                     <Link href="/admin" className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-red-500 to-orange-500">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-green-500">
                             <Shield className="h-4 w-4 text-white" />
                         </div>
                         <span className="font-bold text-white">
-                            MyJara <span className="text-red-400">Admin</span>
+                            MyJara <span className="text-emerald-400">Admin</span>
                         </span>
                     </Link>
                 </div>

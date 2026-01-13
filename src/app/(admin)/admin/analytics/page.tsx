@@ -7,7 +7,7 @@ import { TrendingUp, Users, Store, ShoppingCart } from 'lucide-react'
 export default async function AdminAnalyticsPage() {
     const supabase = await createAdminClient()
 
-    // Fetch platform-wide stats
+    // 1. Fetch platform-wide stats
     const { count: totalUsers } = await supabase.from('stores').select('owner_id', { count: 'exact', head: true }) as any
     const { count: totalStores } = await supabase.from('stores').select('id', { count: 'exact', head: true }) as any
     const { count: totalOrders } = await supabase.from('orders').select('id', { count: 'exact', head: true }) as any
@@ -15,12 +15,42 @@ export default async function AdminAnalyticsPage() {
 
     const totalRevenue = (revenueData || []).reduce((sum: number, order: any) => sum + (order.total_amount || 0), 0)
 
-    // Mock chart data for now (would need proper RPC for real data)
-    const chartData = Array.from({ length: 30 }, (_, i) => ({
-        date: `Day ${i + 1}`,
-        revenue: Math.floor(Math.random() * 50000) + 10000,
-        orders: Math.floor(Math.random() * 50) + 5
-    }))
+    // 2. Fetch Chart Data (Last 30 Days)
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+    const { data: recentOrders } = await supabase
+        .from('orders')
+        .select('created_at, total_amount')
+        .gte('created_at', thirtyDaysAgo.toISOString())
+        .order('created_at', { ascending: true }) as any
+
+    // Aggregate by Day
+    const dailyStats: Record<string, { revenue: number, orders: number }> = {}
+
+    // Initialize last 30 days with 0
+    for (let i = 0; i < 30; i++) {
+        const d = new Date()
+        d.setDate(d.getDate() - i)
+        const dateStr = d.toISOString().split('T')[0] // YYYY-MM-DD
+        dailyStats[dateStr] = { revenue: 0, orders: 0 }
+    }
+
+    (recentOrders || []).forEach((order: any) => {
+        const dateStr = new Date(order.created_at).toISOString().split('T')[0]
+        if (dailyStats[dateStr]) {
+            dailyStats[dateStr].revenue += (order.total_amount || 0)
+            dailyStats[dateStr].orders += 1
+        }
+    })
+
+    const chartData = Object.entries(dailyStats)
+        .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+        .map(([date, stats]) => ({
+            date: new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+            revenue: stats.revenue,
+            orders: stats.orders
+        }))
 
     const stats = [
         { label: 'Total Sellers', value: totalUsers || 0, icon: Users, color: 'text-blue-500' },
