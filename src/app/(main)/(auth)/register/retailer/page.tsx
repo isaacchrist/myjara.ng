@@ -3,7 +3,8 @@
 import { useState, Suspense, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Store, User, Mail, Lock, ArrowRight, Loader2, CheckCircle2, MapPin, Calendar, ShoppingBag, CreditCard, Ticket, Phone } from 'lucide-react'
+import { Store, User, Mail, Lock, ArrowRight, Loader2, CheckCircle2, MapPin, Calendar, ShoppingBag, CreditCard, Ticket, Phone, Camera } from 'lucide-react'
+import { ProfilePictureUpload } from '@/components/shared/profile-picture-upload'
 import { PhoneDialpad } from '@/components/shared/phone-dialpad'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -58,7 +59,8 @@ function RetailerRegisterForm() {
         // Subscription
         selectedPlan: '' as 'basic' | 'pro' | 'exclusive' | '',
         paymentMethod: '' as 'flutterwave' | 'promo_code' | '',
-        promoCode: ''
+        promoCode: '',
+        profilePictureUrl: ''
     })
 
     // Persistence Key
@@ -182,7 +184,8 @@ function RetailerRegisterForm() {
                 category_id: formData.categoryId,
                 subcategory_id: formData.subcategoryId,
                 product_range: [categoryName], // Use the fetched name
-                policy_accepted_at: formData.agreedToPolicy ? new Date().toISOString() : null
+                policy_accepted_at: formData.agreedToPolicy ? new Date().toISOString() : null,
+                profile_picture_url: formData.profilePictureUrl || null
             }
 
             const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -263,6 +266,15 @@ function RetailerRegisterForm() {
     // Helper Renders
     const renderStep1 = () => (
         <div className="space-y-4 max-w-md mx-auto animate-in fade-in slide-in-from-right-4">
+            {/* Profile Picture */}
+            <div className="flex flex-col items-center py-4">
+                <label className="text-sm font-medium text-gray-700 mb-3">Profile Picture *</label>
+                <ProfilePictureUpload
+                    value={formData.profilePictureUrl}
+                    onChange={(url) => setFormData(prev => ({ ...prev, profilePictureUrl: url || '' }))}
+                />
+            </div>
+
             <div className="space-y-2">
                 <label className="text-sm font-medium">Full Name</label>
                 <Input name="fullName" value={formData.fullName} onChange={handleChange} placeholder="Chidinma Okafor" />
