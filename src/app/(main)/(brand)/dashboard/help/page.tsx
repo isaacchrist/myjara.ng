@@ -7,7 +7,16 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Loader2, Send, AlertCircle, CheckCircle2, HelpCircle } from "lucide-react"
 
+const DISPUTE_CAUSES = [
+    { value: 'payment', label: '💳 Payment Issue', description: 'Problems with payment processing or refunds' },
+    { value: 'delivery', label: '🚚 Delivery Issue', description: 'Order not delivered or delayed' },
+    { value: 'product_quality', label: '📦 Product Quality', description: 'Received wrong or damaged item' },
+    { value: 'account', label: '👤 Account Issue', description: 'Verification, login, or profile problems' },
+    { value: 'other', label: '❓ Other', description: 'Any other issue not listed above' },
+]
+
 export default function HelpCenterPage() {
+    const [cause, setCause] = useState("")
     const [subject, setSubject] = useState("")
     const [description, setDescription] = useState("")
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -30,12 +39,14 @@ export default function HelpCenterPage() {
                     user_id: user.id,
                     subject,
                     description,
+                    cause,
                     status: 'open'
                 })
 
             if (error) throw error
 
             setStatus('success')
+            setCause("")
             setSubject("")
             setDescription("")
         } catch (err) {
@@ -61,8 +72,38 @@ export default function HelpCenterPage() {
                     <CardContent className="p-6">
                         <h3 className="font-semibold text-lg mb-4">Submit a New Request</h3>
                         <form onSubmit={handleSubmit} className="space-y-4">
+                            {/* Cause Selection */}
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Subject</label>
+                                <label className="text-sm font-medium">What's this about? *</label>
+                                <div className="grid gap-2">
+                                    {DISPUTE_CAUSES.map((c) => (
+                                        <label
+                                            key={c.value}
+                                            className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${cause === c.value
+                                                    ? 'border-emerald-500 bg-emerald-50 ring-1 ring-emerald-500'
+                                                    : 'border-gray-200 hover:border-gray-300'
+                                                }`}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="cause"
+                                                value={c.value}
+                                                checked={cause === c.value}
+                                                onChange={(e) => setCause(e.target.value)}
+                                                className="sr-only"
+                                            />
+                                            <span className="text-lg">{c.label.split(' ')[0]}</span>
+                                            <div>
+                                                <div className="font-medium text-sm">{c.label.split(' ').slice(1).join(' ')}</div>
+                                                <div className="text-xs text-gray-500">{c.description}</div>
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Subject *</label>
                                 <Input
                                     placeholder="e.g. Order #1234 issue"
                                     value={subject}
@@ -71,9 +112,9 @@ export default function HelpCenterPage() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Description</label>
+                                <label className="text-sm font-medium">Description *</label>
                                 <textarea
-                                    className="w-full rounded-md border border-input px-3 py-2 text-sm min-h-[150px]"
+                                    className="w-full rounded-md border border-input px-3 py-2 text-sm min-h-[120px]"
                                     placeholder="Describe your issue in detail..."
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
@@ -84,7 +125,7 @@ export default function HelpCenterPage() {
                             <Button
                                 type="submit"
                                 className="w-full bg-emerald-600 hover:bg-emerald-700"
-                                disabled={isSubmitting}
+                                disabled={isSubmitting || !cause}
                             >
                                 {isSubmitting ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <Send className="h-4 w-4 mr-2" />}
                                 Submit Ticket
@@ -104,16 +145,16 @@ export default function HelpCenterPage() {
                     </CardContent>
                 </Card>
 
-                {/* Info / Previous Tickets (Placeholder) */}
+                {/* Info / Previous Tickets */}
                 <div className="space-y-6">
                     <Card className="bg-emerald-50 border-emerald-100">
                         <CardContent className="p-6">
-                            <h3 className="font-semibold text-emerald-900 mb-2">Common Issues</h3>
+                            <h3 className="font-semibold text-emerald-900 mb-2">Tips for Faster Resolution</h3>
                             <ul className="list-disc list-inside text-sm text-emerald-800 space-y-2">
-                                <li>My order hasn't arrived</li>
-                                <li>I received the wrong item</li>
-                                <li>Payment issues</li>
-                                <li>Verification status</li>
+                                <li>Include order numbers if applicable</li>
+                                <li>Attach screenshots if possible</li>
+                                <li>Provide your contact phone number</li>
+                                <li>Be specific about dates and amounts</li>
                             </ul>
                         </CardContent>
                     </Card>
@@ -132,3 +173,4 @@ export default function HelpCenterPage() {
         </div>
     )
 }
+

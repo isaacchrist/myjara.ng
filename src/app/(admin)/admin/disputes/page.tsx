@@ -5,8 +5,8 @@ import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { formatDistanceToNow } from 'date-fns'
-import { Loader2, Search, Filter, MessageSquare, CheckCircle, XCircle } from 'lucide-react'
+import { formatDistanceToNow, format } from 'date-fns'
+import { Loader2, Search, Filter, MessageSquare, CheckCircle, XCircle, Calendar } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import Link from 'next/link'
 
@@ -15,19 +15,30 @@ type Dispute = {
     created_at: string
     subject: string
     description: string
+    cause: string | null
     status: 'open' | 'resolved' | 'closed'
     user: {
         id: string
         full_name: string
         email: string
-        role: string // Anticipating this column exists or is synced
+        role: string
     }
 }
+
+const CAUSE_OPTIONS = [
+    { value: 'all', label: 'All Causes' },
+    { value: 'payment', label: '💳 Payment' },
+    { value: 'delivery', label: '🚚 Delivery' },
+    { value: 'product_quality', label: '📦 Quality' },
+    { value: 'account', label: '👤 Account' },
+    { value: 'other', label: '❓ Other' },
+]
 
 export default function AdminDisputesPage() {
     const [disputes, setDisputes] = useState<Dispute[]>([])
     const [loading, setLoading] = useState(true)
     const [filterRole, setFilterRole] = useState<'all' | 'retailer' | 'brand_admin' | 'consumer'>('all')
+    const [filterCause, setFilterCause] = useState('all')
     const [search, setSearch] = useState('')
 
     const supabase = createClient()
@@ -65,12 +76,15 @@ export default function AdminDisputesPage() {
     // Filter Logic
     const filteredDisputes = disputes.filter(d => {
         // Role Filter
-        const userRole = d.user?.role || 'consumer' // Default to consumer if null
+        const userRole = d.user?.role || 'consumer'
         const matchesRole = filterRole === 'all'
             ? true
             : filterRole === 'consumer'
                 ? (userRole !== 'retailer' && userRole !== 'brand_admin')
                 : userRole === filterRole
+
+        // Cause Filter
+        const matchesCause = filterCause === 'all' || d.cause === filterCause
 
         // Search Filter
         const matchesSearch =
@@ -78,7 +92,7 @@ export default function AdminDisputesPage() {
             d.description.toLowerCase().includes(search.toLowerCase()) ||
             d.user?.full_name?.toLowerCase().includes(search.toLowerCase())
 
-        return matchesRole && matchesSearch
+        return matchesRole && matchesCause && matchesSearch
     })
 
     const handleResolve = async (id: string, newStatus: 'resolved' | 'closed') => {
@@ -106,45 +120,63 @@ export default function AdminDisputesPage() {
 
             {/* Controls */}
             <Card>
-                <CardContent className="p-6 flex flex-col md:flex-row gap-4 items-center">
-                    <div className="relative flex-1 w-full">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <Input
-                            placeholder="Search subjects, descriptions, or users..."
-                            className="pl-10"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
+                <CardContent className="p-6 space-y-4">
+                    <div className="flex flex-col md:flex-row gap-4 items-center">
+                        <div className="relative flex-1 w-full">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <Input
+                                placeholder="Search subjects, descriptions, or users..."
+                                className="pl-10"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex gap-2 w-full md:w-auto overflow-x-auto">
+                            <Button
+                                variant={filterRole === 'all' ? 'default' : 'outline'}
+                                onClick={() => setFilterRole('all')}
+                                className={filterRole === 'all' ? 'bg-gray-900' : ''}
+                            >
+                                All
+                            </Button>
+                            <Button
+                                variant={filterRole === 'brand_admin' ? 'default' : 'outline'}
+                                onClick={() => setFilterRole('brand_admin')}
+                                className={filterRole === 'brand_admin' ? 'bg-purple-600 hover:bg-purple-700' : 'text-purple-600 border-purple-200'}
+                            >
+                                Wholesalers
+                            </Button>
+                            <Button
+                                variant={filterRole === 'retailer' ? 'default' : 'outline'}
+                                onClick={() => setFilterRole('retailer')}
+                                className={filterRole === 'retailer' ? 'bg-blue-600 hover:bg-blue-700' : 'text-blue-600 border-blue-200'}
+                            >
+                                Retailers
+                            </Button>
+                            <Button
+                                variant={filterRole === 'consumer' ? 'default' : 'outline'}
+                                onClick={() => setFilterRole('consumer')}
+                                className={filterRole === 'consumer' ? 'bg-emerald-600 hover:bg-emerald-700' : 'text-emerald-600 border-emerald-200'}
+                            >
+                                Consumers
+                            </Button>
+                        </div>
                     </div>
-                    <div className="flex gap-2 w-full md:w-auto overflow-x-auto">
-                        <Button
-                            variant={filterRole === 'all' ? 'default' : 'outline'}
-                            onClick={() => setFilterRole('all')}
-                            className={filterRole === 'all' ? 'bg-gray-900' : ''}
-                        >
-                            All
-                        </Button>
-                        <Button
-                            variant={filterRole === 'brand_admin' ? 'default' : 'outline'}
-                            onClick={() => setFilterRole('brand_admin')}
-                            className={filterRole === 'brand_admin' ? 'bg-purple-600 hover:bg-purple-700' : 'text-purple-600 border-purple-200'}
-                        >
-                            Wholesalers
-                        </Button>
-                        <Button
-                            variant={filterRole === 'retailer' ? 'default' : 'outline'}
-                            onClick={() => setFilterRole('retailer')}
-                            className={filterRole === 'retailer' ? 'bg-blue-600 hover:bg-blue-700' : 'text-blue-600 border-blue-200'}
-                        >
-                            Retailers
-                        </Button>
-                        <Button
-                            variant={filterRole === 'consumer' ? 'default' : 'outline'}
-                            onClick={() => setFilterRole('consumer')}
-                            className={filterRole === 'consumer' ? 'bg-emerald-600 hover:bg-emerald-700' : 'text-emerald-600 border-emerald-200'}
-                        >
-                            Consumers
-                        </Button>
+
+                    {/* Cause Filter */}
+                    <div className="flex gap-2 flex-wrap">
+                        <span className="text-sm text-gray-500 font-medium self-center mr-2">Filter by cause:</span>
+                        {CAUSE_OPTIONS.map((c) => (
+                            <Button
+                                key={c.value}
+                                size="sm"
+                                variant={filterCause === c.value ? 'default' : 'outline'}
+                                onClick={() => setFilterCause(c.value)}
+                                className={filterCause === c.value ? 'bg-gray-800' : ''}
+                            >
+                                {c.label}
+                            </Button>
+                        ))}
                     </div>
                 </CardContent>
             </Card>

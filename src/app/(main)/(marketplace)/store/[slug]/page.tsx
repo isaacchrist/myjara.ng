@@ -2,8 +2,9 @@ import { notFound } from "next/navigation"
 import Image from "next/image"
 import { createClient } from "@/lib/supabase/server"
 import { ProductCard } from "@/components/marketplace/product-card"
-import { Button } from "@/components/ui/button"
-import { MessageCircle, MapPin } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { MapPin, Phone, Store, Building, Calendar } from "lucide-react"
+import { CopyPhoneButton } from "@/components/marketplace/copy-phone-button"
 
 export default async function StorePage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params
@@ -20,11 +21,21 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
         notFound()
     }
 
-    // Parse settings
+    // Parse settings and metadata
     const settings = store.settings as any
     const theme = settings?.theme || { primaryColor: '#10b981', layout: 'grid' }
     const primaryColor = theme.primaryColor
     const layout = theme.layout === 'list' ? 'list' : 'grid'
+
+    // Determine store type from user metadata or store settings
+    const storeType = store.shop_type || settings?.shop_type || 'physical'
+
+    const storeTypeConfig: Record<string, { label: string; icon: any; color: string }> = {
+        physical: { label: 'Physical Store', icon: Building, color: 'bg-blue-100 text-blue-700' },
+        online: { label: 'Online Store', icon: Store, color: 'bg-purple-100 text-purple-700' },
+        market_day: { label: 'Market Day Seller', icon: Calendar, color: 'bg-orange-100 text-orange-700' },
+    }
+    const typeInfo = storeTypeConfig[storeType] || storeTypeConfig.physical
 
     // Fetch products
     const { data: products } = await supabase
@@ -38,7 +49,7 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
         .eq('status', 'active')
         .order('created_at', { ascending: false })
 
-    // Fetch logistics (for location display if needed, simplified for now)
+    // Fetch logistics (for location display)
     const { data: logistics } = await supabase
         .from('store_logistics')
         .select('city')
@@ -55,18 +66,18 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
                 <div
                     className="h-48 w-full bg-cover bg-center"
                     style={{
-                        backgroundColor: primaryColor + '20', // 20% opacity as fallback/tint
+                        backgroundColor: primaryColor + '20',
                         backgroundImage: store.banner_url ? `url(${store.banner_url})` : 'none'
                     }}
                 />
 
                 <div className="container mx-auto px-4">
-                    <div className="relative -mt-16 mb-6 flex flex-col items-center sm:block sm:items-start">
-                        {/* Logo */}
-                        <div className="relative h-32 w-32 overflow-hidden rounded-full border-4 border-white bg-white shadow-md">
-                            {store.logo_url ? (
+                    <div className="relative -mt-16 mb-6 flex flex-col items-center sm:flex-row sm:items-end sm:gap-6">
+                        {/* Profile Picture / Logo */}
+                        <div className="relative h-32 w-32 overflow-hidden rounded-full border-4 border-white bg-white shadow-lg shrink-0">
+                            {store.profile_picture_url || store.logo_url ? (
                                 <Image
-                                    src={store.logo_url}
+                                    src={store.profile_picture_url || store.logo_url}
                                     alt={store.name}
                                     fill
                                     className="object-cover"
@@ -81,25 +92,39 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
                             )}
                         </div>
 
-                        <div className="mt-4 text-center sm:text-left">
+                        <div className="mt-4 flex-1 text-center sm:mt-0 sm:text-left">
                             <h1 className="text-3xl font-bold">{store.name}</h1>
-                            {cities.length > 0 && (
-                                <div className="mt-2 flex items-center justify-center gap-1 text-sm text-gray-500 sm:justify-start">
-                                    <MapPin className="h-4 w-4" />
-                                    <span>{cities.join(', ')}</span>
-                                </div>
-                            )}
+
+                            {/* Store Type Badge */}
+                            <div className="mt-2 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+                                <Badge className={`${typeInfo.color} flex items-center gap-1.5 px-3 py-1`}>
+                                    <typeInfo.icon className="h-3.5 w-3.5" />
+                                    {typeInfo.label}
+                                </Badge>
+
+                                {cities.length > 0 && (
+                                    <div className="flex items-center gap-1 text-sm text-gray-500">
+                                        <MapPin className="h-4 w-4" />
+                                        <span>{cities.join(', ')}</span>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
-                        {/* Actions (Chat, etc.) */}
-                        <div className="mt-4 flex gap-3 sm:absolute sm:bottom-0 sm:right-0 sm:mt-0">
-                            {/* Future: Add 'Follow' or general 'Chat with Store' button */}
-                        </div>
+                        {/* Phone Number Button */}
+                        {store.phone && (
+                            <div className="mt-4 sm:mt-0">
+                                <CopyPhoneButton phone={store.phone} />
+                            </div>
+                        )}
                     </div>
 
-                    <p className="max-w-2xl text-gray-600">
-                        {store.description}
-                    </p>
+                    {/* Description */}
+                    {store.description && (
+                        <p className="max-w-2xl text-gray-600">
+                            {store.description}
+                        </p>
+                    )}
                 </div>
             </div>
 
@@ -148,3 +173,4 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
         </div>
     )
 }
+

@@ -27,6 +27,7 @@ export function ProductCard({
     jaraBuyQty,
     jaraGetQty,
     storeName,
+    storeSlug,
     imageUrl,
     cities = [],
     variant = 'grid',
@@ -50,8 +51,14 @@ export function ProductCard({
                                 className="object-cover transition-transform duration-300 group-hover:scale-105"
                             />
                         ) : (
-                            <div className="flex h-full items-center justify-center">
-                                <span className="text-4xl text-gray-300 dark:text-gray-600">📦</span>
+                            <div className="flex h-full items-center justify-center bg-gradient-to-br from-emerald-50 to-gray-100">
+                                <Image
+                                    src="/logo.png"
+                                    alt="MyJara"
+                                    width={80}
+                                    height={80}
+                                    className="opacity-40"
+                                />
                             </div>
                         )}
 
@@ -72,10 +79,14 @@ export function ProductCard({
                         <h3 className="line-clamp-2 text-sm font-medium text-gray-900 group-hover:text-emerald-600">
                             {name}
                         </h3>
+                    </Link>
 
-                        <p className="mt-1 text-xs text-gray-500">
-                            by {storeName}
-                        </p>
+                    <Link
+                        href={`/store/${storeSlug}`}
+                        className="mt-1 inline-block text-xs text-gray-500 hover:text-emerald-600 hover:underline transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        by {storeName}
                     </Link>
 
                     <div>
