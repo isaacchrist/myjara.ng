@@ -43,7 +43,7 @@ export function ProductCard({
                     {/* Image */}
                     <div className={`relative overflow-hidden bg-gray-100 cursor-pointer ${variant === 'list' ? 'h-full w-48 shrink-0' : 'aspect-square w-full'
                         }`}>
-                        {imageUrl ? (
+                        {imageUrl && (imageUrl.startsWith('http') || imageUrl.startsWith('/')) ? (
                             <Image
                                 src={imageUrl}
                                 alt={name}

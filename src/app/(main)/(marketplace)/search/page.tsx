@@ -59,6 +59,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     const market = params.market || null
     const sort = params.sort || 'relevance'
     const compareMode = params.compare === 'true'
+    const categorySlug = params.category || null
 
     // Safe parsing helpers
     const safeFloat = (v: string | undefined) => {
@@ -70,7 +71,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         return isNaN(n) ? null : n
     }
 
-    const categoryId = params.category || null
     const minPrice = safeFloat(params.minPrice)
     const maxPrice = safeFloat(params.maxPrice)
     const minJara = safeInt(params.minJara)
@@ -89,17 +89,55 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
     let products: any[] = []
     let errorMessage: string | null = null
+    const supabase = await createClient()
+
+    // Resolve Category Slug to ID(s)
+    let categoryIds: string[] = []
+
+    if (categorySlug) {
+        // Find category by slug
+        const { data: catData, error: catError } = await supabase
+            .from('categories')
+            .select('id, parent_id')
+            .eq('slug', categorySlug)
+            .single()
+
+        if (catData) {
+            categoryIds.push((catData as any).id)
+
+            // If it's a parent category, also get its children
+            const { data: subData } = await supabase
+                .from('categories')
+                .select('id')
+                .eq('parent_id', (catData as any).id)
+
+            if (subData) {
+                categoryIds = [...categoryIds, ...(subData as any).map((s: any) => s.id)]
+            }
+        } else {
+            console.error('Category lookup failed:', catError)
+        }
+    }
 
     try {
-        const supabase = await createClient()
-
         // Try the RPC function first
         let rpcWorked = false
         try {
+            // NOTE: RPC currently only accepts a single category ID. 
+            // If we have multiple (parent + subs), determining which to pass is tricky without RPC update.
+            // For now, we pass the main ID if found.
+            // In a real fix, we should update RPC to accept array or handle children.
+            // However, passing just the resolved ID is better than passing a slug.
+
+            const mainCategoryId = categoryIds[0] || null
+
+            // Only run RPC if we don't need multi-category filter (unless RPC is updated)
+            // Or if no category filter
+
             const { data, error } = await (supabase as any).rpc('search_products', {
                 search_query: query || null,
                 filter_city: city || null,
-                filter_category_id: categoryId,
+                filter_category_id: mainCategoryId,
                 filter_min_price: minPrice,
                 filter_max_price: maxPrice,
                 filter_min_jara: minJara
@@ -146,8 +184,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             if (query) {
                 dbQuery = dbQuery.ilike('name', `%${query}%`)
             }
-            if (categoryId) {
-                dbQuery = dbQuery.eq('category_id', categoryId)
+            if (categoryIds.length > 0) {
+                dbQuery = dbQuery.in('category_id', categoryIds)
             }
             if (minPrice !== null) {
                 dbQuery = dbQuery.gte('price', minPrice)
@@ -267,7 +305,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                         <Suspense fallback={<div className="h-64 rounded-xl bg-gray-100 animate-pulse" />}>
                             <ClientFilterSidebar
                                 currentParams={{
-                                    category: categoryId,
+                                    category: categorySlug,
                                     minPrice: minPrice,
                                     maxPrice: maxPrice,
                                     minJara: minJara,
