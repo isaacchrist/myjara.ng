@@ -1,34 +1,5 @@
-import Link from 'next/link'
-import {
-    LayoutDashboard,
-    Store,
-    FolderTree,
-    CreditCard,
-    Users,
-    BarChart3,
-    Settings,
-    Shield,
-    LogOut,
-    ChevronRight
-} from 'lucide-react'
-import { getAdminSession, logoutAdmin } from '@/app/actions/admin-auth'
-
-
-const sidebarItems: Array<{
-    icon: React.ComponentType<{ className?: string }>
-    label: string
-    href: string
-    badge?: number | string
-}> = [
-        { icon: LayoutDashboard, label: 'Overview', href: '/admin' },
-        { icon: Shield, label: 'Disputes', href: '/admin/disputes' },
-        { icon: Store, label: 'Stores', href: '/admin/stores' },
-        { icon: FolderTree, label: 'Categories', href: '/admin/categories' },
-        { icon: CreditCard, label: 'Transactions', href: '/admin/transactions' },
-        { icon: Users, label: 'Users', href: '/admin/users' },
-        { icon: BarChart3, label: 'Analytics', href: '/admin/analytics' },
-        { icon: Settings, label: 'Settings', href: '/admin/settings' },
-    ]
+import { getAdminSession } from '@/app/actions/admin-auth'
+import { AdminShell } from '@/components/admin/admin-shell'
 
 export default async function AdminLayout({
     children,
@@ -36,9 +7,6 @@ export default async function AdminLayout({
     children: React.ReactNode
 }) {
     const isAdmin = await getAdminSession()
-
-    // If no admin session, we only allow access to the base /admin page (which shows the login form)
-    // For now, we'll let the layout render but keep it minimal or hidden if not admin.
 
     if (!isAdmin) {
         return (
@@ -49,86 +17,10 @@ export default async function AdminLayout({
             </div>
         )
     }
+
     return (
-        <div className="flex min-h-screen bg-gray-900">
-            {/* Sidebar */}
-            <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 border-r border-gray-800 bg-gray-900 md:block">
-                {/* Logo */}
-                <div className="flex h-16 items-center border-b border-gray-800 px-6">
-                    <Link href="/admin" className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-green-500">
-                            <Shield className="h-4 w-4 text-white" />
-                        </div>
-                        <span className="font-bold text-white">
-                            MyJara <span className="text-emerald-400">Admin</span>
-                        </span>
-                    </Link>
-                </div>
-
-                {/* Navigation */}
-                <nav className="flex-1 p-4">
-                    <ul className="space-y-1">
-                        {sidebarItems.map((item) => (
-                            <li key={item.href}>
-                                <Link
-                                    href={item.href}
-                                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-400 transition-colors hover:bg-gray-800 hover:text-white"
-                                >
-                                    <item.icon className="h-5 w-5" />
-                                    {item.label}
-                                    {item.badge && (
-                                        <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-                                            {item.badge}
-                                        </span>
-                                    )}
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
-                </nav>
-
-                {/* Logout */}
-                <div className="border-t border-gray-800 p-4">
-                    <form action={async () => {
-                        'use server'
-                        await logoutAdmin()
-                    }}>
-                        <button
-                            type="submit"
-                            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-400 transition-colors hover:bg-gray-800 hover:text-white"
-                        >
-                            <LogOut className="h-5 w-5" />
-                            Sign Out
-                        </button>
-                    </form>
-                </div>
-            </aside>
-
-            {/* Main Content */}
-            <div className="flex-1 md:ml-64">
-                {/* Top Bar */}
-                <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-gray-800 bg-gray-900 px-6">
-                    <div className="flex items-center gap-2 text-sm text-gray-400">
-                        <Link href="/admin" className="hover:text-white">Admin</Link>
-                        <ChevronRight className="h-4 w-4" />
-                        <span className="text-white">Overview</span>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                        <Link
-                            href="/"
-                            className="text-sm text-gray-400 hover:text-white"
-                        >
-                            View Site →
-                        </Link>
-                    </div>
-                </header>
-
-                {/* Page Content */}
-                <main className="p-6">
-                    {children}
-                </main>
-            </div>
-        </div>
+        <AdminShell>
+            {children}
+        </AdminShell>
     )
 }

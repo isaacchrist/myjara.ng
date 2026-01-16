@@ -267,19 +267,31 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                                 <span className="text-sm text-emerald-800 font-medium">Compare by:</span>
                                 <div className="flex gap-2">
                                     <Link href={buildUrl({ sort: 'price_asc' })}>
-                                        <Badge className={`cursor-pointer ${sort === 'price_asc' ? 'bg-emerald-600' : 'bg-white text-emerald-600 border-emerald-200'}`}>
+                                        <Button
+                                            size="sm"
+                                            variant={sort === 'price_asc' ? 'default' : 'outline'}
+                                            className={`${sort === 'price_asc' ? 'bg-emerald-600 hover:bg-emerald-700' : 'text-emerald-700 border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800'}`}
+                                        >
                                             Cheapest
-                                        </Badge>
+                                        </Button>
                                     </Link>
                                     <Link href={buildUrl({ sort: 'jara_desc' })}>
-                                        <Badge className={`cursor-pointer ${sort === 'jara_desc' ? 'bg-emerald-800' : 'bg-white text-emerald-800 border-emerald-200'}`}>
+                                        <Button
+                                            size="sm"
+                                            variant={sort === 'jara_desc' ? 'default' : 'outline'}
+                                            className={`${sort === 'jara_desc' ? 'bg-emerald-800 hover:bg-emerald-900' : 'text-emerald-700 border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800'}`}
+                                        >
                                             Best Jara
-                                        </Badge>
+                                        </Button>
                                     </Link>
                                     <Link href={buildUrl({ sort: 'hybrid' })}>
-                                        <Badge className={`cursor-pointer ${sort === 'hybrid' ? 'bg-emerald-500' : 'bg-white text-emerald-500 border-emerald-200'}`}>
+                                        <Button
+                                            size="sm"
+                                            variant={sort === 'hybrid' ? 'default' : 'outline'}
+                                            className={`${sort === 'hybrid' ? 'bg-emerald-500 hover:bg-emerald-600' : 'text-emerald-700 border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800'}`}
+                                        >
                                             Best Value
-                                        </Badge>
+                                        </Button>
                                     </Link>
                                 </div>
                             </div>

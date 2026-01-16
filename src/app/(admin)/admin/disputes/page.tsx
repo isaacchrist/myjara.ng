@@ -142,21 +142,21 @@ export default function AdminDisputesPage() {
                             <Button
                                 variant={filterRole === 'brand_admin' ? 'default' : 'outline'}
                                 onClick={() => setFilterRole('brand_admin')}
-                                className={filterRole === 'brand_admin' ? 'bg-purple-600 hover:bg-purple-700' : 'text-purple-600 border-purple-200'}
+                                className={filterRole === 'brand_admin' ? 'bg-emerald-700 hover:bg-emerald-800' : 'text-emerald-700 border-emerald-200'}
                             >
                                 Wholesalers
                             </Button>
                             <Button
                                 variant={filterRole === 'retailer' ? 'default' : 'outline'}
                                 onClick={() => setFilterRole('retailer')}
-                                className={filterRole === 'retailer' ? 'bg-blue-600 hover:bg-blue-700' : 'text-blue-600 border-blue-200'}
+                                className={filterRole === 'retailer' ? 'bg-emerald-600 hover:bg-emerald-700' : 'text-emerald-600 border-emerald-200'}
                             >
                                 Retailers
                             </Button>
                             <Button
                                 variant={filterRole === 'consumer' ? 'default' : 'outline'}
                                 onClick={() => setFilterRole('consumer')}
-                                className={filterRole === 'consumer' ? 'bg-emerald-600 hover:bg-emerald-700' : 'text-emerald-600 border-emerald-200'}
+                                className={filterRole === 'consumer' ? 'bg-emerald-500 hover:bg-emerald-600' : 'text-emerald-500 border-emerald-200'}
                             >
                                 Consumers
                             </Button>
@@ -172,7 +172,7 @@ export default function AdminDisputesPage() {
                                 size="sm"
                                 variant={filterCause === c.value ? 'default' : 'outline'}
                                 onClick={() => setFilterCause(c.value)}
-                                className={filterCause === c.value ? 'bg-gray-800' : ''}
+                                className={filterCause === c.value ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
                             >
                                 {c.label}
                             </Button>

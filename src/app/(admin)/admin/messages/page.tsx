@@ -157,7 +157,7 @@ export default function AdminMessagesPage() {
     const selectedConv = conversations.find(c => c.id === selectedConversation)
 
     return (
-        <div className="h-[calc(100vh-8rem)] flex flex-col">
+        <div className="h-[calc(100vh-100px)] min-h-[500px] flex flex-col bg-white border rounded-lg overflow-hidden shadow-sm">
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b">
                 <div>

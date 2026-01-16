@@ -8,41 +8,97 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { formatPrice, formatJara } from '@/lib/utils'
 
-// Mock product data - would come from Supabase in production
+import { createClient } from '@/lib/supabase/server'
+import { notFound } from 'next/navigation'
+
+// Fetch product from Supabase
 const getProduct = async (id: string) => {
+    const supabase = await createClient()
+
+    const { data: productData, error } = await supabase
+        .from('products')
+        .select(`
+            id,
+            name,
+            description,
+            price,
+            jara_buy_quantity,
+            jara_get_quantity,
+            stock_quantity,
+            store_id,
+            category_id,
+            stores (
+                id,
+                name,
+                slug,
+                logo_url,
+                store_logistics (
+                    id,
+                    type,
+                    location_name,
+                    city,
+                    delivery_fee,
+                    delivery_timeline
+                )
+            ),
+            categories (
+                id,
+                name
+            ),
+            product_images (
+                url,
+                is_primary,
+                sort_order
+            )
+        `)
+        .eq('id', id)
+        .single()
+
+    const product = productData as any
+
+    if (error || !product) {
+        console.error('Error fetching product:', error)
+        return null
+    }
+
+    // Transform images
+    let images = product.product_images
+        ?.sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0))
+        .map((img: any) => img.url) || []
+
+    // Ensure primary image is first if exists
+    const primaryImg = (product as any).product_images?.find((img: any) => img.is_primary)
+    if (primaryImg) {
+        images = [primaryImg.url, ...images.filter((url: string) => url !== primaryImg.url)]
+    }
+
     return {
-        id,
-        name: 'Premium Basmati Rice (50kg)',
-        description: `Imported premium long-grain Basmati rice. Perfect for special occasions, biryanis, and fried rice. Each bag is 50kg of pure quality.
-
-Features:
-• Extra long grain
-• Aged for perfect aroma
-• Low glycemic index
-• Non-GMO
-
-This rice is sourced directly from the best farms and carefully processed to maintain its natural qualities. The grains cook up fluffy and separate, making it ideal for a variety of dishes.`,
-        price: 48000,
-        jaraBuyQty: 5,
-        jaraGetQty: 1,
-        stockQuantity: 100,
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        jaraBuyQty: product.jara_buy_quantity,
+        jaraGetQty: product.jara_get_quantity,
+        stockQuantity: product.stock_quantity,
         store: {
-            id: 'store-1',
-            name: 'FoodMart Nigeria',
-            slug: 'foodmart',
-            logoUrl: null,
+            id: product.stores.id,
+            name: product.stores.name,
+            slug: product.stores.slug,
+            logoUrl: product.stores.logo_url,
         },
         category: {
-            id: 'cat-1',
-            name: 'Food & Groceries',
+            id: product.categories?.id,
+            name: product.categories?.name,
         },
-        images: [] as string[],
-        logistics: [
-            { id: 'log-1', type: 'pickup', locationName: 'Ikeja Warehouse', city: 'Lagos', deliveryFee: 0, timeline: 'Same day' },
-            { id: 'log-2', type: 'pickup', locationName: 'Lekki Hub', city: 'Lagos', deliveryFee: 0, timeline: 'Same day' },
-            { id: 'log-3', type: 'delivery', locationName: 'Lagos Mainland', city: 'Lagos', deliveryFee: 2000, timeline: '1-2 days' },
-            { id: 'log-4', type: 'delivery', locationName: 'Lagos Island', city: 'Lagos', deliveryFee: 2500, timeline: '1-2 days' },
-        ],
+        images: images,
+        logistics: product.stores.store_logistics.map((log: any) => ({
+            id: log.id,
+            type: log.type,
+            locationName: log.location_name,
+            city: log.city,
+            deliveryFee: log.delivery_fee,
+            timeline: log.delivery_timeline
+        }))
     }
 }
 
@@ -53,6 +109,11 @@ interface ProductPageProps {
 export default async function ProductPage({ params }: ProductPageProps) {
     const { id } = await params
     const product = await getProduct(id)
+
+    if (!product) {
+        return notFound()
+    }
+
     const jaraText = formatJara(product.jaraBuyQty, product.jaraGetQty)
 
     return (
@@ -94,7 +155,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                         </div>
                         {/* Thumbnails */}
                         <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
-                            {product.images.map((img, i) => (
+                            {product.images.map((img: string, i: number) => (
                                 <button
                                     key={i}
                                     className="h-20 w-20 shrink-0 overflow-hidden rounded-lg border-2 border-transparent bg-gray-100 transition-all hover:border-emerald-500 relative"
@@ -179,7 +240,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                                 Pickup & Delivery Options
                             </h3>
                             <div className="space-y-2">
-                                {product.logistics.map((option) => (
+                                {product.logistics.map((option: any) => (
                                     <div
                                         key={option.id}
                                         className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-3"

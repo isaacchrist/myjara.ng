@@ -44,3 +44,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+public/backup_logos/
+favicon_io(2)/

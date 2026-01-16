@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { OverviewCharts } from '@/components/dashboard/analytics-charts'
 import { formatPrice } from '@/lib/utils'
 import { TrendingUp, Users, Store, ShoppingCart } from 'lucide-react'
+import { LocationSalesAnalytics } from '@/components/dashboard/location-sales-analytics'
 
 export default async function AdminAnalyticsPage() {
     const supabase = await createAdminClient()
@@ -52,6 +53,38 @@ export default async function AdminAnalyticsPage() {
             orders: stats.orders
         }))
 
+    // 3. Fetch User Roles Distribution
+    const { data: usersData } = await supabase.from('users').select('role') as any
+    const roleCounts: Record<string, number> = {}
+
+        ; (usersData || []).forEach((u: any) => {
+            const role = u.role ? (u.role.charAt(0).toUpperCase() + u.role.slice(1)) : 'Unknown'
+            roleCounts[role] = (roleCounts[role] || 0) + 1
+        })
+
+    const usersByRole = Object.entries(roleCounts).map(([name, value]) => ({ name, value }))
+
+    // 4. Fetch User Location Distribution (via Stores -> Logistics)
+    // Since we don't have user addresses easily accessible for all users, we use Store Locations as a proxy for "active business areas"
+    const { data: storeLocations } = await supabase
+        .from('store_logistics')
+        .select('city')
+        .eq('is_active', true) as any
+
+    const locationCounts: Record<string, number> = {}
+
+        ; (storeLocations || []).forEach((l: any) => {
+            if (l.city) {
+                locationCounts[l.city] = (locationCounts[l.city] || 0) + 1
+            }
+        })
+
+    // Get Top 6 locations
+    const usersByLocation = Object.entries(locationCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6)
+        .map(([name, value]) => ({ name, value }))
+
     const stats = [
         { label: 'Total Sellers', value: totalUsers || 0, icon: Users, color: 'text-blue-500' },
         { label: 'Total Stores', value: totalStores || 0, icon: Store, color: 'text-emerald-500' },
@@ -84,8 +117,15 @@ export default async function AdminAnalyticsPage() {
             {/* Charts */}
             <div className="rounded-xl bg-gray-800 p-6 border border-gray-700">
                 <h2 className="text-lg font-semibold text-white mb-4">Revenue & Orders Trends</h2>
-                <OverviewCharts data={chartData} />
+                <OverviewCharts
+                    data={chartData}
+                    usersByRole={usersByRole}
+                    usersByLocation={usersByLocation}
+                />
             </div>
+
+            {/* Advanced Analytics */}
+            <LocationSalesAnalytics />
         </div>
     )
 }
