@@ -16,7 +16,6 @@ const featuredProducts = [
     jaraGetQty: 1,
     storeName: 'FoodMart Nigeria',
     storeSlug: 'foodmart',
-    imageUrl: '/products/rice.jpg',
     cities: ['Lagos', 'Abuja'],
   },
   {
@@ -27,7 +26,6 @@ const featuredProducts = [
     jaraGetQty: 2,
     storeName: 'TechZone',
     storeSlug: 'techzone',
-    imageUrl: '/products/earbuds.jpg',
     cities: ['Lagos', 'Port Harcourt'],
   },
   {
@@ -38,7 +36,6 @@ const featuredProducts = [
     jaraGetQty: 1,
     storeName: 'NaturalGlow',
     storeSlug: 'naturalglow',
-    imageUrl: '/products/shea.jpg',
     cities: ['Kano', 'Kaduna'],
   },
   {
@@ -49,7 +46,6 @@ const featuredProducts = [
     jaraGetQty: 1,
     storeName: 'StyleHub',
     storeSlug: 'stylehub',
-    imageUrl: '/products/polo.jpg',
     cities: ['Lagos', 'Ibadan'],
   },
 ]
