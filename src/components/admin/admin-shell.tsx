@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
     LayoutDashboard,
     Store,
@@ -57,12 +58,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 {/* Logo & Close Button */}
                 <div className="flex h-16 items-center justify-between border-b border-gray-800 px-6">
                     <Link href="/admin" className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-green-500">
-                            <Shield className="h-4 w-4 text-white" />
-                        </div>
-                        <span className="font-bold text-white">
-                            MyJara <span className="text-emerald-400">Admin</span>
-                        </span>
+                        <Image src="/logo.png" alt="MyJara Logo" width={120} height={40} className="h-8 w-auto brightness-0 invert" />
                     </Link>
                     <button
                         onClick={() => setSidebarOpen(false)}
@@ -83,8 +79,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                                         href={item.href}
                                         onClick={() => setSidebarOpen(false)}
                                         className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${isActive
-                                                ? 'bg-emerald-500/10 text-emerald-400'
-                                                : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                                            ? 'bg-emerald-500/10 text-emerald-400'
+                                            : 'text-gray-400 hover:bg-gray-800 hover:text-white'
                                             }`}
                                     >
                                         <item.icon className="h-5 w-5" />

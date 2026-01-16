@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 export function Footer() {
     return (
@@ -8,9 +9,7 @@ export function Footer() {
                     {/* Brand */}
                     <div className="md:col-span-1">
                         <Link href="/" className="flex items-center gap-2">
-                            <span className="text-4xl font-bold text-emerald-600 tracking-wide" style={{ fontFamily: '"Lobster", cursive' }}>
-                                MyJara
-                            </span>
+                            <Image src="/logo.png" alt="MyJara Logo" width={140} height={40} className="h-10 w-auto" />
                         </Link>
                         <p className="mt-4 text-sm text-gray-500">
                             Discover products. Enjoy more.

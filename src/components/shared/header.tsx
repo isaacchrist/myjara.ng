@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, ShoppingBag, User, LogOut, LayoutDashboard, MessageSquare } from 'lucide-react'
@@ -63,9 +64,7 @@ export function Header() {
                 <div className="flex h-16 items-center justify-between">
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2">
-                        <span className="text-4xl font-bold text-emerald-600 tracking-wide" style={{ fontFamily: '"Lobster", cursive' }}>
-                            MyJara
-                        </span>
+                        <Image src="/logo.png" alt="MyJara Logo" width={140} height={40} className="h-10 w-auto" priority />
                     </Link>
 
                     {/* Desktop Navigation */}
