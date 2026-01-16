@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowLeft, MapPin, MessageCircle, ShoppingCart, Store, Truck } from 'lucide-react'
 import { ChatButton } from '@/components/marketplace/chat-button'
 import { AddToCartButton } from '@/components/marketplace/add-to-cart-button'
@@ -73,20 +74,53 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 <div className="grid gap-8 lg:grid-cols-2">
                     {/* Image Gallery */}
                     <div>
-                        <div className="aspect-square overflow-hidden rounded-2xl bg-gray-100">
-                            {/* Main image placeholder */}
-                            <div className="flex h-full items-center justify-center">
-                                <span className="text-8xl">📦</span>
-                            </div>
+                        <div className="aspect-square overflow-hidden rounded-2xl bg-gray-100 relative">
+                            {/* Main image */}
+                            {product.images[0] && (product.images[0].startsWith('http') || product.images[0].startsWith('/')) ? (
+                                <Image
+                                    src={product.images[0]}
+                                    alt={product.name}
+                                    fill
+                                    className="object-cover"
+                                    priority
+                                />
+                            ) : (
+                                <div className="flex h-full items-center justify-center bg-gradient-to-br from-emerald-50 to-gray-100">
+                                    <Image
+                                        src="/logo.png"
+                                        alt="MyJara"
+                                        width={120}
+                                        height={120}
+                                        className="opacity-40"
+                                    />
+                                </div>
+                            )}
                         </div>
                         {/* Thumbnails */}
-                        <div className="mt-4 flex gap-3">
-                            {[1, 2, 3].map((i) => (
+                        <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
+                            {product.images.map((img, i) => (
                                 <button
                                     key={i}
-                                    className="h-20 w-20 overflow-hidden rounded-lg border-2 border-transparent bg-gray-100 transition-all hover:border-emerald-500"
+                                    className="h-20 w-20 shrink-0 overflow-hidden rounded-lg border-2 border-transparent bg-gray-100 transition-all hover:border-emerald-500 relative"
                                 >
-                                    <div className="flex h-full items-center justify-center text-2xl">📦</div>
+                                    {img && (img.startsWith('http') || img.startsWith('/')) ? (
+                                        <Image
+                                            src={img}
+                                            alt={`${product.name} ${i + 1}`}
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    ) : (
+                                        <div className="flex h-full items-center justify-center bg-gray-50">
+                                            <Image
+                                                src="/logo.png"
+                                                alt="MyJara"
+                                                width={30}
+                                                height={30}
+                                                className="opacity-40"
+                                            />
+                                        </div>
+                                    )}
                                 </button>
                             ))}
                         </div>

@@ -82,18 +82,17 @@ export function ExpandableCategories({ categories }: ExpandableCategoriesProps) 
 
                                 {/* Subcategories - Expandable */}
                                 {isExpanded && subs.length > 0 && (
-                                    <div className="mt-4 border-t pt-4 space-y-2 animate-in slide-in-from-top-2 fade-in duration-300">
+                                    <div className="mt-4 border-t pt-4 grid grid-cols-2 gap-3 animate-in slide-in-from-top-2 fade-in duration-300">
                                         {subs.map((sub) => (
                                             <Link
                                                 key={sub.id}
                                                 href={`/search?category=${sub.slug}`}
-                                                className="flex items-center gap-3 rounded-lg p-2 hover:bg-emerald-50 transition-colors"
+                                                className="flex flex-col items-center justify-center gap-2 rounded-lg border border-gray-100 p-3 text-center hover:bg-emerald-50 hover:border-emerald-200 transition-all hover:shadow-sm"
                                             >
-                                                <span className="text-lg">{sub.icon || '📁'}</span>
-                                                <span className="text-sm font-medium text-gray-700 hover:text-emerald-600">
+                                                <span className="text-2xl">{sub.icon || '📁'}</span>
+                                                <span className="text-xs font-medium text-gray-700 hover:text-emerald-600 line-clamp-2">
                                                     {sub.name}
                                                 </span>
-                                                <ArrowRight className="ml-auto h-4 w-4 text-gray-400" />
                                             </Link>
                                         ))}
                                     </div>
