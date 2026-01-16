@@ -36,11 +36,7 @@ This rice is sourced directly from the best farms and carefully processed to mai
             id: 'cat-1',
             name: 'Food & Groceries',
         },
-        images: [
-            '/products/rice-1.jpg',
-            '/products/rice-2.jpg',
-            '/products/rice-3.jpg',
-        ],
+        images: [] as string[],
         logistics: [
             { id: 'log-1', type: 'pickup', locationName: 'Ikeja Warehouse', city: 'Lagos', deliveryFee: 0, timeline: 'Same day' },
             { id: 'log-2', type: 'pickup', locationName: 'Lekki Hub', city: 'Lagos', deliveryFee: 0, timeline: 'Same day' },
