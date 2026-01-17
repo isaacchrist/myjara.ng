@@ -134,6 +134,14 @@ export function Header() {
                                         </Link>
                                     </Button>
                                 )}
+                                {(user.user_metadata?.role === 'customer' || !user.user_metadata?.role) && (
+                                    <Button variant="outline" size="sm" asChild>
+                                        <Link href="/customer/dashboard">
+                                            <LayoutDashboard className="mr-2 h-4 w-4" />
+                                            Dashboard
+                                        </Link>
+                                    </Button>
+                                )}
                                 <Button variant="ghost" size="sm" onClick={handleLogout}>
                                     <LogOut className="h-4 w-4 mr-2" />
                                     Sign Out

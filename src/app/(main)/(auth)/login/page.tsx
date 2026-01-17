@@ -51,8 +51,8 @@ export default function LoginPage() {
             } else if (role === 'retailer') {
                 router.push('/seller/dashboard')
             } else {
-                // Customers go to Marketplace
-                router.push('/')
+                // Customers go to Customer Dashboard
+                router.push('/customer/dashboard')
             }
         } catch (err) {
             console.error('Login error:', err)
