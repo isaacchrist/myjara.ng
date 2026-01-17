@@ -295,6 +295,27 @@ function RetailerRegisterForm() {
                     </label>
                 </div>
             </div>
+
+            {/* Market Days Selection (For frequent markets) */}
+            {formData.shopType === 'market_day' && (
+                <div className="pt-4 border-t border-gray-100">
+                    <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-emerald-600" /> Frequent Markets
+                    </h4>
+                    <p className="text-sm text-gray-500 mb-3">Select the markets you attend regularly (besides your main spot):</p>
+                    <div className="grid grid-cols-2 gap-3">
+                        {ABUJA_MARKETS.map(m => (
+                            <div
+                                key={m.name}
+                                onClick={() => toggleMarket(m.name)}
+                                className={`text-sm p-3 rounded-lg border cursor-pointer select-none transition-all text-center ${formData.choosenMarkets.includes(m.name) ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm' : 'bg-white text-gray-700 hover:border-emerald-400 hover:bg-emerald-50'}`}
+                            >
+                                {m.name}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     )
 
