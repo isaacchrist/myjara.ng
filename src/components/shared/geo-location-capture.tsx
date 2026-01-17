@@ -43,6 +43,15 @@ export function GeoLocationCapture({ onLocationCaptured, initialMarket }: GeoLoc
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const { latitude, longitude, accuracy } = position.coords
+
+                // Validation: Accuracy must be better than 75m
+                // User requirement: "location accuracy should be to 50m - 75m"
+                if (accuracy > 75) {
+                    setStatus('error')
+                    setErrorMsg(`Signal weak (Accuracy: ${Math.round(accuracy)}m). Please move outdoors for better reception (< 75m required).`)
+                    return
+                }
+
                 setCoords({ lat: latitude, lng: longitude, accuracy })
                 setStatus('success')
 
@@ -58,7 +67,7 @@ export function GeoLocationCapture({ onLocationCaptured, initialMarket }: GeoLoc
             },
             {
                 enableHighAccuracy: true,
-                timeout: 10000,
+                timeout: 15000,
                 maximumAge: 0
             }
         )
@@ -121,7 +130,9 @@ export function GeoLocationCapture({ onLocationCaptured, initialMarket }: GeoLoc
                         </div>
                         <div className="col-span-2 border-t pt-2">
                             <span className="text-gray-500 block text-xs uppercase">Accuracy</span>
-                            <span className="font-mono text-xs text-gray-600">Within {coords.accuracy.toFixed(1)} meters</span>
+                            <span className={`font-mono text-xs ${coords.accuracy > 50 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                                ±{coords.accuracy.toFixed(1)}m {coords.accuracy > 50 ? '(Acceptable)' : '(Excellent)'}
+                            </span>
                         </div>
                     </div>
 
