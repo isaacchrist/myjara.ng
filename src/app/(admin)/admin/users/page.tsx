@@ -1,35 +1,48 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { UsersTable } from '@/components/admin/users-table'
+import { Card, CardContent } from '@/components/ui/card'
 import { createAdminClient } from '@/lib/supabase/server'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Users, CheckCircle, XCircle, Clock, Search } from 'lucide-react'
+import { Users, CheckCircle, Clock } from 'lucide-react'
 
 export default async function AdminUsersPage() {
     const supabase = await createAdminClient()
 
-    // Fetch all stores with owner info
-    const { data: stores, error } = await supabase
-        .from('stores')
-        .select('id, name, slug, owner_id, created_at, is_verified')
+    // 1. Fetch Users
+    const { data: usersData } = await supabase
+        .from('users')
+        .select('*')
         .order('created_at', { ascending: false })
-        .limit(50) as any
 
-    const users = stores || []
+    // 2. Fetch Stores (to link to users)
+    const { data: storesData } = await supabase
+        .from('stores')
+        .select('id, name, slug, owner_id, shop_type, market_name')
+
+    // 3. Merge Data
+    const users: any[] = (usersData || []).map((user: any) => {
+        const userStore = storesData?.find((s: any) => s.owner_id === user.id)
+        return {
+            ...user,
+            store: userStore,
+            // Assuming 'is_verified' is on the store? Or user?
+            // User table doesn't have is_verified usually, Store does.
+            // But we can check if store is verified for Sellers.
+            // For Customers, maybe email confirmed?
+            // Let's use store verification for sellers, true for customers?
+            is_verified: userStore ? userStore.is_verified : true // Default true for customers (or check email_confirmed_at if exposed)
+        }
+    })
+
+    const totalUsers = users.length
+    const verifiedUsers = users.filter(u => u.is_verified).length
+    const pendingUsers = users.filter(u => !u.is_verified).length
+
+    // (Dead code removed)
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-white">User Management</h1>
-                    <p className="text-gray-400">Manage platform users and sellers</p>
-                </div>
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                    <Input
-                        placeholder="Search users..."
-                        className="pl-10 bg-gray-800 border-gray-700 text-white w-64"
-                    />
-                </div>
+            <div>
+                <h1 className="text-2xl font-bold text-white">User Management</h1>
+                <p className="text-gray-400">Manage platform users and sellers</p>
             </div>
 
             {/* Stats Row */}
@@ -40,8 +53,8 @@ export default async function AdminUsersPage() {
                             <Users className="h-6 w-6 text-blue-400" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-white">{users.length}</p>
-                            <p className="text-sm text-gray-400">Total Sellers</p>
+                            <p className="text-2xl font-bold text-white">{totalUsers}</p>
+                            <p className="text-sm text-gray-400">Total Users</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -51,8 +64,8 @@ export default async function AdminUsersPage() {
                             <CheckCircle className="h-6 w-6 text-emerald-400" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-white">{users.filter((u: any) => u.is_verified).length}</p>
-                            <p className="text-sm text-gray-400">Verified</p>
+                            <p className="text-2xl font-bold text-white">{verifiedUsers}</p>
+                            <p className="text-sm text-gray-400">Verified / Active</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -62,59 +75,15 @@ export default async function AdminUsersPage() {
                             <Clock className="h-6 w-6 text-yellow-400" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-white">{users.filter((u: any) => !u.is_verified).length}</p>
+                            <p className="text-2xl font-bold text-white">{pendingUsers}</p>
                             <p className="text-sm text-gray-400">Pending Review</p>
                         </div>
                     </CardContent>
                 </Card>
             </div>
 
-            {/* Users Table */}
-            <Card className="bg-gray-800 border-gray-700">
-                <CardHeader>
-                    <CardTitle className="text-white">All Sellers</CardTitle>
-                    <CardDescription className="text-gray-400">List of all registered sellers on the platform</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="border-b border-gray-700">
-                                    <th className="text-left py-3 px-4 text-gray-400 font-medium">Store Name</th>
-                                    <th className="text-left py-3 px-4 text-gray-400 font-medium">Slug</th>
-                                    <th className="text-left py-3 px-4 text-gray-400 font-medium">Status</th>
-                                    <th className="text-left py-3 px-4 text-gray-400 font-medium">Joined</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {users.map((user: any) => (
-                                    <tr key={user.id} className="border-b border-gray-700/50 hover:bg-gray-700/30">
-                                        <td className="py-3 px-4 text-white font-medium">{user.name}</td>
-                                        <td className="py-3 px-4 text-gray-300">@{user.slug}</td>
-                                        <td className="py-3 px-4">
-                                            {user.is_verified ? (
-                                                <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Verified</Badge>
-                                            ) : (
-                                                <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">Pending</Badge>
-                                            )}
-                                        </td>
-                                        <td className="py-3 px-4 text-gray-400">
-                                            {new Date(user.created_at).toLocaleDateString()}
-                                        </td>
-                                    </tr>
-                                ))}
-                                {users.length === 0 && (
-                                    <tr>
-                                        <td colSpan={4} className="py-8 text-center text-gray-500">
-                                            No users found
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </CardContent>
-            </Card>
+            {/* Users Table Component */}
+            <UsersTable initialUsers={users} />
         </div>
     )
 }

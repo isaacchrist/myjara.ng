@@ -48,8 +48,10 @@ export default function LoginPage() {
                 router.push('/admin')
             } else if (role === 'brand_admin') {
                 router.push('/dashboard')
+            } else if (role === 'retailer') {
+                router.push('/seller/dashboard')
             } else {
-                // Retailers and Customers go to Marketplace
+                // Customers go to Marketplace
                 router.push('/')
             }
         } catch (err) {
