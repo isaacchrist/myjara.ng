@@ -71,9 +71,11 @@ export default async function CustomerDashboardPage() {
                                 <Heart className="mr-2 h-4 w-4" />
                                 Wishlist (Coming Soon)
                             </Button>
-                            <Button variant="ghost" className="w-full justify-start" disabled>
-                                <User className="mr-2 h-4 w-4" />
-                                Profile Settings
+                            <Button variant="ghost" className="w-full justify-start" asChild>
+                                <Link href="/customer/settings">
+                                    <User className="mr-2 h-4 w-4" />
+                                    Profile Settings
+                                </Link>
                             </Button>
                         </CardContent>
                     </Card>
