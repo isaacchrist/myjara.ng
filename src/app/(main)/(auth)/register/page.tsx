@@ -25,21 +25,31 @@ export default function RegisterPage() {
 
         try {
             const supabase = createClient()
-            const { error } = await supabase.auth.signUp({
+            const { data, error } = await supabase.auth.signUp({
                 email,
                 password,
                 options: {
                     emailRedirectTo: `${location.origin}/auth/callback`,
                     data: {
                         full_name: fullName,
+                        role: 'customer',  // IMPORTANT: Required for trigger
                     },
                 },
             })
 
-            if (error) throw error
+            if (error) {
+                console.error('Supabase signup error:', error)
+                throw error
+            }
+
+            // Check if user was created or if email already exists
+            if (data?.user?.identities?.length === 0) {
+                throw new Error('An account with this email already exists. Please login instead.')
+            }
 
             router.push('/login?message=Check your email to confirm your account')
         } catch (err) {
+            console.error('Registration error:', err)
             setError(err instanceof Error ? err.message : 'Registration failed')
         } finally {
             setLoading(false)
