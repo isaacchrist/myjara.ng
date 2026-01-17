@@ -19,9 +19,7 @@ export default async function AdminLayout({
     }
 
     // Fetch Pending Verifications Count
-    // Using simple client for now (serverless optimized)
-    // We can't import createClient inside server component easily unless it's server-optimized
-    // src/lib/supabase/server.ts exports createAdminClient
+    // Using admin client to bypass RLS
     const { createAdminClient } = await import('@/lib/supabase/server')
     const supabase = await createAdminClient()
 

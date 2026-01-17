@@ -31,10 +31,29 @@ export default function LoginPage() {
 
             if (error) throw error
 
-            // Redirect based on user role (would check in a real app)
-            router.push('/')
-            router.refresh()
+            const { data: { user } } = await supabase.auth.getUser()
+            const role = user?.user_metadata?.role
+
+            /* 
+              Role-Based Redirect Logic:
+              - platform_admin -> /admin
+              - brand_admin (Wholesaler) -> /dashboard
+              - retailer -> / (Marketplace with retailer features)
+              - customer -> / (Marketplace)
+            */
+
+            router.refresh() // Refresh router cache first
+
+            if (role === 'platform_admin') {
+                router.push('/admin')
+            } else if (role === 'brand_admin') {
+                router.push('/dashboard')
+            } else {
+                // Retailers and Customers go to Marketplace
+                router.push('/')
+            }
         } catch (err) {
+            console.error('Login error:', err)
             setError(err instanceof Error ? err.message : 'Login failed')
         } finally {
             setLoading(false)

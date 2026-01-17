@@ -9,6 +9,8 @@ import { AdminKeyForm } from '@/components/admin/admin-key-form'
 import { createAdminClient } from '@/lib/supabase/server'
 import { formatDistanceToNow } from 'date-fns'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminPage() {
     const isAdmin = await getAdminSession()
 
@@ -43,19 +45,9 @@ export default async function AdminPage() {
         .select('*', { count: 'exact', head: true })
         .gte('created_at', today.toISOString())
 
-    // Active Users (Total users for now)
-    // Note: 'users' table access via admin client.
-    // Assuming we can query auth.users or a public profiles table?
-    // Using 'stores' owner_id count as proxy for sellers + checking if we have a profiles/users table.
-    // If no public users table, we might need to rely on other metrics or RPC.
-    // For MVP, let's count distinct buyer_ids in orders + store owners?
-    // Or just count stores as "Active Sellers".
-    // Let's check 'users' table if it exists (from my memory of previous user/profile queries).
-    // The previous audit showed no public 'users' table, but `client_contacts` exists.
-    // Let's use `client_contacts` count as "Total Clients" for now, or just stores.
-    // Better: Just use Store count for "Sellers" and maybe client_contacts for "Users".
+    // Active Users (Use public.users table)
     const { count: totalUsersCount } = await supabase
-        .from('stores') // Using stores as primary user metric for now
+        .from('users')
         .select('*', { count: 'exact', head: true })
 
 
@@ -74,7 +66,7 @@ export default async function AdminPage() {
         { label: 'Active Stores', value: activeStoresCount || 0, change: '', icon: Store, color: 'emerald' },
         { label: 'Orders Today', value: ordersTodayCount || 0, change: '', icon: ShoppingCart, color: 'blue' },
         { label: 'Revenue (MTD)', value: formatPrice(revenueMTD), change: '', icon: CreditCard, color: 'purple' },
-        { label: 'Total Sellers', value: totalUsersCount || 0, change: '', icon: Users, color: 'amber' },
+        { label: 'Total Users', value: totalUsersCount || 0, change: '', icon: Users, color: 'amber' },
     ]
 
     // 2. Pending Stores

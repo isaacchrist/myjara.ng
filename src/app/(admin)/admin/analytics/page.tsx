@@ -9,7 +9,7 @@ export default async function AdminAnalyticsPage() {
     const supabase = await createAdminClient()
 
     // 1. Fetch platform-wide stats
-    const { count: totalUsers } = await supabase.from('stores').select('owner_id', { count: 'exact', head: true }) as any
+    const { count: totalUsers } = await supabase.from('users').select('id', { count: 'exact', head: true }) as any
     const { count: totalStores } = await supabase.from('stores').select('id', { count: 'exact', head: true }) as any
     const { count: totalOrders } = await supabase.from('orders').select('id', { count: 'exact', head: true }) as any
     const { data: revenueData } = await supabase.from('orders').select('total_amount').eq('status', 'completed') as any
@@ -86,7 +86,7 @@ export default async function AdminAnalyticsPage() {
         .map(([name, value]) => ({ name, value }))
 
     const stats = [
-        { label: 'Total Sellers', value: totalUsers || 0, icon: Users, color: 'text-blue-500' },
+        { label: 'Total Users', value: totalUsers || 0, icon: Users, color: 'text-blue-500' },
         { label: 'Total Stores', value: totalStores || 0, icon: Store, color: 'text-emerald-500' },
         { label: 'Total Orders', value: totalOrders || 0, icon: ShoppingCart, color: 'text-purple-500' },
         { label: 'Total Revenue', value: formatPrice(totalRevenue), icon: TrendingUp, color: 'text-orange-500' },
