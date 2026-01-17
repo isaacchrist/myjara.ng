@@ -127,6 +127,7 @@ export default function BrandRegisterPage() {
                 email: formData.email,
                 password: formData.password,
                 options: {
+                    emailRedirectTo: `${location.origin}/auth/callback`,
                     data: metaData,
                 },
             })

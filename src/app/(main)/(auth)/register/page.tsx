@@ -29,6 +29,7 @@ export default function RegisterPage() {
                 email,
                 password,
                 options: {
+                    emailRedirectTo: `${location.origin}/auth/callback`,
                     data: {
                         full_name: fullName,
                     },
