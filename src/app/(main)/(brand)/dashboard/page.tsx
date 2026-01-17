@@ -14,40 +14,21 @@ export default async function DashboardPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/login')
 
-    // 2. Get User's Store
-    // Using maybeSingle() because new users might not have a store yet (though reg flow creates one?)
-    // Actually, branding flow creates store. Retailer flow creates user + metadata.
-    // Retailers don't have "Stores" in the same way? Wait.
-    // If I am a Retailer, do I have a Store ID?
-    // Wholesalers have 'stores' table entries.
-    // Retailers: The dashboard is for "Brand" (Wholesaler)?
-    // The path is `(brand)/dashboard`.
-    // If I am a Retailer, I might be redirected elsewhere?
-    // Let's assume this dashboard is for Wholesalers (Brands).
-    // But the user asked for "Retailer Dashboard Development".
-    // Is `(brand)/dashboard` shared?
-    // Let's check metadata role.
-
+    // 2. Check Role & Enforce Access
+    // Only 'brand_admin' (Wholesalers) should access this dashboard.
+    // Retailers and Customers use the Marketplace.
     const { data: userData } = await supabase.from('users').select('role').eq('id', user.id).single() as any
-    const isRetailer = userData?.role === 'retailer'
+    const role = userData?.role
+
+    if (role === 'customer' || role === 'retailer') {
+        redirect('/')
+    }
 
     let storeId = null
     let storeName = ''
 
-    if (isRetailer) {
-        // Retailers don't have a record in 'stores' table usually?
-        // Or maybe they do if they want to sell?
-        // For now, let's assume they might not.
-        // But the dashboard shows "Total Orders", "Revenue". Retailers BUY. 
-        // So "Total Orders" for a Retailer = Orders they PLACED?
-        // "Revenue" = ? (Maybe irrelevant for Retailer unless they resell on platform?)
-        // The prompt said: "Develop Retailer Dashboard... Overview: Fetch and display real data for orders and products."
-        // Retailers BUY products. So "Products" might mean "Inventory bought"?
-        // Or "Products" they uploaded?
-        // "Implement product upload functionality". So Retailers CAN sell?
-        // If Retailers can sell, they need a Store.
-        // Let's check if they have a store.
-    }
+    // (Dead code block removed)
+    // Retailers are redirected to / above.
 
     const { data: store } = await supabase.from('stores').select('id, name, slug').eq('owner_id', user.id).single() as any
 
