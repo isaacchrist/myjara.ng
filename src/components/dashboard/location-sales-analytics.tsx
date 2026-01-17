@@ -31,13 +31,13 @@ export function LocationSalesAnalytics() {
     const [salesData, setSalesData] = useState<LocationSales[]>([])
 
     // Controls
-    const [selectedCategoryId, setSelectedCategoryId] = useState<string>('all')
-    const [isSubcategoryView, setIsSubcategoryView] = useState(false)
+    const [selectedParentId, setSelectedParentId] = useState<string>('all')
+    const [selectedSubId, setSelectedSubId] = useState<string>('all')
     const [loading, setLoading] = useState(false)
 
     const supabase = createClient()
 
-    // 1. Fetch Categories on Mount
+    // 1. Fetch Categories
     useEffect(() => {
         const fetchCategories = async () => {
             const { data } = await supabase
@@ -52,25 +52,32 @@ export function LocationSalesAnalytics() {
         fetchCategories()
     }, [])
 
-    // 2. Filter Categories based on View Mode
-    const availableCategories = useMemo(() => {
-        if (isSubcategoryView) {
-            // Show subcategories (has parent_id)
-            // If a parent is selected, strictly show its children? 
-            // For simplicity, let's just list ALL subcategories if "All" is selected, 
-            // or filter by parent if we want complex logic.
-            // Let's stick to: List all Subcategories.
-            return categories.filter(c => c.parent_id !== null)
-        } else {
-            // Show Parent Categories
-            return categories.filter(c => c.parent_id === null)
-        }
-    }, [categories, isSubcategoryView])
+    // 2. Computed Lists
+    const parentCategories = useMemo(() =>
+        categories.filter(c => c.parent_id === null),
+        [categories])
 
-    // 3. Fetch Data when filters change
+    const subCategories = useMemo(() => {
+        if (selectedParentId === 'all') return []
+        return categories.filter(c => c.parent_id === selectedParentId)
+    }, [categories, selectedParentId])
+
+    // 3. Fetch Data
     useEffect(() => {
         const fetchData = async () => {
-            if (!selectedCategoryId || selectedCategoryId === 'all') {
+            // Determine what to filter by
+            // If nothing selected, maybe show global? Or wait?
+            // Let's show Global if 'all' & 'all', but existing RPC requires an ID if we use that logic.
+            // If RPC requires ID, we might need a 'global' mode or pass null?
+            // Checking RPC: "target_category_id uuid". UUID cannot be null if not handled?
+            // If I pass a specific Parents ID, it works.
+            // If I want "All Sales", user has to pick something?
+            // User asked "Sales by Location per Category". So picking a category is expected.
+
+            let targetId = selectedSubId !== 'all' ? selectedSubId : selectedParentId
+            let isParent = selectedSubId === 'all'
+
+            if (targetId === 'all') {
                 setSalesData([])
                 return
             }
@@ -79,13 +86,12 @@ export function LocationSalesAnalytics() {
             try {
                 const { data, error } = await (supabase as any)
                     .rpc('get_sales_by_location', {
-                        target_category_id: selectedCategoryId,
-                        is_parent_category: !isSubcategoryView
+                        target_category_id: targetId,
+                        is_parent_category: isParent
                     })
 
                 if (error) {
                     console.error('Analytics RPC error:', error)
-                    // Fallback/Empty if error (e.g. RPC not created yet)
                     setSalesData([])
                 } else {
                     setSalesData(data || [])
@@ -98,12 +104,12 @@ export function LocationSalesAnalytics() {
         }
 
         fetchData()
-    }, [selectedCategoryId, isSubcategoryView])
+    }, [selectedParentId, selectedSubId])
 
-    // Reset selection when toggling view mode
-    const handleModeToggle = (checked: boolean) => {
-        setIsSubcategoryView(checked)
-        setSelectedCategoryId('all') // Reset to force user to pick
+    // Reset sub when parent changes
+    const handleParentChange = (val: string) => {
+        setSelectedParentId(val)
+        setSelectedSubId('all')
     }
 
     const hasData = salesData.length > 0
@@ -111,50 +117,50 @@ export function LocationSalesAnalytics() {
     return (
         <Card className="col-span-1 md:col-span-2 border-emerald-100 shadow-sm">
             <CardHeader>
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <CardTitle>Sales by Location</CardTitle>
-                        <CardDescription>
-                            Where are your {isSubcategoryView ? 'subcategory' : 'category'} sales coming from?
-                        </CardDescription>
-                    </div>
-
-                    <div className="flex items-center gap-4 bg-gray-50 p-2 rounded-lg border">
-                        <div className="flex items-center gap-2">
-                            <Switch
-                                id="mode-toggle"
-                                checked={isSubcategoryView}
-                                onCheckedChange={handleModeToggle}
-                            />
-                            <Label htmlFor="mode-toggle" className="text-sm font-medium cursor-pointer">
-                                {isSubcategoryView ? 'Subcategories' : 'Main Categories'}
-                            </Label>
-                        </div>
-                    </div>
-                </div>
+                <CardTitle>Sales by Location</CardTitle>
+                <CardDescription>
+                    Drill down by category to see sales distribution across cities.
+                </CardDescription>
             </CardHeader>
             <CardContent>
                 <div className="flex flex-col md:flex-row gap-8">
                     {/* Controls & List */}
                     <div className="w-full md:w-1/3 space-y-6">
-                        <div className="space-y-2">
-                            <Label>Select {isSubcategoryView ? 'Subcategory' : 'Category'}</Label>
-                            <Select
-                                value={selectedCategoryId}
-                                onValueChange={setSelectedCategoryId}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Choose..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">-- Select to View --</SelectItem>
-                                    {availableCategories.map(c => (
-                                        <SelectItem key={c.id} value={c.id}>
-                                            {c.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                        {/* Filters */}
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label>Main Category</Label>
+                                <Select value={selectedParentId} onValueChange={handleParentChange}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select Category" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">-- Select Category --</SelectItem>
+                                        {parentCategories.map(c => (
+                                            <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className={selectedParentId === 'all' ? 'text-gray-400' : ''}>Subcategory (Optional)</Label>
+                                <Select
+                                    value={selectedSubId}
+                                    onValueChange={setSelectedSubId}
+                                    disabled={selectedParentId === 'all' || subCategories.length === 0}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder={subCategories.length === 0 && selectedParentId !== 'all' ? "No subcategories" : "All Subcategories"} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Subcategories</SelectItem>
+                                        {subCategories.map(c => (
+                                            <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
 
                         {/* Stats List */}
@@ -163,7 +169,8 @@ export function LocationSalesAnalytics() {
                                 <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
                             </div>
                         ) : hasData ? (
-                            <div className="space-y-3">
+                            <div className="space-y-3 pt-4 border-t border-dashed">
+                                <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Top Locations</h4>
                                 {salesData.slice(0, 5).map((item, index) => (
                                     <div key={item.location_name} className="flex items-center justify-between text-sm p-2 rounded hover:bg-gray-50">
                                         <div className="flex items-center gap-2">
@@ -180,8 +187,8 @@ export function LocationSalesAnalytics() {
                                     </div>
                                 ))}
                             </div>
-                        ) : selectedCategoryId !== 'all' ? (
-                            <div className="text-center py-8 text-gray-400 text-sm">
+                        ) : selectedParentId !== 'all' ? (
+                            <div className="text-center py-8 text-gray-400 text-sm bg-gray-50 rounded-lg border border-dashed">
                                 No sales data found for this selection.
                             </div>
                         ) : (
