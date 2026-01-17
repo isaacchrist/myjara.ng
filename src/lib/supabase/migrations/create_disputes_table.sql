@@ -1,0 +1,29 @@
+-- Create disputes table
+
+CREATE TABLE IF NOT EXISTS public.disputes (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    customer_id UUID REFERENCES public.users(id) NOT NULL,
+    order_id TEXT NOT NULL, -- Using TEXT to be safe, ideally should be UUID REFERENCES public.orders(id)
+    reason TEXT NOT NULL,
+    description TEXT,
+    status TEXT DEFAULT 'pending' NOT NULL CHECK (status IN ('pending', 'under_review', 'resolved', 'closed')),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+
+-- Add RLS Policies
+ALTER TABLE public.disputes ENABLE ROW LEVEL SECURITY;
+
+-- Customers can view their own disputes
+CREATE POLICY "Customers can view their own disputes" ON public.disputes
+    FOR SELECT
+    USING (auth.uid() = customer_id);
+
+-- Customers can create disputes
+CREATE POLICY "Customers can create disputes" ON public.disputes
+    FOR INSERT
+    WITH CHECK (auth.uid() = customer_id);
+
+-- Admins/Retailers policies (Placeholder for now)
+-- Assuming retailers should see disputes for their orders, but that requires a join.
+-- For now, let's keep it simple for the customer view.

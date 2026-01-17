@@ -186,9 +186,11 @@ export function Header() {
                                                     Profile Settings
                                                 </Link>
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem disabled>
-                                                <LayoutDashboard className="mr-2 h-4 w-4" />
-                                                Disputes (Coming Soon)
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/customer/disputes">
+                                                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                                                    Disputes
+                                                </Link>
                                             </DropdownMenuItem>
                                         </DropdownMenuGroup>
                                         <DropdownMenuSeparator />
