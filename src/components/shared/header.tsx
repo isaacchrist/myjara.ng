@@ -102,12 +102,12 @@ export function Header() {
                     {/* Desktop Actions */}
                     <div className="hidden items-center gap-3 md:flex">
 
-                        <Button variant="ghost" size="icon" asChild>
+                        <Button variant="ghost" size="icon" asChild className="h-10 w-10 rounded-full" title="Search">
                             <Link href="/search">
                                 <Search className="h-5 w-5" />
                             </Link>
                         </Button>
-                        <Button variant="ghost" size="icon" asChild className="relative">
+                        <Button variant="ghost" size="icon" asChild className="relative h-10 w-10 rounded-full" title="Cart">
                             <Link href="/cart">
                                 <ShoppingBag className="h-5 w-5" />
                                 {mounted && count > 0 && (
@@ -121,7 +121,7 @@ export function Header() {
                         {user ? (
                             <div className="flex items-center gap-2">
                                 {user.user_metadata?.role === 'brand_admin' && (
-                                    <Button variant="outline" size="sm" asChild>
+                                    <Button variant="outline" size="sm" asChild className="h-10">
                                         <Link href="/dashboard">
                                             <LayoutDashboard className="mr-2 h-4 w-4" />
                                             My Dashboard
@@ -129,7 +129,7 @@ export function Header() {
                                     </Button>
                                 )}
                                 {user.user_metadata?.role === 'retailer' && (
-                                    <Button variant="outline" size="sm" asChild>
+                                    <Button variant="outline" size="sm" asChild className="h-10">
                                         <Link href="/seller/dashboard">
                                             <LayoutDashboard className="mr-2 h-4 w-4" />
                                             My Dashboard
@@ -137,7 +137,7 @@ export function Header() {
                                     </Button>
                                 )}
                                 {user.user_metadata?.role === 'platform_admin' && (
-                                    <Button variant="outline" size="sm" asChild>
+                                    <Button variant="outline" size="sm" asChild className="h-10">
                                         <Link href="/admin">
                                             <LayoutDashboard className="mr-2 h-4 w-4" />
                                             Admin
@@ -145,10 +145,10 @@ export function Header() {
                                     </Button>
                                 )}
 
-                                <Button variant="ghost" size="sm" asChild>
+                                <Button variant="ghost" size="icon" asChild className="h-10 w-10 rounded-full" title="Messages">
                                     <Link href="/inbox">
-                                        <MessageSquare className="h-4 w-4 mr-2" />
-                                        Messages
+                                        <MessageSquare className="h-5 w-5" />
+                                        <span className="sr-only">Messages</span>
                                     </Link>
                                 </Button>
 
