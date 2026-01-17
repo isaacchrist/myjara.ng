@@ -25,7 +25,7 @@ interface GeoLocationCaptureProps {
 }
 
 export function GeoLocationCapture({ onLocationCaptured, initialMarket }: GeoLocationCaptureProps) {
-    const [status, setStatus] = useState<'idle' | 'requesting' | 'success' | 'error'>('idle')
+    const [status, setStatus] = useState<'idle' | 'requesting' | 'success' | 'error' | 'manual'>('idle')
     const [coords, setCoords] = useState<{ lat: number, lng: number, accuracy: number } | null>(null)
     const [market, setMarket] = useState<string>(initialMarket || '')
     const [errorMsg, setErrorMsg] = useState('')
@@ -166,9 +166,47 @@ export function GeoLocationCapture({ onLocationCaptured, initialMarket }: GeoLoc
                         <h4 className="font-bold text-gray-900">Couldn't Detect Location</h4>
                         <p className="text-sm text-red-600 max-w-xs mx-auto">{errorMsg}</p>
                     </div>
-                    <Button variant="outline" onClick={requestLocation}>
-                        Try Again
-                    </Button>
+                    <div className="flex flex-col gap-2 w-full max-w-xs mx-auto">
+                        <Button variant="outline" onClick={requestLocation}>
+                            Try Again
+                        </Button>
+                        <Button variant="ghost" className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50" onClick={() => {
+                            setStatus('manual')
+                            setCoords({ lat: 0, lng: 0, accuracy: 0 })
+                        }}>
+                            Enter Manually / Skip
+                        </Button>
+                    </div>
+                </div>
+            )}
+
+            {status === 'manual' && (
+                <div className="w-full text-center space-y-4 animate-in fade-in">
+                    <div className="bg-amber-50 p-4 rounded-full inline-block">
+                        <MapPin className="h-8 w-8 text-amber-600" />
+                    </div>
+                    <div>
+                        <h4 className="font-bold text-gray-900">Manual Entry</h4>
+                        <p className="text-sm text-gray-500">Since we couldn't detect your location, please tell us which market you are in.</p>
+                    </div>
+
+                    <div className="space-y-2 text-left w-full max-w-xs mx-auto">
+                        <label className="text-sm font-medium">Which market is this?</label>
+                        <Select value={market} onValueChange={(val) => {
+                            setMarket(val)
+                            onLocationCaptured({ lat: 0, lng: 0, accuracy: 0, marketName: val })
+                        }}>
+                            <SelectTrigger className="bg-white">
+                                <SelectValue placeholder="Select Market" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {ABUJA_MARKETS.map(m => (
+                                    <SelectItem key={m.name} value={m.name}>{m.name}</SelectItem>
+                                ))}
+                                <SelectItem value="Other">Other / Not Listed</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
             )}
         </div>

@@ -414,7 +414,7 @@ function RetailerRegisterForm() {
                             <Button onClick={() => setStep(prev => typeof prev === 'number' ? (prev + 1) as any : prev)}
                                 disabled={
                                     (step === 1 && (!formData.fullName || !formData.residentialAddress)) ||
-                                    (step === 2 && (!formData.businessLocation.lat || !formData.agreedToPolicy)) ||
+                                    (step === 2 && (formData.businessLocation.lat === null || !formData.agreedToPolicy)) ||
                                     (step === 3 && !formData.selectedPlan)
                                 }
                             >
