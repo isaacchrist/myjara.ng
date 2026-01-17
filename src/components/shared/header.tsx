@@ -137,8 +137,8 @@ export function Header() {
                                 {(user.user_metadata?.role === 'customer' || !user.user_metadata?.role) && (
                                     <Button variant="outline" size="sm" asChild>
                                         <Link href="/customer/dashboard">
-                                            <LayoutDashboard className="mr-2 h-4 w-4" />
-                                            Dashboard
+                                            <User className="mr-2 h-4 w-4" />
+                                            My Account
                                         </Link>
                                     </Button>
                                 )}
