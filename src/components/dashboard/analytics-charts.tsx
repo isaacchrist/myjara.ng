@@ -44,8 +44,8 @@ const MOCK_USERS_BY_LOCATION: DemographicData[] = [
 ]
 
 export function OverviewCharts({ data, usersByRole, usersByLocation }: AnalyticsChartsProps) {
-    const roleData = (usersByRole && usersByRole.length > 0) ? usersByRole : MOCK_USERS_BY_ROLE
-    const locationData = (usersByLocation && usersByLocation.length > 0) ? usersByLocation : MOCK_USERS_BY_LOCATION
+    const roleData = (usersByRole && usersByRole.length > 0) ? usersByRole : []
+    const locationData = (usersByLocation && usersByLocation.length > 0) ? usersByLocation : []
 
     return (
         <div className="space-y-6">

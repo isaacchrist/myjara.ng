@@ -36,7 +36,7 @@ const sidebarItems = [
     { icon: Settings, label: 'Settings', href: '/admin/settings' },
 ]
 
-export function AdminShell({ children }: { children: React.ReactNode }) {
+export function AdminShell({ children, pendingVerifications = 0 }: { children: React.ReactNode, pendingVerifications?: number }) {
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const pathname = usePathname()
 
@@ -73,6 +73,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                     <ul className="space-y-1">
                         {sidebarItems.map((item) => {
                             const isActive = pathname === item.href
+                            // Custom Logic: Show badge for Verification if count > 0
+                            const showBadge = item.label === 'Verification' && pendingVerifications > 0
+
                             return (
                                 <li key={item.href}>
                                     <Link
@@ -85,8 +88,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                                     >
                                         <item.icon className="h-5 w-5" />
                                         {item.label}
-                                        {item.badge && (
-                                            <span className="ml-auto flex h-2 w-2 items-center justify-center rounded-full bg-emerald-500">
+                                        {showBadge && (
+                                            <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-xs text-white font-bold">
+                                                {pendingVerifications}
                                             </span>
                                         )}
                                     </Link>

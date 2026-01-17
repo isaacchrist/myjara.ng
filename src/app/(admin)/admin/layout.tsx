@@ -18,8 +18,23 @@ export default async function AdminLayout({
         )
     }
 
+    // Fetch Pending Verifications Count
+    // Using simple client for now (serverless optimized)
+    // We can't import createClient inside server component easily unless it's server-optimized
+    // src/lib/supabase/server.ts exports createAdminClient
+    const { createAdminClient } = await import('@/lib/supabase/server')
+    const supabase = await createAdminClient()
+
+    // Check pending count
+    const { count } = await supabase
+        .from('stores')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending')
+
+    const pendingCount = count || 0
+
     return (
-        <AdminShell>
+        <AdminShell pendingVerifications={pendingCount}>
             {children}
         </AdminShell>
     )
