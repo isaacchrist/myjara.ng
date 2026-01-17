@@ -154,49 +154,62 @@ export function Header() {
 
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="relative h-8 w-8 rounded-full">
-                                            <Avatar className="h-8 w-8">
-                                                <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name} />
-                                                <AvatarFallback>{user.user_metadata?.full_name?.charAt(0) || 'U'}</AvatarFallback>
-                                            </Avatar>
+                                        <Button variant="ghost" className="relative flex items-center gap-2 h-auto py-1 pl-1 pr-3 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-all border border-transparent hover:border-gray-200">
+                                            <div className="relative">
+                                                <Avatar className="h-8 w-8 border-2 border-white dark:border-gray-950 shadow-sm">
+                                                    <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name} />
+                                                    <AvatarFallback className="bg-emerald-100 text-emerald-700 font-semibold">
+                                                        {user.user_metadata?.full_name?.charAt(0) || 'U'}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <span className="absolute bottom-0 right-0 flex h-2.5 w-2.5">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 border-2 border-white dark:border-gray-950"></span>
+                                                </span>
+                                            </div>
+                                            <span className="text-sm font-medium text-gray-700 dark:text-gray-200 hidden sm:inline-block">
+                                                {user.user_metadata?.full_name?.split(' ')[0] || 'User'}
+                                            </span>
+                                            <ChevronDown className="h-3 w-3 text-gray-400" />
                                         </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="w-56" align="end" forceMount>
-                                        <DropdownMenuLabel className="font-normal">
-                                            <div className="flex flex-col space-y-1">
-                                                <p className="text-sm font-medium leading-none">{user.user_metadata?.full_name || 'User'}</p>
-                                                <p className="text-xs leading-none text-muted-foreground">
-                                                    {user.email}
-                                                </p>
-                                            </div>
-                                        </DropdownMenuLabel>
-                                        <DropdownMenuSeparator />
+                                    <DropdownMenuContent className="w-64 p-2" align="end" forceMount>
+                                        <div className="bg-emerald-50 dark:bg-emerald-950/20 p-3 rounded-md mb-2">
+                                            <DropdownMenuLabel className="font-normal p-0">
+                                                <div className="flex flex-col space-y-1">
+                                                    <p className="text-sm font-semibold leading-none text-emerald-900 dark:text-emerald-100">{user.user_metadata?.full_name || 'User'}</p>
+                                                    <p className="text-xs leading-none text-emerald-600 dark:text-emerald-400">
+                                                        {user.email}
+                                                    </p>
+                                                </div>
+                                            </DropdownMenuLabel>
+                                        </div>
                                         <DropdownMenuGroup>
                                             {(user.user_metadata?.role === 'customer' || !user.user_metadata?.role) && (
-                                                <DropdownMenuItem asChild>
-                                                    <Link href="/customer/dashboard">
-                                                        <User className="mr-2 h-4 w-4" />
-                                                        My Account
+                                                <DropdownMenuItem asChild className="cursor-pointer">
+                                                    <Link href="/customer/dashboard" className="w-full flex items-center">
+                                                        <User className="mr-2 h-4 w-4 text-emerald-500" />
+                                                        <span>My Account</span>
                                                     </Link>
                                                 </DropdownMenuItem>
                                             )}
-                                            <DropdownMenuItem asChild>
-                                                <Link href="/customer/settings">
-                                                    <User className="mr-2 h-4 w-4" />
-                                                    Profile Settings
+                                            <DropdownMenuItem asChild className="cursor-pointer">
+                                                <Link href="/customer/settings" className="w-full flex items-center">
+                                                    <LayoutDashboard className="mr-2 h-4 w-4 text-emerald-500" />
+                                                    <span>Profile Settings</span>
                                                 </Link>
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem asChild>
-                                                <Link href="/customer/disputes">
-                                                    <LayoutDashboard className="mr-2 h-4 w-4" />
-                                                    Disputes
+                                            <DropdownMenuItem asChild className="cursor-pointer">
+                                                <Link href="/customer/disputes" className="w-full flex items-center">
+                                                    <MessageSquare className="mr-2 h-4 w-4 text-emerald-500" />
+                                                    <span>My Disputes</span>
                                                 </Link>
                                             </DropdownMenuItem>
                                         </DropdownMenuGroup>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem onClick={handleLogout}>
+                                        <DropdownMenuSeparator className="my-2" />
+                                        <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:text-red-700 focus:bg-red-50 dark:focus:bg-red-950/20">
                                             <LogOut className="mr-2 h-4 w-4" />
-                                            Log out
+                                            <span>Log out</span>
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
