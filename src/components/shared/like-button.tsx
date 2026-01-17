@@ -56,8 +56,8 @@ export function LikeButton({ storeId, initialIsLiked = false, className }: LikeB
         try {
             if (isLiked) {
                 // Unlike
-                const { error } = await supabase
-                    .from('favorite_stores')
+                const { error } = await (supabase
+                    .from('favorite_stores') as any)
                     .delete()
                     .eq('user_id', user.id)
                     .eq('store_id', storeId)
@@ -67,8 +67,8 @@ export function LikeButton({ storeId, initialIsLiked = false, className }: LikeB
                 toast({ description: "Removed from favorites" })
             } else {
                 // Like
-                const { error } = await supabase
-                    .from('favorite_stores')
+                const { error } = await (supabase
+                    .from('favorite_stores') as any)
                     .insert({ user_id: user.id, store_id: storeId })
 
                 if (error) throw error
