@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, ShoppingBag, User, LogOut, LayoutDashboard, MessageSquare, ChevronDown } from 'lucide-react'
+import { Search, ShoppingBag, User, LogOut, LayoutDashboard, MessageSquare, ChevronDown, Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
     DropdownMenu,
@@ -154,7 +154,7 @@ export function Header() {
 
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" className="relative flex items-center gap-2 h-auto py-1 pl-1 pr-3 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-all border border-transparent hover:border-gray-200">
+                                        <Button variant="ghost" className="relative flex items-center gap-2 h-10 py-1 pl-1 pr-3 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-all border border-transparent hover:border-gray-200">
                                             <div className="relative">
                                                 <Avatar className="h-8 w-8 border-2 border-white dark:border-gray-950 shadow-sm">
                                                     <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name} />
@@ -173,7 +173,7 @@ export function Header() {
                                             <ChevronDown className="h-3 w-3 text-gray-400" />
                                         </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="w-64 p-2" align="end" forceMount>
+                                    <DropdownMenuContent className="w-64 p-2 bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800 shadow-lg z-50" align="end" forceMount>
                                         <div className="bg-emerald-50 dark:bg-emerald-950/20 p-3 rounded-md mb-2">
                                             <DropdownMenuLabel className="font-normal p-0">
                                                 <div className="flex flex-col space-y-1">
@@ -197,6 +197,12 @@ export function Header() {
                                                 <Link href="/customer/settings" className="w-full flex items-center">
                                                     <LayoutDashboard className="mr-2 h-4 w-4 text-emerald-500" />
                                                     <span>Profile Settings</span>
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild className="cursor-pointer">
+                                                <Link href="/customer/favorites" className="w-full flex items-center">
+                                                    <Heart className="mr-2 h-4 w-4 text-emerald-500" />
+                                                    <span>Liked Vendors</span>
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem asChild className="cursor-pointer">
