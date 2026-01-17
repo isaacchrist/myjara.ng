@@ -15,11 +15,11 @@ export default async function AdminUsersPage() {
     // 2. Fetch Stores (to link to users)
     const { data: storesData } = await supabase
         .from('stores')
-        .select('id, name, slug, owner_id, shop_type, market_name')
+        .select('id, name, slug, owner_id, shop_type, market_name, is_verified')
 
     // 3. Merge Data
     const users: any[] = (usersData || []).map((user: any) => {
-        const userStore = storesData?.find((s: any) => s.owner_id === user.id)
+        const userStore = (storesData as any[])?.find((s: any) => s.owner_id === user.id)
         return {
             ...user,
             store: userStore,
