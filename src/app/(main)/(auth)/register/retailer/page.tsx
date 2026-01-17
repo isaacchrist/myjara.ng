@@ -210,6 +210,17 @@ function RetailerRegisterForm() {
 
     if (step === 'phone_entry') return <PhoneDialpad title="Enter Phone Number" subtitle="Verify your account" onSubmit={handlePhoneSubmit} />
 
+    const toggleMarket = (market: string) => {
+        setFormData(prev => {
+            const current = prev.choosenMarkets
+            if (current.includes(market)) {
+                return { ...prev, choosenMarkets: current.filter(m => m !== market) }
+            } else {
+                return { ...prev, choosenMarkets: [...current, market] }
+            }
+        })
+    }
+
     const renderStep1 = () => (
         <div className="space-y-4 max-w-md mx-auto animate-in fade-in slide-in-from-right-4">
             <div className="flex flex-col items-center py-4">
