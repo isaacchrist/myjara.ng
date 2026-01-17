@@ -6,6 +6,16 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, ShoppingBag, User, LogOut, LayoutDashboard, MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { createClient } from '@/lib/supabase/client'
 
 import { useCart } from '@/context/cart-context'
@@ -114,7 +124,7 @@ export function Header() {
                                     <Button variant="outline" size="sm" asChild>
                                         <Link href="/dashboard">
                                             <LayoutDashboard className="mr-2 h-4 w-4" />
-                                            Dashboard
+                                            My Dashboard
                                         </Link>
                                     </Button>
                                 )}
@@ -122,7 +132,7 @@ export function Header() {
                                     <Button variant="outline" size="sm" asChild>
                                         <Link href="/seller/dashboard">
                                             <LayoutDashboard className="mr-2 h-4 w-4" />
-                                            Dashboard
+                                            My Dashboard
                                         </Link>
                                     </Button>
                                 )}
@@ -134,34 +144,70 @@ export function Header() {
                                         </Link>
                                     </Button>
                                 )}
-                                {(user.user_metadata?.role === 'customer' || !user.user_metadata?.role) && (
-                                    <Button variant="outline" size="sm" asChild>
-                                        <Link href="/customer/dashboard">
-                                            <User className="mr-2 h-4 w-4" />
-                                            My Account
-                                        </Link>
-                                    </Button>
-                                )}
-                                <Button variant="ghost" size="sm" onClick={handleLogout}>
-                                    <LogOut className="h-4 w-4 mr-2" />
-                                    Sign Out
-                                </Button>
+
                                 <Button variant="ghost" size="sm" asChild>
                                     <Link href="/inbox">
                                         <MessageSquare className="h-4 w-4 mr-2" />
                                         Messages
                                     </Link>
                                 </Button>
+
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="relative h-8 w-8 rounded-full">
+                                            <Avatar className="h-8 w-8">
+                                                <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name} />
+                                                <AvatarFallback>{user.user_metadata?.full_name?.charAt(0) || 'U'}</AvatarFallback>
+                                            </Avatar>
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="w-56" align="end" forceMount>
+                                        <DropdownMenuLabel className="font-normal">
+                                            <div className="flex flex-col space-y-1">
+                                                <p className="text-sm font-medium leading-none">{user.user_metadata?.full_name || 'User'}</p>
+                                                <p className="text-xs leading-none text-muted-foreground">
+                                                    {user.email}
+                                                </p>
+                                            </div>
+                                        </DropdownMenuLabel>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuGroup>
+                                            {(user.user_metadata?.role === 'customer' || !user.user_metadata?.role) && (
+                                                <DropdownMenuItem asChild>
+                                                    <Link href="/customer/dashboard">
+                                                        <User className="mr-2 h-4 w-4" />
+                                                        My Account
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                            )}
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/customer/settings">
+                                                    <User className="mr-2 h-4 w-4" />
+                                                    Profile Settings
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem disabled>
+                                                <LayoutDashboard className="mr-2 h-4 w-4" />
+                                                Disputes (Coming Soon)
+                                            </DropdownMenuItem>
+                                        </DropdownMenuGroup>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem onClick={handleLogout}>
+                                            <LogOut className="mr-2 h-4 w-4" />
+                                            Log out
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
                         ) : (
-                            <>
+                            <div className="flex items-center gap-2">
                                 <Button variant="outline" size="sm" asChild>
                                     <Link href="/login">Sign In</Link>
                                 </Button>
                                 <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 transition-all duration-300 hover:shadow-md hover:scale-105" asChild>
                                     <Link href="/register/seller">Sell on MyJara</Link>
                                 </Button>
-                            </>
+                            </div>
                         )}
                     </div>
 
