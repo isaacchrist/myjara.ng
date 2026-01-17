@@ -43,8 +43,8 @@ export function SettingsForm({ user }: SettingsFormProps) {
         setLoading(true)
 
         try {
-            const { error } = await supabase
-                .from('users')
+            const { error } = await (supabase
+                .from('users') as any)
                 .update({
                     full_name: formData.full_name,
                     phone: formData.phone,
