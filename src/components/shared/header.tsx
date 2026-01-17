@@ -110,12 +110,30 @@ export function Header() {
 
                         {user ? (
                             <div className="flex items-center gap-2">
-                                <Button variant="outline" size="sm" asChild>
-                                    <Link href="/dashboard">
-                                        <LayoutDashboard className="mr-2 h-4 w-4" />
-                                        Dashboard
-                                    </Link>
-                                </Button>
+                                {user.user_metadata?.role === 'brand_admin' && (
+                                    <Button variant="outline" size="sm" asChild>
+                                        <Link href="/dashboard">
+                                            <LayoutDashboard className="mr-2 h-4 w-4" />
+                                            Dashboard
+                                        </Link>
+                                    </Button>
+                                )}
+                                {user.user_metadata?.role === 'retailer' && (
+                                    <Button variant="outline" size="sm" asChild>
+                                        <Link href="/seller/dashboard">
+                                            <LayoutDashboard className="mr-2 h-4 w-4" />
+                                            Dashboard
+                                        </Link>
+                                    </Button>
+                                )}
+                                {user.user_metadata?.role === 'platform_admin' && (
+                                    <Button variant="outline" size="sm" asChild>
+                                        <Link href="/admin">
+                                            <LayoutDashboard className="mr-2 h-4 w-4" />
+                                            Admin
+                                        </Link>
+                                    </Button>
+                                )}
                                 <Button variant="ghost" size="sm" onClick={handleLogout}>
                                     <LogOut className="h-4 w-4 mr-2" />
                                     Sign Out
