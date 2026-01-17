@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, ShoppingBag, User, LogOut, LayoutDashboard, MessageSquare } from 'lucide-react'
+import { Search, ShoppingBag, User, LogOut, LayoutDashboard, MessageSquare, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
     DropdownMenu,
