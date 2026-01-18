@@ -163,10 +163,10 @@ export default function RegisterPage() {
 
                     <div className="mt-4 text-center">
                         <Link
-                            href="/register/brand"
+                            href="/register/seller"
                             className="text-sm text-gray-500 underline hover:text-emerald-600"
                         >
-                            Want to sell? Create a brand account instead
+                            Want to sell? Create a seller account instead
                         </Link>
                     </div>
                 </CardContent>

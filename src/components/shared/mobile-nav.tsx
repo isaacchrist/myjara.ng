@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { Menu, X, Search, ShoppingBag, User, LayoutDashboard, MessageSquare } from 'lucide-react'
+import { Menu, X, Search, ShoppingBag, User, LayoutDashboard, MessageSquare, Store } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { useRouter } from 'next/navigation'
@@ -38,6 +38,15 @@ export function MobileNav({ user, count, onLogout }: MobileNavProps) {
                         <span className="text-2xl font-bold text-emerald-600 tracking-wide" style={{ fontFamily: '"Lobster", cursive' }}>
                             MyJara
                         </span>
+                    </Link>
+
+                    <Link
+                        href="/register/seller"
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-2 text-lg font-semibold text-emerald-600"
+                    >
+                        <Store className="h-5 w-5" />
+                        Sell on MyJara
                     </Link>
 
                     <Link

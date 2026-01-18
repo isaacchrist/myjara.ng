@@ -17,7 +17,8 @@ import {
     Menu,
     X,
     MessageSquare,
-    CheckCircle
+    CheckCircle,
+    Bug
 } from 'lucide-react'
 import { logoutAdmin } from '@/app/actions/admin-auth'
 import { usePathname } from 'next/navigation'
@@ -34,6 +35,7 @@ const sidebarItems = [
     { icon: Users, label: 'Users', href: '/admin/users' },
     { icon: BarChart3, label: 'Analytics', href: '/admin/analytics' },
     { icon: Settings, label: 'Settings', href: '/admin/settings' },
+    { icon: Bug, label: 'Debug', href: '/admin/debug' }, // Added Debug
 ]
 
 export function AdminShell({ children, pendingVerifications = 0 }: { children: React.ReactNode, pendingVerifications?: number }) {
