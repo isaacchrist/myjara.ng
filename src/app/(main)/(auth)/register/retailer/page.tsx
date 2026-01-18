@@ -129,65 +129,52 @@ function RetailerRegisterForm() {
         setError('')
 
         try {
-            const supabase = createClient()
-
-            // Prepare Metadata
-            const metaData: Record<string, any> = {
-                full_name: formData.fullName,
-                role: 'retailer',
-                sex: formData.sex,
-                verification_status: 'pending',
-                shop_type: formData.shopType,
-                phone_number: formData.phone,
-                date_of_birth: formData.dateOfBirth,
-                residential_address: formData.residentialAddress,
-
-                // Business Logic
-                business_name: formData.businessName,
-                business_address: formData.businessLocation.marketName || 'Location Captured',
-
-                // Geo Data
-                latitude: formData.businessLocation.lat,
-                longitude: formData.businessLocation.lng,
-                market_name: formData.businessLocation.marketName,
-                location_accuracy: formData.businessLocation.accuracy,
-
-                has_physical_store: formData.shopType === 'physical',
-                category_id: formData.categoryId,
-                subcategory_id: formData.subcategoryId,
-                product_range: [categoryName],
-                policy_accepted_at: formData.agreedToPolicy ? new Date().toISOString() : null,
-                profile_picture_url: formData.profilePictureUrl || null
-            }
-
-            const { data: authData, error: authError } = await supabase.auth.signUp({
+            // Prepare Payload for Server Action
+            const payload = {
                 email: formData.email,
                 password: formData.password,
-                options: {
-                    emailRedirectTo: `${location.origin}/auth/callback`,
-                    data: metaData
-                }
-            })
+                fullName: formData.fullName,
+                phone: formData.phone,
+                dateOfBirth: formData.dateOfBirth,
+                sex: formData.sex,
+                residentialAddress: formData.residentialAddress,
 
-            if (authError || !authData.user) throw authError || new Error('Signup failed')
+                businessName: formData.businessName,
+                businessDescription: `Retailer specializing in ${categoryName}`,
+                shopType: formData.shopType || 'physical',
 
-            // Subscription
-            let subResult
-            if (formData.paymentMethod === 'promo_code') {
-                subResult = await createSubscriptionAction(authData.user.id, formData.selectedPlan, 'promo_code', formData.promoCode)
-            } else {
-                subResult = await createSubscriptionAction(authData.user.id, formData.selectedPlan, 'flutterwave', 'FLW_MOCK_' + Date.now())
+                latitude: formData.businessLocation.lat,
+                longitude: formData.businessLocation.lng,
+                marketName: formData.businessLocation.marketName,
+                accuracy: formData.businessLocation.accuracy,
+
+                categoryId: formData.categoryId,
+                subcategoryId: formData.subcategoryId,
+                agreedToPolicy: formData.agreedToPolicy,
+                profilePictureUrl: formData.profilePictureUrl
             }
 
-            if (!subResult.success) throw new Error(subResult.error || 'Subscription failed')
+            // Call Server Action
+            const { registerRetailer } = await import('@/app/actions/register')
+            const result = await registerRetailer(payload)
 
+            if (!result.success) {
+                // If user exists error
+                if (result.error?.includes('User already registered') || result.error?.includes('unique constraint')) {
+                    throw new Error('An account with this email/phone already exists.')
+                }
+                throw new Error(result.error || 'Registration failed')
+            }
+
+            // Success Redirect
             toast({ title: 'Welcome!', description: 'Account created successfully.' })
             sessionStorage.removeItem(STORAGE_KEY)
             router.push('/verification-pending')
 
         } catch (err: any) {
-            console.error(err)
+            console.error('Registration error:', err)
             setError(err.message || 'Something went wrong')
+        } finally {
             setLoading(false)
         }
     }
