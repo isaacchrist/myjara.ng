@@ -42,24 +42,29 @@ export function VerificationList({ initialStores }: VerificationListProps) {
     const handleVerification = async (storeId: string, status: 'active' | 'suspended') => {
         setActionLoading(storeId)
         try {
-            const { error } = await (supabase.from('stores') as any)
-                .update({ status })
-                .eq('id', storeId)
+            let result;
+            if (status === 'active') {
+                const { approveStore } = await import('@/app/actions/admin')
+                result = await approveStore(storeId)
+            } else {
+                const { rejectStore } = await import('@/app/actions/admin')
+                result = await rejectStore(storeId)
+            }
 
-            if (error) throw error
+            if (!result.success) throw new Error(result.error)
 
             toast({
-                title: status === 'active' ? 'Store Approved' : 'Store Rejected',
+                title: status === 'active' ? 'Store Approved & Email Sent' : 'Store Rejected',
                 description: `The store has been ${status === 'active' ? 'verified' : 'rejected'}.`,
             })
 
             // Remove from list
             setStores(prev => prev.filter(s => s.id !== storeId))
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error updating store:', error)
             toast({
                 title: 'Error',
-                description: 'Failed to update store status',
+                description: error.message || 'Failed to update store status',
                 variant: 'destructive',
             })
         } finally {
