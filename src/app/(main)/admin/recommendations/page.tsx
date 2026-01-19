@@ -12,7 +12,7 @@ export default async function AdminRecommendationsPage() {
     if (!user) return redirect('/login')
 
     // Check Admin Role
-    const { data: userData } = await supabase.from('users').select('role').eq('id', user.id).single()
+    const { data: userData } = await supabase.from('users').select('role').eq('id', user.id).single() as any
     if (userData?.role !== 'admin' && userData?.role !== 'super_admin') {
         return redirect('/')
     }

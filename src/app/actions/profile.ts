@@ -22,14 +22,14 @@ export async function updateProfile(formData: ProfileUpdateData) {
     }
 
     // 1. Update User Data
-    const updateData: any = {}
+    const updateData: Record<string, any> = {}
     if (formData.phone) updateData.phone = formData.phone
     if (formData.residentialAddress) updateData.residential_address = formData.residentialAddress
     if (formData.emergencyContacts) updateData.emergency_contacts = formData.emergencyContacts
 
     if (Object.keys(updateData).length > 0) {
-        const { error: userError } = await supabase
-            .from('users')
+        const { error: userError } = await (supabase
+            .from('users') as any)
             .update(updateData)
             .eq('id', user.id)
 
@@ -41,10 +41,8 @@ export async function updateProfile(formData: ProfileUpdateData) {
 
     // 2. Update Store Data (e.g. GPS) if provided
     if (formData.latitude !== undefined && formData.longitude !== undefined) {
-        // Verify shop_type ? Or just allow update if they own the store.
-        // The UI should guard only market_day types to edit this, but backend can be lenient for owner.
-        const { error: storeError } = await supabase
-            .from('stores')
+        const { error: storeError } = await (supabase
+            .from('stores') as any)
             .update({
                 latitude: formData.latitude,
                 longitude: formData.longitude

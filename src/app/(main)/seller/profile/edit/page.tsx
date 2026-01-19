@@ -38,8 +38,8 @@ export default function EditProfilePage() {
                 return
             }
 
-            const { data: userData } = await supabase.from('users').select('*').eq('id', user.id).single()
-            const { data: storeData } = await supabase.from('stores').select('*').eq('owner_id', user.id).single()
+            const { data: userData } = await supabase.from('users').select('*').eq('id', user.id).single() as any
+            const { data: storeData } = await supabase.from('stores').select('*').eq('owner_id', user.id).single() as any
 
             setUser(userData)
             setStore(storeData)

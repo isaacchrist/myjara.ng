@@ -11,7 +11,7 @@ import { ShareButton } from '@/components/marketplace/share-button'
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
     const supabase = await createClient()
-    const { data: product } = await supabase.from('products').select('name, description, price, product_images(url)').eq('id', id).single()
+    const { data: product } = await supabase.from('products').select('name, description, price, product_images(url)').eq('id', id).single() as any
 
     if (!product) return { title: 'Product Not Found' }
 
@@ -48,7 +48,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             product_images(url, is_primary)
         `)
         .eq('id', id)
-        .single()
+        .single() as any
 
     if (!product) return notFound()
 

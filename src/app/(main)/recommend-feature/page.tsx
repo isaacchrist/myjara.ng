@@ -37,7 +37,7 @@ export default function RecommendFeaturePage() {
             description,
             type,
             status: 'pending'
-        })
+        } as any)
 
         setSubmitting(false)
 
