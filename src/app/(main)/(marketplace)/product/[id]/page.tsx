@@ -1,314 +1,153 @@
+import { Share2, MapPin, ShoppingCart, Store, ArrowLeft } from 'lucide-react'
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowLeft, MapPin, MessageCircle, ShoppingCart, Store, Truck } from 'lucide-react'
-import { ChatButton } from '@/components/marketplace/chat-button'
-import { AddToCartButton } from '@/components/marketplace/add-to-cart-button'
+import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { formatPrice, formatJara } from '@/lib/utils'
+import { ShareButton } from '@/components/marketplace/share-button'
 
-import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params
+    const supabase = await createClient()
+    const { data: product } = await supabase.from('products').select('name, description, price, product_images(url)').eq('id', id).single()
 
-// Fetch product from Supabase
-const getProduct = async (id: string) => {
+    if (!product) return { title: 'Product Not Found' }
+
+    const imageUrl = product.product_images?.[0]?.url || '/placeholder.png'
+    const title = `${product.name} - ₦${product.price.toLocaleString()}`
+
+    return {
+        title: title,
+        description: product.description || 'Buy on MyJara',
+        openGraph: {
+            title: title,
+            description: product.description || 'Check out this product on MyJara',
+            images: [imageUrl],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: title,
+            description: product.description,
+            images: [imageUrl],
+        }
+    }
+}
+
+export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params
     const supabase = await createClient()
 
-    const { data: productData, error } = await supabase
+    // Fetch Product with Store info
+    const { data: product } = await supabase
         .from('products')
         .select(`
-            id,
-            name,
-            description,
-            price,
-            jara_buy_quantity,
-            jara_get_quantity,
-            stock_quantity,
-            store_id,
-            category_id,
-            stores (
-                id,
-                name,
-                slug,
-                logo_url,
-                store_logistics (
-                    id,
-                    type,
-                    location_name,
-                    city,
-                    delivery_fee,
-                    delivery_timeline
-                )
-            ),
-            categories (
-                id,
-                name
-            ),
-            product_images (
-                url,
-                is_primary,
-                sort_order
-            )
+            *,
+            store:stores(*),
+            product_images(url, is_primary)
         `)
         .eq('id', id)
         .single()
 
-    const product = productData as any
+    if (!product) return notFound()
 
-    if (error || !product) {
-        console.error('Error fetching product:', error)
-        return null
+    const images = product.product_images?.map((img: any) => img.url) || []
+    const mainImage = images[0] || '/placeholder.png'
+    const isPhysical = product.store?.shop_type === 'physical' || product.store?.shop_type === 'market_day'
+    const pickupLocation = product.pickup_location // JSONB {address, lat, lng} or string? Checking usage.
+    // In add_product, it was saved as JSON object if GPS used.
+
+    let pickupAddress = 'Contact Seller'
+    if (typeof pickupLocation === 'string') {
+        pickupAddress = pickupLocation
+    } else if (pickupLocation?.address) {
+        pickupAddress = pickupLocation.address
+    } else if (product.store?.market_name) {
+        pickupAddress = product.store.market_name
     }
-
-    // Transform images
-    let images = product.product_images
-        ?.sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0))
-        .map((img: any) => img.url) || []
-
-    // Ensure primary image is first if exists
-    const primaryImg = (product as any).product_images?.find((img: any) => img.is_primary)
-    if (primaryImg) {
-        images = [primaryImg.url, ...images.filter((url: string) => url !== primaryImg.url)]
-    }
-
-    return {
-        id: product.id,
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        jaraBuyQty: product.jara_buy_quantity,
-        jaraGetQty: product.jara_get_quantity,
-        stockQuantity: product.stock_quantity,
-        store: {
-            id: product.stores.id,
-            name: product.stores.name,
-            slug: product.stores.slug,
-            logoUrl: product.stores.logo_url,
-        },
-        category: {
-            id: product.categories?.id,
-            name: product.categories?.name,
-        },
-        images: images,
-        logistics: product.stores.store_logistics.map((log: any) => ({
-            id: log.id,
-            type: log.type,
-            locationName: log.location_name,
-            city: log.city,
-            deliveryFee: log.delivery_fee,
-            timeline: log.delivery_timeline
-        }))
-    }
-}
-
-interface ProductPageProps {
-    params: Promise<{ id: string }>
-}
-
-export default async function ProductPage({ params }: ProductPageProps) {
-    const { id } = await params
-    const product = await getProduct(id)
-
-    if (!product) {
-        return notFound()
-    }
-
-    const jaraText = formatJara(product.jaraBuyQty, product.jaraGetQty)
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
-            <div className="container mx-auto px-4">
-                {/* Breadcrumb */}
-                <Link
-                    href="/search"
-                    className="mb-6 inline-flex items-center gap-2 text-sm text-gray-500 hover:text-emerald-600"
-                >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back to search
-                </Link>
-
-                <div className="grid gap-8 lg:grid-cols-2">
-                    {/* Image Gallery */}
-                    <div>
-                        <div className="aspect-square overflow-hidden rounded-2xl bg-gray-100 relative">
-                            {/* Main image */}
-                            {product.images[0] && (product.images[0].startsWith('http') || product.images[0].startsWith('/')) ? (
-                                <Image
-                                    src={product.images[0]}
-                                    alt={product.name}
-                                    fill
-                                    className="object-cover"
-                                    priority
-                                />
-                            ) : (
-                                <div className="flex h-full items-center justify-center bg-gradient-to-br from-emerald-50 to-gray-100">
-                                    <Image
-                                        src="/logo.png"
-                                        alt="MyJara"
-                                        width={120}
-                                        height={120}
-                                        className="opacity-40"
-                                    />
-                                </div>
-                            )}
-                        </div>
-                        {/* Thumbnails */}
-                        <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
-                            {product.images.map((img: string, i: number) => (
-                                <button
-                                    key={i}
-                                    className="h-20 w-20 shrink-0 overflow-hidden rounded-lg border-2 border-transparent bg-gray-100 transition-all hover:border-emerald-500 relative"
-                                >
-                                    {img && (img.startsWith('http') || img.startsWith('/')) ? (
-                                        <Image
-                                            src={img}
-                                            alt={`${product.name} ${i + 1}`}
-                                            fill
-                                            className="object-cover"
-                                        />
-                                    ) : (
-                                        <div className="flex h-full items-center justify-center bg-gray-50">
-                                            <Image
-                                                src="/logo.png"
-                                                alt="MyJara"
-                                                width={30}
-                                                height={30}
-                                                className="opacity-40"
-                                            />
-                                        </div>
-                                    )}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Product Info */}
-                    <div>
-                        {/* Store Badge */}
-                        <Link
-                            href={`/store/${product.store.slug}`}
-                            className="mb-4 inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-600 transition-colors hover:bg-gray-200"
-                        >
-                            <Store className="h-4 w-4" />
-                            {product.store.name}
+        <div className="min-h-screen bg-gray-50 pb-20">
+            {/* Header */}
+            <div className="bg-white border-b sticky top-0 z-10">
+                <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+                    <Button variant="ghost" size="icon" asChild>
+                        <Link href="/seller/products"> {/* Or Back */}
+                            <ArrowLeft className="h-5 w-5" />
                         </Link>
+                    </Button>
+                    <span className="font-semibold truncate max-w-[200px]">{product.name}</span>
+                    <ShareButton title={product.name} text={`Check out ${product.name} on MyJara!`} />
+                </div>
+            </div>
 
-                        {/* Title */}
-                        <h1 className="text-2xl font-bold text-gray-900 md:text-3xl">
-                            {product.name}
-                        </h1>
-
-                        {/* Category */}
-                        <div className="mt-2">
-                            <Badge variant="secondary">{product.category.name}</Badge>
+            <div className="container mx-auto px-4 py-6 max-w-4xl">
+                <div className="grid md:grid-cols-2 gap-8">
+                    {/* Images */}
+                    <div className="space-y-4">
+                        <div className="aspect-square relative rounded-xl overflow-hidden bg-gray-200 border">
+                            <Image src={mainImage} fill className="object-cover" alt={product.name} />
                         </div>
-
-                        {/* Price */}
-                        <div className="mt-6">
-                            <span className="text-3xl font-bold text-gray-900">
-                                {formatPrice(product.price)}
-                            </span>
-                        </div>
-
-                        {/* Jara Offer */}
-                        {product.jaraGetQty > 0 && (
-                            <Card className="mt-6 border-2 border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
-                                <CardContent className="p-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-amber-400 to-orange-400 text-2xl">
-                                            🎁
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-amber-800">JARA OFFER</p>
-                                            <p className="text-lg font-semibold text-gray-900">
-                                                {jaraText}
-                                            </p>
-                                            <p className="text-sm text-gray-600">
-                                                Buy {product.jaraBuyQty}, pay for {product.jaraBuyQty}, get {product.jaraBuyQty + product.jaraGetQty}!
-                                            </p>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        )}
-
-                        {/* Logistics Options */}
-                        <div className="mt-6">
-                            <h3 className="mb-3 flex items-center gap-2 font-semibold text-gray-900">
-                                <MapPin className="h-5 w-5 text-emerald-600" />
-                                Pickup & Delivery Options
-                            </h3>
-                            <div className="space-y-2">
-                                {product.logistics.map((option: any) => (
-                                    <div
-                                        key={option.id}
-                                        className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-3"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            {option.type === 'pickup' ? (
-                                                <Store className="h-5 w-5 text-gray-400" />
-                                            ) : (
-                                                <Truck className="h-5 w-5 text-gray-400" />
-                                            )}
-                                            <div>
-                                                <p className="font-medium text-gray-900">{option.locationName}</p>
-                                                <p className="text-sm text-gray-500">{option.timeline}</p>
-                                            </div>
-                                        </div>
-                                        <span className={option.deliveryFee === 0 ? 'font-medium text-emerald-600' : 'text-gray-900'}>
-                                            {option.deliveryFee === 0 ? 'FREE' : formatPrice(option.deliveryFee)}
-                                        </span>
+                        {images.length > 1 && (
+                            <div className="flex gap-2 overflow-x-auto pb-2">
+                                {images.map((img: string, idx: number) => (
+                                    <div key={idx} className="h-20 w-20 relative rounded-lg overflow-hidden border shrink-0">
+                                        <Image src={img} fill className="object-cover" alt={`View ${idx}`} />
                                     </div>
                                 ))}
                             </div>
+                        )}
+                    </div>
+
+                    {/* Details */}
+                    <div className="space-y-6">
+                        <div>
+                            <div className="flex justify-between items-start">
+                                <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
+
+                            </div>
+                            <p className="text-2xl font-bold text-emerald-600 mt-2">₦{product.price.toLocaleString()}</p>
+                            <p className="text-gray-500 mt-4">{product.description}</p>
                         </div>
 
+                        {/* Jara Badge */}
+                        <Card className="bg-emerald-50 border-emerald-200">
+                            <CardContent className="p-4 flex gap-3 items-start">
+                                <span className="bg-emerald-600 text-white text-xs font-bold px-2 py-1 rounded">JARA</span>
+                                <div>
+                                    <p className="font-bold text-emerald-900">
+                                        + {product.jara_amount} {product.jara_name || (product.jara_is_same ? product.name : 'Bonus Item')}
+                                    </p>
+                                    {!product.jara_is_same && product.jara_description && (
+                                        <p className="text-sm text-emerald-700 mt-1">{product.jara_description}</p>
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
 
-                        {/* Actions */}
-                        <div className="mt-8 flex gap-4">
-                            <ChatButton
-                                productId={product.id}
-                                productName={product.name}
-                                storeId={product.store.id}
-                                storeName={product.store.name}
-                                className="flex-1"
-                            />
-                            <div className="flex-1 flex gap-2">
-                                <AddToCartButton
-                                    product={{
-                                        ...product,
-                                        store_id: product.store.id // normalize for cart
-                                    }}
-                                    className="flex-1 bg-white border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50"
-                                    variant="outline"
-                                />
-                                <Button asChild className="flex-1 bg-emerald-600 hover:bg-emerald-700">
-                                    <Link href={`/checkout/${product.id}`}>
-                                        Buy Now
-                                    </Link>
+                        {/* Store Info */}
+                        <div className="border-t pt-6">
+                            <h3 className="font-semibold mb-3 flex items-center gap-2">
+                                <Store className="h-5 w-5" />
+                                Seller Information
+                            </h3>
+                            <div className="bg-white p-4 rounded-lg border">
+                                <p className="font-bold text-lg mb-1">{product.store?.name}</p>
+                                <div className="text-sm text-gray-500 space-y-1">
+                                    <p className="capitalize text-emerald-600 font-medium">{product.store?.shop_type?.replace('_', ' ')} Store</p>
+                                    {isPhysical && (
+                                        <div className="flex items-start gap-2 mt-2">
+                                            <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
+                                            <span>{pickupAddress}</span>
+                                        </div>
+                                    )}
+                                </div>
+                                <Button className="w-full mt-4 bg-emerald-600 hover:bg-emerald-700">
+                                    Contact Seller
                                 </Button>
                             </div>
                         </div>
-
-                        {/* Stock Status */}
-                        <p className="mt-4 text-center text-sm text-gray-500">
-                            {product.stockQuantity > 10
-                                ? '✓ In Stock'
-                                : product.stockQuantity > 0
-                                    ? `Only ${product.stockQuantity} left`
-                                    : 'Out of Stock'}
-                        </p>
-                    </div>
-                </div>
-
-                {/* Description */}
-                <div className="mt-12">
-                    <h2 className="mb-4 text-xl font-bold text-gray-900">Product Description</h2>
-                    <div className="rounded-xl bg-white p-6 shadow-sm">
-                        <p className="whitespace-pre-line text-gray-600">
-                            {product.description}
-                        </p>
                     </div>
                 </div>
             </div>

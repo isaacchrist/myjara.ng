@@ -99,7 +99,12 @@ export async function registerRetailer(formData: RegistrationData) {
             full_name: formData.fullName,
             phone: formData.phone,
             role: 'retailer',
-            avatar_url: formData.profilePictureUrl
+            avatar_url: formData.profilePictureUrl,
+            // NEW FIELDS (Phase 9)
+            sex: formData.sex,
+            date_of_birth: formData.dateOfBirth,
+            residential_address: formData.residentialAddress,
+            emergency_contacts: [] // Initialize empty array
         } as any)
 
         if (publicUserError && !publicUserError.message.includes('duplicate key')) {
@@ -221,7 +226,12 @@ export async function registerBrand(formData: RegistrationData) {
             full_name: formData.fullName,
             phone: formData.phone,
             role: 'brand_admin',
-            avatar_url: formData.profilePictureUrl
+            avatar_url: formData.profilePictureUrl,
+            // NEW FIELDS (Phase 9)
+            sex: formData.sex,
+            date_of_birth: formData.dateOfBirth,
+            residential_address: formData.residentialAddress,
+            emergency_contacts: [] // Initialize empty array
         } as any)
 
         if (publicUserError && !publicUserError.message.includes('duplicate key')) {

@@ -90,16 +90,95 @@ export default function SellerProfilePage() {
                                 <Badge className="mt-1">{userData?.role || 'retailer'}</Badge>
                             </div>
                         </div>
-                        <div className="space-y-3 text-sm">
+                        <div className="space-y-4 text-sm">
                             <div className="flex items-center gap-2">
                                 <Mail className="h-4 w-4 text-gray-400" />
                                 <span>{userData?.email || user?.email}</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Phone className="h-4 w-4 text-gray-400" />
-                                <span>{userData?.phone || 'Not Set'}</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="font-bold text-lg">{userData?.phone || 'Not Set'}</span>
+                                    {userData?.phone && (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-6 px-2"
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(userData.phone)
+                                                // Ideally show toast
+                                            }}
+                                        >
+                                            Copy
+                                        </Button>
+                                    )}
+                                </div>
                             </div>
+                            {userData?.sex && (
+                                <div className="flex items-center gap-2">
+                                    <span className="text-gray-500 w-24">Sex:</span>
+                                    <span className="capitalize">{userData.sex}</span>
+                                </div>
+                            )}
+                            {userData?.date_of_birth && (
+                                <div className="flex items-center gap-2">
+                                    <span className="text-gray-500 w-24">Date of Birth:</span>
+                                    <span>{new Date(userData.date_of_birth).toLocaleDateString()}</span>
+                                </div>
+                            )}
+                            {userData?.residential_address && (
+                                <div className="flex items-start gap-2">
+                                    <span className="text-gray-500 w-24 shrink-0">Address:</span>
+                                    <span>{userData.residential_address}</span>
+                                </div>
+                            )}
                         </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Emergency Contacts */}
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                        <Phone className="h-5 w-5 text-red-500" />
+                        Emergency Contacts
+                    </CardTitle>
+                    <Button variant="outline" size="sm">Manage</Button>
+                </CardHeader>
+                <CardContent>
+                    {userData?.emergency_contacts && userData.emergency_contacts.length > 0 ? (
+                        <div className="space-y-2">
+                            {userData.emergency_contacts.map((contact: any, idx: number) => (
+                                <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded">
+                                    <div>
+                                        <p className="font-bold">{contact.number}</p>
+                                        {contact.name && <p className="text-xs text-gray-500">{contact.name}</p>}
+                                    </div>
+                                    <Button size="sm" variant="ghost">Call</Button>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-4 bg-gray-50 rounded-lg">
+                            <p className="text-gray-500 mb-2">No emergency contacts added.</p>
+                            <Link href="/seller/profile/edit" className="text-emerald-600 hover:underline">Add Emergency Contacts</Link>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
+            {/* My Customers (Placeholder) */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <User className="h-5 w-5 text-blue-500" />
+                        My Customers
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-center py-6 text-gray-500">
+                        <p>Customer history will appear here once you start receiving orders.</p>
                     </div>
                 </CardContent>
             </Card>
