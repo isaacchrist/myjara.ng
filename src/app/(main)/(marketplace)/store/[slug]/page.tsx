@@ -3,7 +3,7 @@ import Image from "next/image"
 import { createClient } from "@/lib/supabase/server"
 import { ProductCard } from "@/components/marketplace/product-card"
 import { Badge } from "@/components/ui/badge"
-import { MapPin, Phone, Store, Building, Calendar } from "lucide-react"
+import { MapPin, Phone, Store, Building, Calendar, Package } from "lucide-react"
 import { CopyPhoneButton } from "@/components/marketplace/copy-phone-button"
 
 export default async function StorePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -34,6 +34,8 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
         physical: { label: 'Physical Store', icon: Building, color: 'bg-blue-100 text-blue-700' },
         online: { label: 'Online Store', icon: Store, color: 'bg-purple-100 text-purple-700' },
         market_day: { label: 'Market Day Seller', icon: Calendar, color: 'bg-orange-100 text-orange-700' },
+        brand: { label: 'Official Brand / Wholesaler', icon: Building, color: 'bg-indigo-100 text-indigo-700' },
+        wholesaler: { label: 'Wholesaler', icon: Package, color: 'bg-indigo-100 text-indigo-700' },
     }
     const typeInfo = storeTypeConfig[storeType] || storeTypeConfig.physical
 

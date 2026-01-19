@@ -19,7 +19,8 @@ ADD COLUMN IF NOT EXISTS subscription_plan subscription_plan_type DEFAULT 'basic
 ADD COLUMN IF NOT EXISTS subscription_expiry TIMESTAMPTZ,
 ADD COLUMN IF NOT EXISTS payment_status payment_status_type DEFAULT 'pending',
 ADD COLUMN IF NOT EXISTS categories JSONB DEFAULT '[]'::jsonb,
-ADD COLUMN IF NOT EXISTS frequent_markets JSONB DEFAULT '[]'::jsonb;
+ADD COLUMN IF NOT EXISTS frequent_markets JSONB DEFAULT '[]'::jsonb,
+ADD COLUMN IF NOT EXISTS pickup_location JSONB;
 
 -- 3. Add index for performance (optional but good practice)
 CREATE INDEX IF NOT EXISTS idx_stores_subscription_plan ON stores(subscription_plan);

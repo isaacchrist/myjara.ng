@@ -1,20 +1,20 @@
 export const ABUJA_MARKETS = [
-    { name: 'Karmo Market', days: ['Tuesday', 'Friday'] },
-    { name: 'Kuje Market', days: ['Wednesday', 'Saturday'] },
-    { name: 'Gwarinpa Farmers Market', days: ['Friday', 'Sunday'] },
-    { name: 'Jabi Lake Mall Farmers Market', days: ['Saturday'] },
-    { name: 'Kubwa Farmers Market', days: ['Sunday'] },
-    { name: 'Kabusa Market', days: ['Saturday'] },
-    { name: 'Nyanya Market', days: ['Wednesday'] },
-    { name: 'Wuse Market', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] },
-    { name: 'Garki International Market', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] },
-    { name: 'Gudu Market', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] },
-    { name: 'Deidei Market', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] },
-    { name: 'Utako Market', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] },
-    { name: 'Kado Fish Market', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] },
-    { name: 'Maitama Farmers Market', days: ['Sunday'] },
-    { name: 'Zuba Market', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] },
-    { name: 'Gosa Market', days: ['Friday'] }, // Assumed Friday based on general farmers market trends in the area, but defaulting to daily or specific if known. Let's stick to the specific ones researched.
+    { name: 'Karmo Market', days: ['Tuesday', 'Friday'], lat: 9.0558, lng: 7.3916 },
+    { name: 'Kuje Market', days: ['Wednesday', 'Saturday'], lat: 8.8797, lng: 7.2303 },
+    { name: 'Gwarinpa Farmers Market', days: ['Friday', 'Sunday'], lat: 9.1083, lng: 7.4083 },
+    { name: 'Jabi Lake Mall Farmers Market', days: ['Saturday'], lat: 9.0767, lng: 7.4167 },
+    { name: 'Kubwa Farmers Market', days: ['Sunday'], lat: 9.1550, lng: 7.3450 },
+    { name: 'Kabusa Market', days: ['Saturday'], lat: 8.9833, lng: 7.5000 },
+    { name: 'Nyanya Market', days: ['Wednesday'], lat: 9.0417, lng: 7.5667 },
+    { name: 'Wuse Market', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], lat: 9.0612, lng: 7.4646 },
+    { name: 'Garki International Market', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], lat: 9.0333, lng: 7.4933 },
+    { name: 'Gudu Market', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], lat: 9.0167, lng: 7.4750 },
+    { name: 'Deidei Market', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], lat: 9.1083, lng: 7.3000 },
+    { name: 'Utako Market', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], lat: 9.0667, lng: 7.4442 },
+    { name: 'Kado Fish Market', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], lat: 9.0833, lng: 7.4333 },
+    { name: 'Maitama Farmers Market', days: ['Sunday'], lat: 9.0833, lng: 7.5000 },
+    { name: 'Zuba Market', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], lat: 9.1167, lng: 7.2000 },
+    { name: 'Gosa Market', days: ['Friday'], lat: 8.9667, lng: 7.2833 }
 ]
 
 export const SUBSCRIPTION_PLANS = [

@@ -73,7 +73,7 @@ export async function registerRetailer(formData: RegistrationData) {
                 console.log('Found user in public table:', userId)
 
                 // Check if they already have a store
-                const { data: existingStore } = await admin.from('stores').select('id').eq('owner_id', userId).single()
+                const { data: existingStore } = await admin.from('stores').select('id').eq('owner_id', userId as string).single()
                 if (existingStore) {
                     return { success: false, error: 'User already has a registered store. Please Log In.' }
                 }
@@ -189,14 +189,14 @@ export async function registerBrand(formData: RegistrationData) {
         // RECOVERY
         if (authError.message.includes('already registered') || authError.message.includes('unique constraint')) {
             console.log('User exists (Brand). Checking if store exists...')
-            const { data: publicUser } = await admin.from('users').select('id, role').eq('email', formData.email).single()
+            const { data: publicUser } = await admin.from('users').select('id, role').eq('email', formData.email).single() as any
 
-            if (publicUser) {
+            if (publicUser && publicUser.id) {
                 userId = publicUser.id
                 console.log('Found user in public table:', userId)
 
                 // Check if they already have a store
-                const { data: existingStore } = await admin.from('stores').select('id').eq('owner_id', userId).single()
+                const { data: existingStore } = await admin.from('stores').select('id').eq('owner_id', userId as string).single()
                 if (existingStore) {
                     return { success: false, error: 'User already has a registered store. Please Log In.' }
                 }

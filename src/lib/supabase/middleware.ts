@@ -62,6 +62,33 @@ export async function updateSession(request: NextRequest) {
         }
     }
 
+    // Protect seller routes & Check Subscription
+    if (url.pathname.startsWith('/seller')) {
+        if (!user) {
+            url.pathname = '/login'
+            url.searchParams.set('redirect', request.nextUrl.pathname)
+            return NextResponse.redirect(url)
+        }
+
+        // Check subscription expiry
+        // Optimization: We could use cached valid status in cookie, but for now query DB
+        if (!url.pathname.startsWith('/seller/subscription')) {
+            const { data: store } = await supabase
+                .from('stores')
+                .select('subscription_expiry')
+                .eq('owner_id', user.id)
+                .single()
+
+            if (store?.subscription_expiry) {
+                const expiry = new Date(store.subscription_expiry)
+                if (expiry < new Date()) {
+                    url.pathname = '/seller/subscription'
+                    return NextResponse.redirect(url)
+                }
+            }
+        }
+    }
+
     // Protect admin routes (except for the login page)
     // Admin uses a separate cookie-based auth, not Supabase user auth
     if (url.pathname.startsWith('/admin') && url.pathname !== '/admin/login') {
