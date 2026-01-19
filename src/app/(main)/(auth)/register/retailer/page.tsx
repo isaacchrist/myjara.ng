@@ -148,14 +148,11 @@ function RetailerRegisterForm() {
                 marketName: formData.businessLocation.marketName,
                 accuracy: formData.businessLocation.accuracy,
 
-                categoryId: formData.categoryId,
-                subcategoryId: formData.subcategoryId,
-                agreedToPolicy: formData.agreedToPolicy,
                 profilePictureUrl: formData.profilePictureUrl,
 
-                // New Fields
-                selectedPlan: formData.selectedPlan,
-                promoCode: formData.paymentMethod === 'promo_code' ? formData.promoCode : undefined,
+                // New Fields - Sanitize empty strings to undefined
+                selectedPlan: (formData.selectedPlan && formData.selectedPlan !== '') ? (formData.selectedPlan as any) : 'basic',
+                promoCode: (formData.paymentMethod === 'promo_code' && formData.promoCode) ? formData.promoCode : undefined,
                 choosenMarkets: formData.choosenMarkets
             }
 
