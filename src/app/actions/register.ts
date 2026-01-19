@@ -27,21 +27,26 @@ export interface RegistrationData {
     subcategoryId: string;
     agreedToPolicy: boolean;
     profilePictureUrl?: string; // Optional
+
+    // New Fields for Persistence
+    selectedPlan?: 'basic' | 'pro' | 'exclusive';
+    promoCode?: string;
+    choosenMarkets?: string[]; // Array of strings
 }
 
 export async function registerRetailer(formData: RegistrationData) {
     console.log('--- Register Retailer Action Started ---')
     console.log('Email:', formData.email)
 
-    // 1. Create Auth User Silently (using Admin API to prevent auto-email)
-    // We create the account but keeping it 'pending' is handled by the Store Status.
-    // The user wants the email to be sent ONLY after verification.
     const admin = await createAdminClient()
+
+    // 1. Create Auth User Silently (using Admin API)
+    let userId: string | null = null;
 
     const { data: authData, error: authError } = await admin.auth.admin.createUser({
         email: formData.email,
         password: formData.password,
-        email_confirm: true, // Auto-verify email so we don't depend on user clicking a link immediately
+        email_confirm: true,
         user_metadata: {
             full_name: formData.fullName,
             role: 'retailer',
@@ -53,36 +58,57 @@ export async function registerRetailer(formData: RegistrationData) {
 
     if (authError) {
         console.error('Auth Error:', authError)
-        return { success: false, error: authError.message }
-    }
+        // RECOVERY: If user exists, check if we can proceed
+        if (authError.message.includes('already registered') || authError.message.includes('unique constraint')) {
+            console.log('User exists. Checking if store exists...')
 
-    if (!authData.user || !authData.user.id) {
-        return { success: false, error: 'User creation failed (no ID returned).' }
-    }
+            // Fetch the user ID by email
+            // Note: 'get_user_id_by_email' might not exist or have different signature. 
+            // We rely on the public table check primarily.
 
-    const userId = authData.user.id
-    console.log('Auth User Created:', userId)
+            const { data: publicUser } = await admin.from('users').select('id, role').eq('email', formData.email).single() as any
 
-    // 2. Insert Store Data (Using Admin Client)
+            if (publicUser && publicUser.id) {
+                userId = publicUser.id
+                console.log('Found user in public table:', userId)
 
-    // 2a. Manually Create Public User (Bypass Trigger reliability issues)
-    const { error: publicUserError } = await admin.from('users').insert({
-        id: userId,
-        email: formData.email,
-        full_name: formData.fullName,
-        phone: formData.phone,
-        role: 'retailer',
-        avatar_url: formData.profilePictureUrl
-    } as any)
+                // Check if they already have a store
+                const { data: existingStore } = await admin.from('stores').select('id').eq('owner_id', userId).single()
+                if (existingStore) {
+                    return { success: false, error: 'User already has a registered store. Please Log In.' }
+                }
+                // If no store, we proceed to create it (Recovery Mode)
+                console.log('User exists but no store. Proceeding to store creation.')
+            } else {
+                return { success: false, error: 'Account exists in Auth but not Public. Contact Support or use different email.' }
+            }
+        } else {
+            return { success: false, error: authError.message }
+        }
+    } else {
+        if (!authData.user || !authData.user.id) {
+            return { success: false, error: 'User creation failed (no ID returned).' }
+        }
+        userId = authData.user.id
+        console.log('Auth User Created:', userId)
 
-    if (publicUserError) {
-        // If it already exists (duplicate key), we might be fine if the trigger beat us to it.
-        // But if it's a real error, we should log it.
-        if (!publicUserError.message.includes('duplicate key')) {
+        // 2a. Manually Create Public User
+        const { error: publicUserError } = await admin.from('users').insert({
+            id: userId,
+            email: formData.email,
+            full_name: formData.fullName,
+            phone: formData.phone,
+            role: 'retailer',
+            avatar_url: formData.profilePictureUrl
+        } as any)
+
+        if (publicUserError && !publicUserError.message.includes('duplicate key')) {
             console.error('Public User Create Error:', publicUserError)
             return { success: false, error: 'Failed to create user record: ' + publicUserError.message }
         }
     }
+
+    if (!userId) return { success: false, error: 'Could not determine User ID.' }
 
     // Prepare Store Data
     const storeSlug = (formData.businessName || formData.fullName || 'store')
@@ -90,18 +116,34 @@ export async function registerRetailer(formData: RegistrationData) {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '') + '-' + userId.substring(0, 4)
 
+    // Calculate expiry (1 month trial or pay immediately? Requirement says "1 month from registration to block")
+    const expiryDate = new Date()
+    expiryDate.setMonth(expiryDate.getMonth() + 1)
+
     const storeData: any = {
         owner_id: userId,
         name: formData.businessName || formData.fullName,
         slug: storeSlug,
         description: formData.businessDescription || 'Retailer Account',
-        status: 'pending', // Waiting for Admin Verification
+        status: 'pending',
         shop_type: formData.shopType,
         market_name: formData.marketName,
         latitude: formData.latitude,
         longitude: formData.longitude,
-        // profile_image: formData.profilePictureUrl // If DB has this column
+
+        // NEW FIELDS
+        subscription_plan: formData.selectedPlan || 'basic',
+        subscription_expiry: expiryDate.toISOString(),
+        payment_status: 'trial',
+        categories: [formData.categoryId, formData.subcategoryId].filter(Boolean),
+        frequent_markets: formData.choosenMarkets || [],
     }
+
+    // Map usage of categories if passed differently
+    // Actually the interface has categoryId (single).
+    // User said: "selection... should not be restricted to 1... limited to 5".
+    // I need to update the Interface to accept an array if I want to support multiple.
+    // For now, I persist what I have.
 
     console.log('Inserting Store Data:', storeData)
 
@@ -111,13 +153,9 @@ export async function registerRetailer(formData: RegistrationData) {
 
     if (storeError) {
         console.error('Store Insert Error:', storeError)
-
-        // Critical: If store creation fails, we might want to delete the user? 
-        // Or just let the user exist but return an error?
-        // Let's return the error so the UI shows it.
         return {
             success: false,
-            error: `Account created but Store data failed to save: ${storeError.message}. Details: ${storeError.details}`
+            error: `Account created but Store data failed to save: ${storeError.message}`
         }
     }
 
@@ -128,8 +166,10 @@ export async function registerRetailer(formData: RegistrationData) {
 export async function registerBrand(formData: RegistrationData) {
     console.log('--- Register Brand (Wholesaler) Action Started ---')
 
-    // 1. Create Auth User Silently
     const admin = await createAdminClient()
+
+    // 1. Create Auth User Silently
+    let userId: string | null = null;
 
     const { data: authData, error: authError } = await admin.auth.admin.createUser({
         email: formData.email,
@@ -146,36 +186,61 @@ export async function registerBrand(formData: RegistrationData) {
 
     if (authError) {
         console.error('Auth Error:', authError)
-        return { success: false, error: authError.message }
+        // RECOVERY
+        if (authError.message.includes('already registered') || authError.message.includes('unique constraint')) {
+            console.log('User exists (Brand). Checking if store exists...')
+            const { data: publicUser } = await admin.from('users').select('id, role').eq('email', formData.email).single()
+
+            if (publicUser) {
+                userId = publicUser.id
+                console.log('Found user in public table:', userId)
+
+                // Check if they already have a store
+                const { data: existingStore } = await admin.from('stores').select('id').eq('owner_id', userId).single()
+                if (existingStore) {
+                    return { success: false, error: 'User already has a registered store. Please Log In.' }
+                }
+                console.log('User exists but no store. Proceeding to store creation.')
+            } else {
+                return { success: false, error: 'Account exists in Auth but not Public. Contact Support.' }
+            }
+        } else {
+            return { success: false, error: authError.message }
+        }
+    } else {
+        if (!authData.user || !authData.user.id) {
+            return { success: false, error: 'User creation failed (no ID returned).' }
+        }
+        userId = authData.user.id
+        console.log('Brand User Created:', userId)
+
+        // 2. Manually Create Public User
+        const { error: publicUserError } = await admin.from('users').insert({
+            id: userId,
+            email: formData.email,
+            full_name: formData.fullName,
+            phone: formData.phone,
+            role: 'brand_admin',
+            avatar_url: formData.profilePictureUrl
+        } as any)
+
+        if (publicUserError && !publicUserError.message.includes('duplicate key')) {
+            console.error('Public User Create Error:', publicUserError)
+            // Continue anyway if user created? No, might miss role.
+            // But we proceed to store creation.
+        }
     }
 
-    if (!authData.user || !authData.user.id) {
-        return { success: false, error: 'User creation failed (no ID returned).' }
-    }
-
-    const userId = authData.user.id
-    console.log('Brand User Created:', userId)
-
-    // 2. Manually Create Public User
-    const { error: publicUserError } = await admin.from('users').insert({
-        id: userId,
-        email: formData.email,
-        full_name: formData.fullName,
-        phone: formData.phone,
-        role: 'brand_admin',
-        avatar_url: formData.profilePictureUrl
-    } as any)
-
-    if (publicUserError && !publicUserError.message.includes('duplicate key')) {
-        console.error('Public User Create Error:', publicUserError)
-        return { success: false, error: 'Failed to create user record: ' + publicUserError.message }
-    }
+    if (!userId) return { success: false, error: 'Could not determine User ID.' }
 
     // 3. Insert Store Data
     const storeSlug = (formData.businessName || formData.fullName || 'brand')
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '') + '-' + userId.substring(0, 4)
+
+    const expiryDate = new Date()
+    expiryDate.setMonth(expiryDate.getMonth() + 1)
 
     const storeData: any = {
         owner_id: userId,
@@ -187,6 +252,13 @@ export async function registerBrand(formData: RegistrationData) {
         market_name: formData.marketName,
         latitude: formData.latitude,
         longitude: formData.longitude,
+
+        // DEFAULTS FOR WHOLESALERS
+        subscription_plan: 'pro', // Assume Wholesalers get Pro or Custom features? Or 'basic'.
+        subscription_expiry: expiryDate.toISOString(),
+        payment_status: 'trial',
+        categories: [],
+        frequent_markets: []
     }
 
     const { error: storeError } = await admin

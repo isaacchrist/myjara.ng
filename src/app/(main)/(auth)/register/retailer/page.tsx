@@ -151,7 +151,12 @@ function RetailerRegisterForm() {
                 categoryId: formData.categoryId,
                 subcategoryId: formData.subcategoryId,
                 agreedToPolicy: formData.agreedToPolicy,
-                profilePictureUrl: formData.profilePictureUrl
+                profilePictureUrl: formData.profilePictureUrl,
+
+                // New Fields
+                selectedPlan: formData.selectedPlan,
+                promoCode: formData.paymentMethod === 'promo_code' ? formData.promoCode : undefined,
+                choosenMarkets: formData.choosenMarkets
             }
 
             // Call Server Action
