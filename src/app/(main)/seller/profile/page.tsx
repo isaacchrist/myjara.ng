@@ -87,7 +87,14 @@ export default function SellerProfilePage() {
                             </div>
                             <div>
                                 <p className="font-semibold text-xl">{userData?.full_name || 'Not Set'}</p>
-                                <Badge className="mt-1">{userData?.role || 'retailer'}</Badge>
+                                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                    <Badge>{userData?.role || 'retailer'}</Badge>
+                                    {store?.registered_at && (
+                                        <Badge variant="outline" className="text-gray-500">
+                                            Member since {new Date(store.registered_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                                        </Badge>
+                                    )}
+                                </div>
                             </div>
                         </div>
                         <div className="space-y-4 text-sm">

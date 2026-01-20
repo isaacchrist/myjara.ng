@@ -40,6 +40,18 @@ export async function registerRetailer(formData: RegistrationData) {
 
     const admin = await createAdminClient()
 
+    // 0. CHECK PHONE UNIQUENESS
+    if (formData.phone) {
+        const { data: existingPhone } = await (admin.from('users') as any)
+            .select('id')
+            .eq('phone', formData.phone)
+            .maybeSingle()
+
+        if (existingPhone) {
+            return { success: false, error: 'This phone number is already registered. Please use a different number.' }
+        }
+    }
+
     // 1. Create Auth User Silently (using Admin API)
     let userId: string | null = null;
 

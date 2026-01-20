@@ -9,8 +9,10 @@ export interface ProfileUpdateData {
     emergencyContacts?: { name: string, number: string }[];
 
     // Store updates
-    latitude?: number; // For Market Day retailers
+    latitude?: number;
     longitude?: number;
+    storeDescription?: string;
+    categories?: string[]; // Array of category IDs
 }
 
 export async function updateProfile(formData: ProfileUpdateData) {
@@ -19,6 +21,19 @@ export async function updateProfile(formData: ProfileUpdateData) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return { success: false, error: 'Unauthorized' }
+    }
+
+    // 0. CHECK PHONE UNIQUENESS (if changing phone)
+    if (formData.phone) {
+        const { data: existingPhone } = await (supabase.from('users') as any)
+            .select('id')
+            .eq('phone', formData.phone)
+            .neq('id', user.id) // Exclude current user
+            .maybeSingle()
+
+        if (existingPhone) {
+            return { success: false, error: 'This phone number is already in use by another account.' }
+        }
     }
 
     // 1. Update User Data
@@ -39,22 +54,35 @@ export async function updateProfile(formData: ProfileUpdateData) {
         }
     }
 
-    // 2. Update Store Data (e.g. GPS) if provided
+    // 2. Update Store Data
+    const storeUpdate: Record<string, any> = {}
+
     if (formData.latitude !== undefined && formData.longitude !== undefined) {
+        storeUpdate.latitude = formData.latitude
+        storeUpdate.longitude = formData.longitude
+    }
+
+    if (formData.storeDescription !== undefined) {
+        storeUpdate.description = formData.storeDescription
+    }
+
+    if (formData.categories && formData.categories.length > 0) {
+        storeUpdate.categories = formData.categories
+    }
+
+    if (Object.keys(storeUpdate).length > 0) {
         const { error: storeError } = await (supabase
             .from('stores') as any)
-            .update({
-                latitude: formData.latitude,
-                longitude: formData.longitude
-            })
+            .update(storeUpdate)
             .eq('owner_id', user.id)
 
         if (storeError) {
             console.error('Store Update Error:', storeError)
-            return { success: false, error: 'Failed to update store location' }
+            return { success: false, error: 'Failed to update store information' }
         }
     }
 
     revalidatePath('/seller/profile')
+    revalidatePath('/seller/dashboard')
     return { success: true }
 }

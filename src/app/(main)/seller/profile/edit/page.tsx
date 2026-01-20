@@ -4,13 +4,22 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { updateProfile } from '@/app/actions/profile'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { ArrowLeft, Save, Plus, Trash2, MapPin } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { ArrowLeft, Save, Plus, Trash2, MapPin, Store, Tag, Check } from 'lucide-react'
 import { toast } from 'sonner'
+import { PRODUCT_CATEGORIES } from '@/lib/constants'
+
+// Plan limits for categories
+const PLAN_LIMITS: Record<string, number> = {
+    basic: 5,
+    pro: 15,
+    exclusive: 30
+}
 
 export default function EditProfilePage() {
     const router = useRouter()
@@ -23,6 +32,8 @@ export default function EditProfilePage() {
     const [phone, setPhone] = useState('')
     const [address, setAddress] = useState('')
     const [contacts, setContacts] = useState<{ name: string, number: string }[]>([])
+    const [storeDescription, setStoreDescription] = useState('')
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([])
 
     // Location (for market day)
     const [lat, setLat] = useState<number | null>(null)
@@ -53,6 +64,8 @@ export default function EditProfilePage() {
             if (storeData) {
                 setLat(storeData.latitude)
                 setLng(storeData.longitude)
+                setStoreDescription(storeData.description || '')
+                setSelectedCategories(storeData.categories || [])
             }
             setLoading(false)
         }
@@ -97,6 +110,20 @@ export default function EditProfilePage() {
         )
     }
 
+    const toggleCategory = (categoryId: string) => {
+        const limit = PLAN_LIMITS[store?.subscription_plan || 'basic'] || 5
+
+        if (selectedCategories.includes(categoryId)) {
+            setSelectedCategories(selectedCategories.filter(id => id !== categoryId))
+        } else {
+            if (selectedCategories.length >= limit) {
+                toast.error(`Your ${store?.subscription_plan || 'basic'} plan allows only ${limit} categories. Upgrade to add more.`)
+                return
+            }
+            setSelectedCategories([...selectedCategories, categoryId])
+        }
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setSaving(true)
@@ -109,7 +136,9 @@ export default function EditProfilePage() {
             residentialAddress: address,
             emergencyContacts: validContacts,
             latitude: lat || undefined,
-            longitude: lng || undefined
+            longitude: lng || undefined,
+            storeDescription,
+            categories: selectedCategories
         })
 
         setSaving(false)
@@ -122,12 +151,13 @@ export default function EditProfilePage() {
         }
     }
 
-    if (loading) return <div className="p-8">Loading...</div>
+    if (loading) return <div className="p-8 flex justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-600 border-t-transparent" /></div>
 
     const isMarketDayRetailer = store?.shop_type === 'market_day'
+    const categoryLimit = PLAN_LIMITS[store?.subscription_plan || 'basic'] || 5
 
     return (
-        <div className="p-8 max-w-2xl mx-auto space-y-6">
+        <div className="p-8 max-w-3xl mx-auto space-y-6">
             <div className="flex items-center gap-4">
                 <Button variant="ghost" size="icon" onClick={() => router.back()}>
                     <ArrowLeft className="h-5 w-5" />
@@ -136,6 +166,7 @@ export default function EditProfilePage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Contact Information */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Contact Information</CardTitle>
@@ -148,6 +179,7 @@ export default function EditProfilePage() {
                                 onChange={(e) => setPhone(e.target.value)}
                                 placeholder="+234..."
                             />
+                            <p className="text-xs text-gray-500">Must be unique across all users</p>
                         </div>
                         <div className="space-y-2">
                             <Label>Residential Address</Label>
@@ -160,6 +192,70 @@ export default function EditProfilePage() {
                     </CardContent>
                 </Card>
 
+                {/* Store Information */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Store className="h-5 w-5" />
+                            Store Information
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Store Description</Label>
+                            <Textarea
+                                value={storeDescription}
+                                onChange={(e) => setStoreDescription(e.target.value)}
+                                placeholder="Describe what your store offers..."
+                                rows={4}
+                            />
+                            <p className="text-xs text-gray-500">Visible to customers on your store page</p>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Categories */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Tag className="h-5 w-5" />
+                            Product Categories
+                        </CardTitle>
+                        <CardDescription>
+                            Select categories you sell in ({selectedCategories.length}/{categoryLimit} selected)
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                            {PRODUCT_CATEGORIES.map(category => (
+                                <button
+                                    key={category.id}
+                                    type="button"
+                                    onClick={() => toggleCategory(category.id)}
+                                    className={`p-3 rounded-lg border text-left transition-all ${selectedCategories.includes(category.id)
+                                            ? 'bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500'
+                                            : 'bg-white border-gray-200 hover:border-emerald-300'
+                                        }`}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-lg">{category.icon}</span>
+                                        <span className="text-sm font-medium truncate">{category.name}</span>
+                                        {selectedCategories.includes(category.id) && (
+                                            <Check className="h-4 w-4 text-emerald-600 ml-auto shrink-0" />
+                                        )}
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                        {selectedCategories.length >= categoryLimit && (
+                            <p className="text-sm text-amber-600 mt-3">
+                                You've reached your category limit. <a href="/seller/subscription" className="underline">Upgrade your plan</a> to add more.
+                            </p>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Emergency Contacts */}
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle>Emergency Contacts (Max 2)</CardTitle>
@@ -199,6 +295,7 @@ export default function EditProfilePage() {
                     </CardContent>
                 </Card>
 
+                {/* Location for Market Day Retailers */}
                 {isMarketDayRetailer && (
                     <Card className="border-emerald-200 bg-emerald-50/50">
                         <CardHeader>
@@ -209,7 +306,7 @@ export default function EditProfilePage() {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <p className="text-sm text-emerald-700">
-                                Since you are a Market Day retailer, you can update your precise location when you are at the market.
+                                Update your precise location when at the market for easier discovery.
                             </p>
                             <div className="flex items-center gap-4">
                                 <Button
