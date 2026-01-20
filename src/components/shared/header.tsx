@@ -122,28 +122,37 @@ export function Header() {
                         {user ? (
                             <div className="flex items-center gap-2">
                                 {user.user_metadata?.role === 'brand_admin' && (
-                                    <Button variant="outline" size="sm" asChild className="h-10">
-                                        <Link href="/dashboard">
-                                            <LayoutDashboard className="mr-2 h-4 w-4" />
-                                            My Dashboard
-                                        </Link>
-                                    </Button>
+                                    <Link
+                                        href="/dashboard"
+                                        className="group relative inline-flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium text-sm shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 hover:scale-[1.02] transition-all duration-300 ease-out overflow-hidden"
+                                    >
+                                        <span className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-teal-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                        <LayoutDashboard className="relative h-4 w-4 group-hover:rotate-12 transition-transform duration-300" />
+                                        <span className="relative">My Dashboard</span>
+                                        <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 ease-out" />
+                                    </Link>
                                 )}
                                 {user.user_metadata?.role === 'retailer' && (
-                                    <Button variant="outline" size="sm" asChild className="h-10">
-                                        <Link href="/seller/dashboard">
-                                            <LayoutDashboard className="mr-2 h-4 w-4" />
-                                            My Dashboard
-                                        </Link>
-                                    </Button>
+                                    <Link
+                                        href="/seller/dashboard"
+                                        className="group relative inline-flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium text-sm shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 hover:scale-[1.02] transition-all duration-300 ease-out overflow-hidden"
+                                    >
+                                        <span className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-teal-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                        <LayoutDashboard className="relative h-4 w-4 group-hover:rotate-12 transition-transform duration-300" />
+                                        <span className="relative">My Dashboard</span>
+                                        <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 ease-out" />
+                                    </Link>
                                 )}
                                 {user.user_metadata?.role === 'platform_admin' && (
-                                    <Button variant="outline" size="sm" asChild className="h-10">
-                                        <Link href="/admin">
-                                            <LayoutDashboard className="mr-2 h-4 w-4" />
-                                            Admin
-                                        </Link>
-                                    </Button>
+                                    <Link
+                                        href="/admin"
+                                        className="group relative inline-flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-500 to-purple-500 text-white font-medium text-sm shadow-lg shadow-violet-500/25 hover:shadow-xl hover:shadow-violet-500/30 hover:scale-[1.02] transition-all duration-300 ease-out overflow-hidden"
+                                    >
+                                        <span className="absolute inset-0 bg-gradient-to-r from-violet-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                        <LayoutDashboard className="relative h-4 w-4 group-hover:rotate-12 transition-transform duration-300" />
+                                        <span className="relative">Admin Panel</span>
+                                        <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 ease-out" />
+                                    </Link>
                                 )}
 
                                 <Button variant="ghost" size="icon" asChild className="h-10 w-10 rounded-full" title="Messages">
