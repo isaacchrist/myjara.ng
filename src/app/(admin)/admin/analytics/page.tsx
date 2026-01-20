@@ -86,7 +86,7 @@ export default async function AdminAnalyticsPage() {
         .map(([name, value]) => ({ name, value }))
 
     const stats = [
-        { label: 'Total Users', value: totalUsers || 0, icon: Users, color: 'text-blue-500' },
+        { label: 'Total Users', value: totalUsers || 0, icon: Users, color: 'text-emerald-500' },
         { label: 'Total Stores', value: totalStores || 0, icon: Store, color: 'text-emerald-500' },
         { label: 'Total Orders', value: totalOrders || 0, icon: ShoppingCart, color: 'text-purple-500' },
         { label: 'Total Revenue', value: formatPrice(totalRevenue), icon: TrendingUp, color: 'text-orange-500' },

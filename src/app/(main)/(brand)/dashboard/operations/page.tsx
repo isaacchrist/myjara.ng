@@ -15,7 +15,7 @@ export default function OperationsPage() {
                 <Link href="/dashboard/logistics" className="block">
                     <Card className="h-full transition-all hover:border-emerald-500 hover:shadow-md">
                         <CardHeader>
-                            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
                                 <Truck className="h-6 w-6" />
                             </div>
                             <CardTitle>Logistics Settings</CardTitle>

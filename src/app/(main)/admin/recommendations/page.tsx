@@ -27,7 +27,7 @@ export default async function AdminRecommendationsPage() {
 
     const statusColors: any = {
         pending: 'bg-yellow-100 text-yellow-800',
-        reviewed: 'bg-blue-100 text-blue-800',
+        reviewed: 'bg-emerald-100 text-emerald-800',
         implemented: 'bg-emerald-100 text-emerald-800',
         rejected: 'bg-red-100 text-red-800'
     }

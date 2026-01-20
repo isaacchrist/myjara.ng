@@ -31,7 +31,7 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
     const storeType = store.shop_type || settings?.shop_type || 'physical'
 
     const storeTypeConfig: Record<string, { label: string; icon: any; color: string }> = {
-        physical: { label: 'Physical Store', icon: Building, color: 'bg-blue-100 text-blue-700' },
+        physical: { label: 'Physical Store', icon: Building, color: 'bg-emerald-100 text-emerald-700' },
         online: { label: 'Online Store', icon: Store, color: 'bg-purple-100 text-purple-700' },
         market_day: { label: 'Market Day Seller', icon: Calendar, color: 'bg-orange-100 text-orange-700' },
         brand: { label: 'Official Brand / Wholesaler', icon: Building, color: 'bg-indigo-100 text-indigo-700' },

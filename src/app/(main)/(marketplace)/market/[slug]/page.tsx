@@ -93,12 +93,12 @@ export default async function MarketPage({ params }: { params: Promise<{ slug: s
 
             <div className="container mx-auto px-4 py-8">
                 {/* Info Card */}
-                <Card className="mb-8 bg-blue-50 border-blue-200">
+                <Card className="mb-8 bg-emerald-50 border-emerald-200">
                     <CardContent className="p-4 flex gap-4 items-start">
-                        <Info className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                        <Info className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
                         <div>
-                            <p className="font-medium text-blue-900">Market Day Deals</p>
-                            <p className="text-sm text-blue-700">
+                            <p className="font-medium text-emerald-900">Market Day Deals</p>
+                            <p className="text-sm text-emerald-700">
                                 Browse products from verified retailers who attend {marketName}.
                                 Prices and availability may vary.
                             </p>

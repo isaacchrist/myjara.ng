@@ -45,7 +45,7 @@ export default function HowItWorksPage() {
                                 icon: ShoppingBag,
                                 title: "1. Discover",
                                 desc: "Browse thousands of products from verified local brands and stores.",
-                                color: "bg-blue-100 text-blue-600"
+                                color: "bg-emerald-100 text-emerald-600"
                             },
                             {
                                 icon: Gift,

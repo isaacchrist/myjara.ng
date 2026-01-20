@@ -46,7 +46,7 @@ export function OrderActions({ orderId, currentStatus }: OrderActionsProps) {
             {currentStatus === 'paid' && (
                 <Button
                     size="sm"
-                    className="bg-blue-600 hover:bg-blue-700 w-full"
+                    className="bg-emerald-600 hover:bg-emerald-700 w-full"
                     onClick={() => handleUpdateStatus('processing')}
                     disabled={isLoading}
                 >

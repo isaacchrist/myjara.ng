@@ -100,7 +100,7 @@ export default function BrandOrdersPage() {
     const statusColors = {
         pending: 'bg-amber-100 text-amber-700',
         paid: 'bg-emerald-100 text-emerald-700',
-        processing: 'bg-blue-100 text-blue-700',
+        processing: 'bg-emerald-100 text-emerald-700',
         shipped: 'bg-purple-100 text-purple-700',
         delivered: 'bg-emerald-100 text-emerald-700',
         cancelled: 'bg-red-100 text-red-700',
@@ -200,7 +200,7 @@ export default function BrandOrdersPage() {
                                             </Button>
 
                                             {order.status === 'paid' && (
-                                                <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={() => updateOrderStatus(order.id, 'processing')}>
+                                                <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={() => updateOrderStatus(order.id, 'processing')}>
                                                     Process
                                                 </Button>
                                             )}

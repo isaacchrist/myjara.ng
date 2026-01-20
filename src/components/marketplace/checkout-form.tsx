@@ -216,7 +216,7 @@ export function CheckoutForm({ product, logistics, initialQty, userId, userEmail
                                         }`}
                                 >
                                     <div className="flex items-center justify-between mb-2">
-                                        <div className={`p-1.5 rounded-lg ${option.type === 'pickup' ? 'bg-blue-100 text-blue-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                        <div className={`p-1.5 rounded-lg ${option.type === 'pickup' ? 'bg-emerald-100 text-emerald-600' : 'bg-emerald-100 text-emerald-600'}`}>
                                             {option.type === 'pickup' ? <MapPin className="h-4 w-4" /> : <Truck className="h-4 w-4" />}
                                         </div>
                                         <span className="font-bold">{option.delivery_fee === 0 ? 'FREE' : formatPrice(option.delivery_fee)}</span>

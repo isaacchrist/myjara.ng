@@ -125,14 +125,14 @@ export default function VerificationQueueClient() {
                                     {pendingUsers.map(user => (
                                         <div key={user.id} className="flex flex-col sm:flex-row gap-4 p-4 rounded-lg border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
                                             {/* Type Strip */}
-                                            <div className={`absolute left-0 top-0 bottom-0 w-1 ${user.role === 'brand_admin' ? 'bg-orange-500' : 'bg-blue-500'}`} />
+                                            <div className={`absolute left-0 top-0 bottom-0 w-1 ${user.role === 'brand_admin' ? 'bg-orange-500' : 'bg-emerald-500'}`} />
 
                                             <div className="flex-1 space-y-3 pl-2">
                                                 <div className="flex items-start justify-between">
                                                     <div>
                                                         <div className="flex items-center gap-2 mb-1">
                                                             <h3 className="font-semibold text-lg text-gray-900">{user.full_name}</h3>
-                                                            <Badge variant="outline" className={user.role === 'brand_admin' ? 'text-orange-600 border-orange-200 bg-orange-50' : 'text-blue-600 border-blue-200 bg-blue-50'}>
+                                                            <Badge variant="outline" className={user.role === 'brand_admin' ? 'text-orange-600 border-orange-200 bg-orange-50' : 'text-emerald-600 border-emerald-200 bg-emerald-50'}>
                                                                 {user.role === 'brand_admin' ? 'Wholesaler' : 'Retailer'}
                                                             </Badge>
                                                         </div>
@@ -157,7 +157,7 @@ export default function VerificationQueueClient() {
 
                                                 {/* Retailer Details */}
                                                 {user.role === 'retailer' && (
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mt-4 bg-blue-50/50 p-3 rounded-md border border-blue-100">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mt-4 bg-emerald-50/50 p-3 rounded-md border border-emerald-100">
                                                         <div>
                                                             <h4 className="font-medium text-gray-700 mb-1 flex items-center gap-2">
                                                                 {user.shop_type === 'physical' && <Store className="h-3 w-3" />}
@@ -166,7 +166,7 @@ export default function VerificationQueueClient() {
                                                                 Shop Type: <span className="uppercase">{user.shop_type?.replace('_', ' ')}</span>
                                                             </h4>
                                                             {user.shop_type === 'market_day' && (
-                                                                <p className="text-blue-700 text-xs">
+                                                                <p className="text-emerald-700 text-xs">
                                                                     <strong>Markets:</strong> {Array.isArray(user.market_days) ? user.market_days.join(', ') : 'None listed'}
                                                                 </p>
                                                             )}

@@ -108,7 +108,7 @@ export function VerificationList({ initialStores }: VerificationListProps) {
                                 <div>
                                     <CardTitle className="text-xl font-bold text-gray-900">{store.name}</CardTitle>
                                     <CardDescription className="flex flex-wrap items-center gap-2 mt-1">
-                                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 capitalize">
+                                        <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 capitalize">
                                             {store.shop_type || 'Retailer/Brand'}
                                         </Badge>
                                         <Badge variant="outline" className="bg-gray-100 text-gray-700 border-gray-200">

@@ -31,7 +31,7 @@ const PLAN_DETAILS: Record<string, { name: string; color: string; icon: any; fea
     },
     pro: {
         name: 'Pro Plan',
-        color: 'bg-blue-100 text-blue-700',
+        color: 'bg-emerald-100 text-emerald-700',
         icon: Crown,
         features: [
             'Up to 100 product listings',

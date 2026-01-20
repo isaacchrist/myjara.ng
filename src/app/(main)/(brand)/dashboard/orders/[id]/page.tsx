@@ -40,7 +40,7 @@ export default async function BrandOrderDetailPage({ params }: { params: Promise
     const statusColors = {
         pending: 'bg-amber-100 text-amber-700',
         paid: 'bg-emerald-100 text-emerald-700',
-        processing: 'bg-blue-100 text-blue-700',
+        processing: 'bg-emerald-100 text-emerald-700',
         shipped: 'bg-purple-100 text-purple-700',
         delivered: 'bg-emerald-100 text-emerald-700',
         cancelled: 'bg-red-100 text-red-700',
@@ -114,7 +114,7 @@ export default async function BrandOrderDetailPage({ params }: { params: Promise
                                 <div className="space-y-3">
                                     <h4 className="text-sm font-semibold uppercase tracking-wider text-gray-500">Selected Method</h4>
                                     <div className="flex items-center gap-3">
-                                        <div className={`p-2 rounded-lg ${order.logistics?.type === 'pickup' ? 'bg-blue-100 text-blue-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                        <div className={`p-2 rounded-lg ${order.logistics?.type === 'pickup' ? 'bg-emerald-100 text-emerald-600' : 'bg-emerald-100 text-emerald-600'}`}>
                                             {order.logistics?.type === 'pickup' ? <MapPin className="h-5 w-5" /> : <Truck className="h-5 w-5" />}
                                         </div>
                                         <div>

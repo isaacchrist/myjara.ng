@@ -39,8 +39,8 @@ export default async function AdminCategoriesPage() {
                 </Card>
                 <Card className="bg-gray-800 border-gray-700">
                     <CardContent className="pt-6 flex items-center gap-4">
-                        <div className="p-3 bg-blue-500/20 rounded-lg">
-                            <FolderTree className="h-6 w-6 text-blue-400" />
+                        <div className="p-3 bg-emerald-500/20 rounded-lg">
+                            <FolderTree className="h-6 w-6 text-emerald-400" />
                         </div>
                         <div>
                             <p className="text-2xl font-bold text-white">{categoryList.length - parentCategories.length}</p>

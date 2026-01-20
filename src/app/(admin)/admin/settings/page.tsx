@@ -16,8 +16,8 @@ export default function AdminSettingsPage() {
                 <Card className="bg-gray-800 border-gray-700">
                     <CardHeader>
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-500/20 rounded-lg">
-                                <Settings className="h-5 w-5 text-blue-400" />
+                            <div className="p-2 bg-emerald-500/20 rounded-lg">
+                                <Settings className="h-5 w-5 text-emerald-400" />
                             </div>
                             <div>
                                 <CardTitle className="text-white">General</CardTitle>

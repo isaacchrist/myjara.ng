@@ -106,13 +106,13 @@ export default function SupportPlatformPage() {
                         <Card
                             key={plan.id}
                             className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 ${plan.popular
-                                    ? 'border-2 border-blue-500 shadow-xl scale-105 md:scale-110'
+                                    ? 'border-2 border-emerald-500 shadow-xl scale-105 md:scale-110'
                                     : 'border border-gray-200'
                                 }`}
                             style={{ animationDelay: `${index * 100}ms` }}
                         >
                             {plan.popular && (
-                                <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
+                                <div className="absolute top-0 right-0 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
                                     MOST POPULAR
                                 </div>
                             )}
@@ -143,7 +143,7 @@ export default function SupportPlatformPage() {
                                 <Button
                                     asChild
                                     className={`w-full ${plan.popular
-                                            ? 'bg-blue-600 hover:bg-blue-700'
+                                            ? 'bg-emerald-600 hover:bg-emerald-700'
                                             : 'bg-gray-900 hover:bg-emerald-600'
                                         }`}
                                 >

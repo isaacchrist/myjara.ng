@@ -107,14 +107,14 @@ export default function MarketDaysPage() {
 
             {/* Store Status */}
             {!(store as any)?.frequent_markets?.length && (
-                <Card className="bg-blue-50 border-blue-200">
+                <Card className="bg-emerald-50 border-emerald-200">
                     <CardContent className="p-4 flex gap-4 items-center">
-                        <Store className="h-5 w-5 text-blue-600" />
+                        <Store className="h-5 w-5 text-emerald-600" />
                         <div>
-                            <p className="font-medium text-blue-900">Add Frequent Markets</p>
-                            <p className="text-sm text-blue-700">Update your profile to show which markets you regularly attend.</p>
+                            <p className="font-medium text-emerald-900">Add Frequent Markets</p>
+                            <p className="text-sm text-emerald-700">Update your profile to show which markets you regularly attend.</p>
                         </div>
-                        <Button asChild variant="outline" size="sm" className="ml-auto bg-white hover:bg-blue-100">
+                        <Button asChild variant="outline" size="sm" className="ml-auto bg-white hover:bg-emerald-100">
                             <Link href="/seller/profile">Update Profile</Link>
                         </Button>
                     </CardContent>

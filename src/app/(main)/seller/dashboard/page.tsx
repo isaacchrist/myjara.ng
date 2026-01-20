@@ -118,16 +118,16 @@ export default async function RetailerDashboardPage() {
 
             {/* Location Prompt */}
             {store && (!store.latitude || !store.longitude) && !isWholesaler && (
-                <Card className="border-blue-200 bg-blue-50 mb-6">
+                <Card className="border-emerald-200 bg-emerald-50 mb-6">
                     <CardContent className="p-4 flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <MapPin className="h-5 w-5 text-blue-600" />
+                            <MapPin className="h-5 w-5 text-emerald-600" />
                             <div>
-                                <p className="font-medium text-blue-900">Add Your Store Location</p>
-                                <p className="text-sm text-blue-700">Help customers find you by adding your precise location.</p>
+                                <p className="font-medium text-emerald-900">Add Your Store Location</p>
+                                <p className="text-sm text-emerald-700">Help customers find you by adding your precise location.</p>
                             </div>
                         </div>
-                        <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white">
+                        <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white">
                             <Link href="/seller/products/new">Add Location via Product</Link>
                         </Button>
                     </CardContent>
@@ -216,7 +216,7 @@ export default async function RetailerDashboardPage() {
                 <Card>
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
-                            <ShoppingCart className="h-5 w-5 text-blue-600" />
+                            <ShoppingCart className="h-5 w-5 text-emerald-600" />
                         </div>
                         <div className="mt-4">
                             <p className="text-2xl font-bold text-gray-900">{totalOrders}</p>
@@ -276,7 +276,7 @@ export default async function RetailerDashboardPage() {
                                             <Badge
                                                 className={
                                                     order.status === 'delivered' ? 'bg-green-100 text-green-700' :
-                                                        order.status === 'shipped' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'
+                                                        order.status === 'shipped' ? 'bg-emerald-100 text-emerald-700' : 'bg-yellow-100 text-yellow-700'
                                                 }
                                             >
                                                 {order.status}
@@ -305,7 +305,7 @@ export default async function RetailerDashboardPage() {
                                 <span className="text-sm font-medium">My Products</span>
                             </Link>
                             <Link href="/seller/products/new" className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors">
-                                <Plus className="h-5 w-5 text-blue-600" />
+                                <Plus className="h-5 w-5 text-emerald-600" />
                                 <span className="text-sm font-medium">Add Product</span>
                             </Link>
 

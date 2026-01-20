@@ -120,7 +120,7 @@ export default async function ProductsPage() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-blue-600">
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-emerald-600">
                                                     <Eye className="h-4 w-4" />
                                                 </Button>
                                                 <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-emerald-600">

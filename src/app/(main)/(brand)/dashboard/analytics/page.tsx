@@ -108,7 +108,7 @@ export default async function AnalyticsPage() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Orders (30d)</CardTitle>
-                        <span className="text-blue-600 font-bold">#</span>
+                        <span className="text-emerald-600 font-bold">#</span>
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{totalOrders}</div>

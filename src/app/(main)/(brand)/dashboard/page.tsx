@@ -166,7 +166,7 @@ export default async function DashboardPage() {
                                                 }
                                                 className={
                                                     order.status === 'delivered' ? 'bg-green-100 text-green-700 hover:bg-green-100' :
-                                                        order.status === 'shipped' ? 'bg-blue-100 text-blue-700 hover:bg-blue-100' :
+                                                        order.status === 'shipped' ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100' :
                                                             'bg-yellow-100 text-yellow-700 hover:bg-yellow-100'
                                                 }
                                             >

@@ -211,8 +211,8 @@ export default function LogisticsPage() {
                     onClick={() => setActiveTab('request')}
                     className={`w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all
                         ${activeTab === 'request'
-                            ? 'bg-white shadow text-blue-700'
-                            : 'text-gray-600 hover:bg-white/[0.12] hover:text-blue-600'}`}
+                            ? 'bg-white shadow text-emerald-700'
+                            : 'text-gray-600 hover:bg-white/[0.12] hover:text-emerald-600'}`}
                 >
                     Request Rider
                 </button>
@@ -313,7 +313,7 @@ export default function LogisticsPage() {
                                 <Card key={option.id} className="overflow-hidden">
                                     <CardContent className="flex items-center justify-between p-6">
                                         <div className="flex items-center gap-4">
-                                            <div className={`flex h-12 w-12 items-center justify-center rounded-full ${option.type === 'pickup' ? 'bg-blue-100 text-blue-600' : 'bg-emerald-100 text-emerald-600'
+                                            <div className={`flex h-12 w-12 items-center justify-center rounded-full ${option.type === 'pickup' ? 'bg-emerald-100 text-emerald-600' : 'bg-emerald-100 text-emerald-600'
                                                 }`}>
                                                 {option.type === 'pickup' ? <MapPin className="h-6 w-6" /> : <Truck className="h-6 w-6" />}
                                             </div>
@@ -358,9 +358,9 @@ export default function LogisticsPage() {
                 </div>
             ) : (
                 <div className="grid gap-8 lg:grid-cols-3">
-                    <Card className="lg:col-span-2 border-blue-100 shadow-md">
-                        <CardHeader className="bg-blue-50/50">
-                            <CardTitle className="text-blue-900">Request Rider</CardTitle>
+                    <Card className="lg:col-span-2 border-emerald-100 shadow-md">
+                        <CardHeader className="bg-emerald-50/50">
+                            <CardTitle className="text-emerald-900">Request Rider</CardTitle>
                             <CardDescription>Need a rider right now? Request one from our partner network.</CardDescription>
                         </CardHeader>
                         <CardContent className="pt-6">
@@ -432,7 +432,7 @@ export default function LogisticsPage() {
                                     </div>
                                 </div>
 
-                                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" size="lg" disabled={isSaving}>
+                                <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" size="lg" disabled={isSaving}>
                                     {isSaving ? (
                                         <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Connecting...</>
                                     ) : (

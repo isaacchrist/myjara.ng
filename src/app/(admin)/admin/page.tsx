@@ -248,7 +248,7 @@ export default async function AdminPage() {
                             <p className="text-sm text-gray-400">Active Issues</p>
                             <div className="flex justify-between items-end">
                                 <p className="mt-1 text-xl font-bold text-yellow-400">3</p>
-                                <Link href="/admin/disputes" className="text-xs text-blue-400 hover:text-blue-300 underline">
+                                <Link href="/admin/disputes" className="text-xs text-emerald-400 hover:text-emerald-300 underline">
                                     Manage Disputes
                                 </Link>
                             </div>

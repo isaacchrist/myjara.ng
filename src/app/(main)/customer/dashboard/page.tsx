@@ -87,7 +87,7 @@ export default async function CustomerDashboardPage() {
                     <div className="grid gap-4 md:grid-cols-3">
                         <Card>
                             <CardContent className="p-6 flex items-center gap-4">
-                                <div className="p-3 bg-blue-50 text-blue-700 rounded-lg">
+                                <div className="p-3 bg-emerald-50 text-emerald-700 rounded-lg">
                                     <Package className="h-6 w-6" />
                                 </div>
                                 <div>
@@ -156,7 +156,7 @@ export default async function CustomerDashboardPage() {
                                                     }
                                                     className={
                                                         order.status === 'delivered' ? 'bg-green-100 text-green-700 border-green-200' :
-                                                            order.status === 'shipped' ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'
+                                                            order.status === 'shipped' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'
                                                     }
                                                 >
                                                     {order.status}

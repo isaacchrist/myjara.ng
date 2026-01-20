@@ -90,7 +90,7 @@ function MessagesContent() {
                             <StoreIcon className="h-4 w-4" /> My Customers
                         </button>
                         <button
-                            className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'user' ? 'bg-white shadow-sm text-blue-700' : 'text-gray-500 hover:text-gray-900'}`}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'user' ? 'bg-white shadow-sm text-emerald-700' : 'text-gray-500 hover:text-gray-900'}`}
                             onClick={() => setActiveTab('user')}
                         >
                             <User className="h-4 w-4" /> My Chats
