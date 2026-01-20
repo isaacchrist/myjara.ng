@@ -104,6 +104,12 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
                                     {typeInfo.label}
                                 </Badge>
 
+                                {store.registered_at && (
+                                    <Badge className="bg-gray-100 text-gray-700 flex items-center gap-1.5 px-3 py-1">
+                                        <span>Joined {new Date(store.registered_at).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</span>
+                                    </Badge>
+                                )}
+
                                 {cities.length > 0 && (
                                     <div className="flex items-center gap-1 text-sm text-gray-500">
                                         <MapPin className="h-4 w-4" />

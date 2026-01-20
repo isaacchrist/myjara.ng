@@ -23,6 +23,7 @@ export interface RegistrationData {
     accuracy: number;
 
     // Meta
+    categories?: string[]; // Array of category IDs (New)
     categoryId: string;
     subcategoryId: string;
     agreedToPolicy: boolean;
@@ -152,7 +153,9 @@ export async function registerRetailer(formData: RegistrationData) {
         subscription_plan: formData.selectedPlan || 'basic',
         subscription_expiry: expiryDate.toISOString(),
         payment_status: 'trial',
-        categories: [formData.categoryId, formData.subcategoryId].filter(Boolean),
+        categories: formData.categories && formData.categories.length > 0
+            ? formData.categories
+            : [formData.categoryId, formData.subcategoryId].filter(Boolean),
         frequent_markets: formData.choosenMarkets || [],
     }
 

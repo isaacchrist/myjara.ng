@@ -22,6 +22,9 @@ function RetailerRegisterForm() {
 
     // URL Params
     const urlPhone = searchParams.get('phone')
+    // Support multi-category param (comma separated)
+    const urlCategories = searchParams.get('categories') ? searchParams.get('categories')?.split(',') : null
+    // Legacy support
     const urlCategory = searchParams.get('category')
     const urlSubcategory = searchParams.get('subcategory')
 
@@ -56,6 +59,7 @@ function RetailerRegisterForm() {
         hasPhysicalStore: (searchParams.get('type') === 'physical' ? 'yes' : 'no'),
 
         // Category Data
+        categories: urlCategories || [], // Array of IDs
         categoryId: urlCategory || '',
         subcategoryId: urlSubcategory || '',
 
@@ -72,17 +76,19 @@ function RetailerRegisterForm() {
 
     // Load/Save Storage
     useEffect(() => {
-        if (urlPhone && !urlCategory) {
+        if (urlPhone && !urlCategory && !urlCategories) {
             const params = new URLSearchParams(searchParams.toString())
             router.push(`/register/retailer/category?${params.toString()}`)
         }
-    }, [urlPhone, urlCategory, router, searchParams])
+    }, [urlPhone, urlCategory, urlCategories, router, searchParams])
 
     useEffect(() => {
         const saved = sessionStorage.getItem(STORAGE_KEY)
         if (saved) {
             try {
                 const parsed = JSON.parse(saved)
+                // Override with URL params if present
+                if (urlCategories) parsed.categories = urlCategories
                 if (urlCategory) parsed.categoryId = urlCategory
                 if (urlSubcategory) parsed.subcategoryId = urlSubcategory
                 if (urlPhone) parsed.phone = urlPhone
@@ -91,7 +97,7 @@ function RetailerRegisterForm() {
                 setFormData(prev => ({ ...prev, ...parsed }))
             } catch (e) { console.error(e) }
         }
-    }, [urlCategory, urlSubcategory, urlPhone])
+    }, [urlCategories, urlCategory, urlSubcategory, urlPhone])
 
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -101,9 +107,15 @@ function RetailerRegisterForm() {
     }, [formData])
 
     // Category Name Fetch
-    const [categoryName, setCategoryName] = useState('')
+    const [categoryDisplay, setCategoryDisplay] = useState('')
     useEffect(() => {
         const fetchCategoryDetails = async () => {
+            if (formData.categories && formData.categories.length > 0) {
+                setCategoryDisplay(`${formData.categories.length} categories selected`)
+                return
+            }
+
+            // Legacy display logic
             if (!formData.categoryId) return
             const supabase = createClient()
             const { data: cat } = await supabase.from('categories').select('name').eq('id', formData.categoryId).single() as any
@@ -112,13 +124,16 @@ function RetailerRegisterForm() {
                 const { data: sub } = await supabase.from('categories').select('name').eq('id', formData.subcategoryId).single() as any
                 if (sub) subName = sub.name
             }
-            if (cat) setCategoryName(`${cat.name}${subName ? ` - ${subName}` : ''}`)
-            else setCategoryName('Unknown Category')
+            if (cat) setCategoryDisplay(`${cat.name}${subName ? ` - ${subName}` : ''}`)
+            else setCategoryDisplay('Unknown Category')
         }
         fetchCategoryDetails()
-    }, [formData.categoryId, formData.subcategoryId])
+    }, [formData.categoryId, formData.subcategoryId, formData.categories])
 
-    const getCategoryName = () => (!formData.categoryId ? 'No Category Selected' : categoryName || 'Loading...')
+    const getCategoryName = () => {
+        if (formData.categories && formData.categories.length > 0) return categoryDisplay
+        return (!formData.categoryId ? 'No Category Selected' : categoryDisplay || 'Loading...')
+    }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
@@ -140,7 +155,7 @@ function RetailerRegisterForm() {
                 residentialAddress: formData.residentialAddress,
 
                 businessName: formData.businessName,
-                businessDescription: `Retailer specializing in ${categoryName}`,
+                businessDescription: `Retailer specializing in ${categoryDisplay}`,
                 shopType: formData.shopType || 'physical',
 
                 latitude: formData.businessLocation.lat,
@@ -148,8 +163,11 @@ function RetailerRegisterForm() {
                 marketName: formData.businessLocation.marketName,
                 accuracy: formData.businessLocation.accuracy,
 
+                // Pass new categories array
+                categories: formData.categories,
                 categoryId: formData.categoryId,
                 subcategoryId: formData.subcategoryId,
+
                 agreedToPolicy: formData.agreedToPolicy,
                 profilePictureUrl: formData.profilePictureUrl,
 
