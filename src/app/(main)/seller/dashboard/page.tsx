@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { redirect } from 'next/navigation'
 import { Package, ShoppingCart, TrendingUp, Plus, User, MapPin, CreditCard, Settings, Store, AlertCircle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -128,7 +129,7 @@ export default async function RetailerDashboardPage() {
                             </div>
                         </div>
                         <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                            <Link href="/seller/products/new">Add Location via Product</Link>
+                            <Link href="/seller/profile/edit">Add Location</Link>
                         </Button>
                     </CardContent>
                 </Card>
@@ -146,8 +147,17 @@ export default async function RetailerDashboardPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="flex items-start gap-4">
-                            <div className="h-16 w-16 rounded-full bg-emerald-100 flex items-center justify-center text-2xl font-bold text-emerald-600">
-                                {(userData?.full_name || 'R')[0].toUpperCase()}
+                            <div className="relative h-16 w-16 rounded-full bg-emerald-100 flex items-center justify-center text-2xl font-bold text-emerald-600 overflow-hidden">
+                                {userData?.avatar_url ? (
+                                    <Image
+                                        src={userData.avatar_url}
+                                        alt={userData.full_name || 'Profile'}
+                                        fill
+                                        className="object-cover"
+                                    />
+                                ) : (
+                                    (userData?.full_name || 'R')[0].toUpperCase()
+                                )}
                             </div>
                             <div className="flex-1 space-y-2">
                                 <p className="font-semibold text-lg">{userData?.full_name}</p>

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Loader2, Store, Phone, Mail, CheckCircle, XCircle, User } from 'lucide-react'
+import { Loader2, Store, Phone, Mail, CheckCircle, XCircle, User, Calendar, MapPinned, Tag } from 'lucide-react'
 import Image from 'next/image'
 import { useToast } from '@/hooks/use-toast'
 import { createClient } from '@/lib/supabase/client'
@@ -20,12 +20,18 @@ type PendingStore = {
     settings: any
     phone: string | null
     shop_type: string | null
+    subscription_plan: string | null
+    categories: string[] | null
+    frequent_markets: string[] | null
     owner: {
         id: string
         full_name: string
         email: string
         avatar_url: string | null
         phone: string | null
+        date_of_birth: string | null
+        sex: string | null
+        residential_address: string | null
     }
 }
 
@@ -157,6 +163,63 @@ export function VerificationList({ initialStores }: VerificationListProps) {
                             <div>
                                 <h4 className="text-sm font-medium text-gray-900 mb-1">Description</h4>
                                 <p className="text-sm text-gray-600 line-clamp-3">{store.description}</p>
+                            </div>
+                        )}
+
+                        {/* Subscription & Categories */}
+                        <div className="space-y-3 rounded-lg border p-4 bg-blue-50/30">
+                            <div className="flex items-center gap-2">
+                                <Tag className="h-4 w-4 text-blue-600" />
+                                <span className="text-sm font-medium text-gray-900">Plan & Categories</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <span className="text-gray-500">Subscription:</span>
+                                    <Badge className="ml-2 capitalize">{store.subscription_plan || 'basic'}</Badge>
+                                </div>
+                                {store.categories && store.categories.length > 0 && (
+                                    <div className="col-span-2">
+                                        <span className="text-gray-500 block mb-1">Categories:</span>
+                                        <div className="flex flex-wrap gap-1">
+                                            {store.categories.slice(0, 5).map((cat: string, i: number) => (
+                                                <Badge key={i} variant="outline" className="text-xs">{cat}</Badge>
+                                            ))}
+                                            {store.categories.length > 5 && (
+                                                <Badge variant="outline" className="text-xs">+{store.categories.length - 5} more</Badge>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            {store.frequent_markets && store.frequent_markets.length > 0 && (
+                                <div className="text-sm">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <MapPinned className="h-3 w-3 text-gray-400" />
+                                        <span className="text-gray-500">Frequent Markets:</span>
+                                    </div>
+                                    <p className="text-gray-700">{store.frequent_markets.join(', ')}</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Personal Info */}
+                        {(store.owner?.date_of_birth || store.owner?.sex || store.owner?.residential_address) && (
+                            <div className="space-y-2 rounded-lg border p-4 bg-amber-50/30">
+                                <div className="flex items-center gap-2">
+                                    <Calendar className="h-4 w-4 text-amber-600" />
+                                    <span className="text-sm font-medium text-gray-900">Personal Information</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 text-sm">
+                                    {store.owner?.sex && (
+                                        <div><span className="text-gray-500">Sex:</span> <span className="capitalize">{store.owner.sex}</span></div>
+                                    )}
+                                    {store.owner?.date_of_birth && (
+                                        <div><span className="text-gray-500">DOB:</span> {new Date(store.owner.date_of_birth).toLocaleDateString()}</div>
+                                    )}
+                                    {store.owner?.residential_address && (
+                                        <div className="col-span-2"><span className="text-gray-500">Address:</span> {store.owner.residential_address}</div>
+                                    )}
+                                </div>
                             </div>
                         )}
 

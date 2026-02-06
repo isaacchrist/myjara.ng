@@ -155,7 +155,7 @@ function RetailerRegisterForm() {
                 residentialAddress: formData.residentialAddress,
 
                 businessName: formData.businessName,
-                businessDescription: `Retailer specializing in ${categoryDisplay}`,
+                businessDescription: (formData as any).businessDescription || `Retailer specializing in ${categoryDisplay}`,
                 shopType: formData.shopType || 'physical',
 
                 latitude: formData.businessLocation.lat,
@@ -188,6 +188,20 @@ function RetailerRegisterForm() {
                     throw new Error('An account with this email/phone already exists.')
                 }
                 throw new Error(result.error || 'Registration failed')
+            }
+
+            // Auto-Login User
+            const supabase = createClient()
+            const { error: loginError } = await supabase.auth.signInWithPassword({
+                email: formData.email,
+                password: formData.password
+            })
+
+            if (loginError) {
+                console.error('Auto-login failed:', loginError)
+                toast({ title: 'Account Created', description: 'Please log in to continue.', variant: 'default' })
+                router.push('/login')
+                return
             }
 
             // Success Redirect
@@ -286,6 +300,17 @@ function RetailerRegisterForm() {
             <div className="space-y-2">
                 <label className="text-sm font-medium">Business / Shop Name</label>
                 <Input name="businessName" value={formData.businessName} onChange={handleChange} placeholder="Chidi's Boutique" required />
+            </div>
+
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Shop Description</label>
+                <textarea
+                    name="businessDescription"
+                    value={(formData as any).businessDescription || ''}
+                    onChange={handleChange}
+                    className="w-full rounded-md border border-input px-3 py-2 text-sm min-h-[80px]"
+                    placeholder="Tell us about what you sell..."
+                />
             </div>
 
             <div className="space-y-2">

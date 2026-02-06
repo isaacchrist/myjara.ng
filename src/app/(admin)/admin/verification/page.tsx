@@ -15,7 +15,10 @@ export default async function VerificationPage() {
                 full_name,
                 email,
                 avatar_url,
-                phone
+                phone,
+                date_of_birth,
+                sex,
+                residential_address
             )
         `)
         .eq('status', 'pending')

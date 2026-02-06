@@ -105,8 +105,8 @@ export async function registerRetailer(formData: RegistrationData) {
         userId = authData.user.id
         console.log('Auth User Created:', userId)
 
-        // 2a. Manually Create Public User
-        const { error: publicUserError } = await admin.from('users').insert({
+        // 2a. Manually Create Public User (UPSERT to handle trigger conflict)
+        const { error: publicUserError } = await admin.from('users').upsert({
             id: userId,
             email: formData.email,
             full_name: formData.fullName,
@@ -118,7 +118,7 @@ export async function registerRetailer(formData: RegistrationData) {
             date_of_birth: formData.dateOfBirth,
             residential_address: formData.residentialAddress,
             emergency_contacts: [] // Initialize empty array
-        } as any)
+        } as any, { onConflict: 'id' })
 
         if (publicUserError && !publicUserError.message.includes('duplicate key')) {
             console.error('Public User Create Error:', publicUserError)
@@ -171,9 +171,30 @@ export async function registerRetailer(formData: RegistrationData) {
 
     console.log('Inserting Store Data:', storeData)
 
-    const { error: storeError } = await admin
+    // Check if store was already created by trigger
+    const { data: existingTriggerStore } = await admin
         .from('stores')
-        .insert(storeData)
+        .select('id')
+        .eq('owner_id', userId)
+        .maybeSingle() as any
+
+    let storeError = null
+
+    if (existingTriggerStore) {
+        // UPDATE existing store
+        console.log('Trigger created store found. Updating with full data...')
+        const { error } = await (admin as any)
+            .from('stores')
+            .update(storeData)
+            .eq('id', existingTriggerStore.id)
+        storeError = error
+    } else {
+        // INSERT new store
+        const { error } = await admin
+            .from('stores')
+            .insert(storeData)
+        storeError = error
+    }
 
     if (storeError) {
         console.error('Store Insert Error:', storeError)
@@ -238,8 +259,8 @@ export async function registerBrand(formData: RegistrationData) {
         userId = authData.user.id
         console.log('Brand User Created:', userId)
 
-        // 2. Manually Create Public User
-        const { error: publicUserError } = await admin.from('users').insert({
+        // 2. Manually Create Public User (UPSERT)
+        const { error: publicUserError } = await admin.from('users').upsert({
             id: userId,
             email: formData.email,
             full_name: formData.fullName,
@@ -251,7 +272,7 @@ export async function registerBrand(formData: RegistrationData) {
             date_of_birth: formData.dateOfBirth,
             residential_address: formData.residentialAddress,
             emergency_contacts: [] // Initialize empty array
-        } as any)
+        } as any, { onConflict: 'id' })
 
         if (publicUserError && !publicUserError.message.includes('duplicate key')) {
             console.error('Public User Create Error:', publicUserError)
@@ -290,9 +311,29 @@ export async function registerBrand(formData: RegistrationData) {
         frequent_markets: []
     }
 
-    const { error: storeError } = await admin
+    // Check if store was already created by trigger
+    const { data: existingBrandStore } = await admin
         .from('stores')
-        .insert(storeData)
+        .select('id')
+        .eq('owner_id', userId)
+        .maybeSingle() as any
+
+    let storeError = null
+
+    if (existingBrandStore) {
+        // UPDATE existing store
+        const { error } = await (admin as any)
+            .from('stores')
+            .update(storeData)
+            .eq('id', existingBrandStore.id)
+        storeError = error
+    } else {
+        // INSERT new store
+        const { error } = await admin
+            .from('stores')
+            .insert(storeData)
+        storeError = error
+    }
 
     if (storeError) {
         console.error('Store Insert Error:', storeError)
