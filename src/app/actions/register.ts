@@ -105,28 +105,34 @@ export async function registerRetailer(formData: RegistrationData) {
         userId = authData.user.id
         console.log('Auth User Created:', userId)
 
-        // 2a. Manually Create Public User (UPSERT to handle trigger conflict)
-        const { error: publicUserError } = await admin.from('users').upsert({
-            id: userId,
-            email: formData.email,
-            full_name: formData.fullName,
-            phone: formData.phone,
-            role: 'retailer',
-            avatar_url: formData.profilePictureUrl,
-            // NEW FIELDS (Phase 9)
-            sex: formData.sex,
-            date_of_birth: formData.dateOfBirth,
-            residential_address: formData.residentialAddress,
-            emergency_contacts: [] // Initialize empty array
-        } as any, { onConflict: 'id' })
-
-        if (publicUserError && !publicUserError.message.includes('duplicate key')) {
-            console.error('Public User Create Error:', publicUserError)
-            return { success: false, error: 'Failed to create user record: ' + publicUserError.message }
-        }
+        // 2a. Manually Create Public User - MOVED BELOW to run for all paths
+        // This ensures existing users also get updated with new metadata (avatar path, etc)
     }
 
+
+
     if (!userId) return { success: false, error: 'Could not determine User ID.' }
+
+    // 2. Ensuring Public User Logic (Run effectively as upsert for both paths)
+    // This is critical because if user came from trigger or existing auth, they might lack avatar/phone
+    const { error: publicUserError } = await admin.from('users').upsert({
+        id: userId,
+        email: formData.email,
+        full_name: formData.fullName,
+        phone: formData.phone,
+        role: 'retailer',
+        avatar_url: formData.profilePictureUrl,
+        // NEW FIELDS (Phase 9)
+        sex: formData.sex,
+        date_of_birth: formData.dateOfBirth,
+        residential_address: formData.residentialAddress,
+        emergency_contacts: [] // Initialize empty array
+    } as any, { onConflict: 'id' })
+
+    if (publicUserError && !publicUserError.message.includes('duplicate key')) {
+        console.error('Public User Create/Update Error:', publicUserError)
+        return { success: false, error: 'Failed to update user record: ' + publicUserError.message }
+    }
 
     // Prepare Store Data
     const storeSlug = (formData.businessName || formData.fullName || 'store')
