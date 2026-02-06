@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { formatPrice, formatJara } from '@/lib/utils'
 import { LocationButton } from './location-button'
 
-interface ProductCardProps {
+export interface ProductCardProps {
     id: string
     name: string
     price: number
@@ -15,6 +15,7 @@ interface ProductCardProps {
     jaraGetQty: number
     storeName: string
     storeSlug: string
+    retailerAvatar?: string | null
     imageUrl?: string
     cities?: string[]
     variant?: 'grid' | 'list'
@@ -28,6 +29,7 @@ export function ProductCard({
     jaraGetQty,
     storeName,
     storeSlug,
+    retailerAvatar,
     imageUrl,
     cities = [],
     variant = 'grid',
@@ -81,12 +83,22 @@ export function ProductCard({
                         </h3>
                     </Link>
 
+                    {/* Retailer Info */}
                     <Link
                         href={`/store/${storeSlug}`}
-                        className="mt-1 inline-block text-xs text-gray-500 hover:text-emerald-600 hover:underline transition-colors"
+                        className="mt-2 flex items-center gap-2 group/store"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        by {storeName}
+                        <div className="h-6 w-6 rounded-full bg-emerald-100 flex items-center justify-center overflow-hidden border border-emerald-200">
+                            {retailerAvatar ? (
+                                <Image src={retailerAvatar} alt={storeName} width={24} height={24} className="object-cover h-full w-full" />
+                            ) : (
+                                <span className="text-[10px] font-bold text-emerald-700">{storeName.charAt(0).toUpperCase()}</span>
+                            )}
+                        </div>
+                        <span className="text-xs text-gray-500 group-hover/store:text-emerald-600 transition-colors">
+                            {storeName}
+                        </span>
                     </Link>
 
                     <div>

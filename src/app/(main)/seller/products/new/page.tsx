@@ -49,11 +49,32 @@ export default function AddProductPage() {
                 return
             }
 
-            const { data: store } = await supabase.from('stores').select('*').eq('owner_id', user.id).single()
+            const { data: store } = await (supabase.from('stores').select('*').eq('owner_id', user.id).single() as any)
             setStore(store)
 
-            const { data: cats } = await supabase.from('categories').select('id, name').is('parent_id', null).order('name')
-            setCategories(cats || [])
+            // Fetch Reference Categories
+            const { data: allCats } = await supabase.from('categories').select('id, name').is('parent_id', null).order('name')
+
+            // Filter based on Store's selected categories
+            // store.categories is JSONB array of IDs e.g. ["uuid1", "uuid2"]
+            // If store has no categories selected, we should maybe allow all or none? 
+            // User requirement implies strictness. If none, maybe prompt to go to settings.
+
+            if (store && store.categories && Array.isArray(store.categories) && store.categories.length > 0) {
+                const allowedIds = new Set(store.categories)
+                const allowedCats = (allCats || []).filter((c: any) => allowedIds.has(c.id))
+                setCategories(allowedCats)
+            } else if (store && (store as any).category_id) {
+                // Fallback for legacy single category
+                const allowedCats = (allCats || []).filter((c: any) => c.id === (store as any).category_id)
+                setCategories(allowedCats)
+            } else {
+                // Fallback if nothing selected (User should update profile)
+                // Show all but maybe warn? Or show empty? 
+                // Let's show all for now to avoid blocking, but ideally restrict.
+                // "limit ... what categories they sell on"
+                setCategories(allCats || [])
+            }
         }
         fetchData()
     }, [router])

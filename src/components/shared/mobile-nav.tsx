@@ -40,14 +40,16 @@ export function MobileNav({ user, count, onLogout }: MobileNavProps) {
                         </span>
                     </Link>
 
-                    <Link
-                        href="/register/seller"
-                        onClick={() => setIsOpen(false)}
-                        className="flex items-center gap-2 text-lg font-semibold text-emerald-600"
-                    >
-                        <Store className="h-5 w-5" />
-                        Sell on MyJara
-                    </Link>
+                    {user && (
+                        <Link
+                            href="/register/seller"
+                            onClick={() => setIsOpen(false)}
+                            className="flex items-center gap-2 text-lg font-semibold text-emerald-600"
+                        >
+                            <Store className="h-5 w-5" />
+                            Sell on MyJara
+                        </Link>
+                    )}
 
                     <Link
                         href="/search"

@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Save, Plus, Trash2, MapPin, Store, Tag, Check } from 'lucide-react'
 import { toast } from 'sonner'
 import { PRODUCT_CATEGORIES } from '@/lib/constants'
+import { ProfilePictureUpload } from '@/components/shared/profile-picture-upload'
 
 // Plan limits for categories
 const PLAN_LIMITS: Record<string, number> = {
@@ -34,6 +35,7 @@ export default function EditProfilePage() {
     const [contacts, setContacts] = useState<{ name: string, number: string }[]>([])
     const [storeDescription, setStoreDescription] = useState('')
     const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+    const [profilePictureUrl, setProfilePictureUrl] = useState('')
 
     // Location (for market day)
     const [lat, setLat] = useState<number | null>(null)
@@ -60,6 +62,7 @@ export default function EditProfilePage() {
                 setPhone(userData.phone || '')
                 setAddress(userData.residential_address || '')
                 setContacts(userData.emergency_contacts || [])
+                setProfilePictureUrl(userData.avatar_url || '')
             }
             if (storeData) {
                 setLat(storeData.latitude)
@@ -138,7 +141,8 @@ export default function EditProfilePage() {
             latitude: lat || undefined,
             longitude: lng || undefined,
             storeDescription,
-            categories: selectedCategories
+            categories: selectedCategories,
+            profilePictureUrl
         })
 
         setSaving(false)
@@ -166,6 +170,17 @@ export default function EditProfilePage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Profile Picture Section */}
+                <div className="flex justify-center py-4">
+                    <div className="flex flex-col items-center gap-2">
+                        <Label>Profile Picture</Label>
+                        <ProfilePictureUpload
+                            value={profilePictureUrl}
+                            onChange={(url) => setProfilePictureUrl(url || '')}
+                        />
+                    </div>
+                </div>
+
                 {/* Contact Information */}
                 <Card>
                     <CardHeader>
@@ -233,8 +248,8 @@ export default function EditProfilePage() {
                                     type="button"
                                     onClick={() => toggleCategory(category.id)}
                                     className={`p-3 rounded-lg border text-left transition-all ${selectedCategories.includes(category.id)
-                                            ? 'bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500'
-                                            : 'bg-white border-gray-200 hover:border-emerald-300'
+                                        ? 'bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500'
+                                        : 'bg-white border-gray-200 hover:border-emerald-300'
                                         }`}
                                 >
                                     <div className="flex items-center gap-2">
@@ -323,6 +338,19 @@ export default function EditProfilePage() {
                                     </span>
                                 )}
                             </div>
+                            {(lat || lng) && (
+                                <div className="mt-2 text-right">
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => { setLat(null); setLng(null); }}
+                                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                    >
+                                        Remove Location
+                                    </Button>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 )}

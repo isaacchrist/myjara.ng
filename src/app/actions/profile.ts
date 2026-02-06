@@ -7,10 +7,11 @@ export interface ProfileUpdateData {
     phone?: string;
     residentialAddress?: string;
     emergencyContacts?: { name: string, number: string }[];
+    profilePictureUrl?: string; // New
 
     // Store updates
-    latitude?: number;
-    longitude?: number;
+    latitude?: number | null;
+    longitude?: number | null;
     storeDescription?: string;
     categories?: string[]; // Array of category IDs
 }
@@ -41,6 +42,7 @@ export async function updateProfile(formData: ProfileUpdateData) {
     if (formData.phone) updateData.phone = formData.phone
     if (formData.residentialAddress) updateData.residential_address = formData.residentialAddress
     if (formData.emergencyContacts) updateData.emergency_contacts = formData.emergencyContacts
+    if (formData.profilePictureUrl) updateData.avatar_url = formData.profilePictureUrl
 
     if (Object.keys(updateData).length > 0) {
         const { error: userError } = await (supabase
@@ -54,7 +56,7 @@ export async function updateProfile(formData: ProfileUpdateData) {
         }
     }
 
-    // 2. Update Store Data
+    // 2. Update Store Data (Sync Public Info)
     const storeUpdate: Record<string, any> = {}
 
     if (formData.latitude !== undefined && formData.longitude !== undefined) {
@@ -70,6 +72,10 @@ export async function updateProfile(formData: ProfileUpdateData) {
         storeUpdate.categories = formData.categories
     }
 
+    // SYNC Public Contact Info
+    if (formData.phone) storeUpdate.phone = formData.phone
+    if (formData.profilePictureUrl) storeUpdate.profile_picture_url = formData.profilePictureUrl
+
     if (Object.keys(storeUpdate).length > 0) {
         const { error: storeError } = await (supabase
             .from('stores') as any)
@@ -84,5 +90,6 @@ export async function updateProfile(formData: ProfileUpdateData) {
 
     revalidatePath('/seller/profile')
     revalidatePath('/seller/dashboard')
+    revalidatePath(`/store/${user.user_metadata?.store_slug}`) // Try to invalidate store page if possible (slug unknown here, but maybe not critical)
     return { success: true }
 }

@@ -10,10 +10,13 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
     const { slug } = await params
     const supabase = await createClient()
 
-    // Fetch store details with settings
+    // Fetch store details with settings AND owner info
     const { data: store } = await (supabase
         .from('stores') as any)
-        .select('*')
+        .select(`
+            *,
+            owner:users!inner(avatar_url, phone, full_name, email)
+        `)
         .eq('slug', slug)
         .single()
 
@@ -60,6 +63,10 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
 
     const cities = logistics ? [...new Set(logistics.map((l: any) => l.city))] : []
 
+    // Use Owner Data (fallback to store data if specific overrides exist, usually user data is master)
+    const profilePic = store.owner?.avatar_url || store.profile_picture_url || store.logo_url
+    const contactPhone = store.owner?.phone || store.phone
+
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
             {/* Store Banner & Header */}
@@ -76,21 +83,18 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
                 <div className="container mx-auto px-4">
                     <div className="relative -mt-16 mb-6 flex flex-col items-center sm:flex-row sm:items-end sm:gap-6">
                         {/* Profile Picture / Logo */}
-                        <div className="relative h-32 w-32 overflow-hidden rounded-full border-4 border-white bg-white shadow-lg shrink-0">
-                            {store.profile_picture_url || store.logo_url ? (
+                        <div className="relative h-32 w-32 overflow-hidden rounded-full border-4 border-white bg-white shadow-lg shrink-0 flex items-center justify-center bg-gray-100">
+                            {profilePic ? (
                                 <Image
-                                    src={store.profile_picture_url || store.logo_url}
+                                    src={profilePic}
                                     alt={store.name}
                                     fill
                                     className="object-cover"
                                 />
                             ) : (
-                                <div
-                                    className="flex h-full w-full items-center justify-center text-4xl font-bold text-white"
-                                    style={{ backgroundColor: primaryColor }}
-                                >
-                                    {store.name.charAt(0)}
-                                </div>
+                                <span className="text-4xl font-bold text-gray-400">
+                                    {(store.name || 'S').charAt(0).toUpperCase()}
+                                </span>
                             )}
                         </div>
 
@@ -120,9 +124,9 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
                         </div>
 
                         {/* Phone Number Button */}
-                        {store.phone && (
+                        {contactPhone && (
                             <div className="mt-4 sm:mt-0">
-                                <CopyPhoneButton phone={store.phone} />
+                                <CopyPhoneButton phone={contactPhone} />
                             </div>
                         )}
                     </div>
@@ -165,6 +169,7 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
                                     jaraGetQty={product.jara_get_quantity}
                                     storeName={product.store.name}
                                     storeSlug={product.store.slug}
+                                    retailerAvatar={profilePic}
                                     imageUrl={primaryImage}
                                     cities={cities}
                                     variant={layout}

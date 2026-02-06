@@ -157,6 +157,10 @@ export async function registerRetailer(formData: RegistrationData) {
             ? formData.categories
             : [formData.categoryId, formData.subcategoryId].filter(Boolean),
         frequent_markets: formData.choosenMarkets || [],
+
+        // Public Contact Info (Synced for visibility)
+        phone: formData.phone,
+        profile_picture_url: formData.profilePictureUrl,
     }
 
     // Map usage of categories if passed differently

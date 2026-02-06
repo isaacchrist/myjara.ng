@@ -82,8 +82,12 @@ export default function SellerProfilePage() {
                 <CardContent>
                     <div className="grid md:grid-cols-2 gap-6">
                         <div className="flex items-start gap-4">
-                            <div className="h-20 w-20 rounded-full bg-emerald-100 flex items-center justify-center text-3xl font-bold text-emerald-600">
-                                {(userData?.full_name || 'U')[0].toUpperCase()}
+                            <div className="h-24 w-24 rounded-full bg-emerald-100 flex items-center justify-center overflow-hidden border-2 border-emerald-500">
+                                {userData?.avatar_url ? (
+                                    <img src={userData.avatar_url} alt="Profile" className="h-full w-full object-cover" />
+                                ) : (
+                                    <span className="text-3xl font-bold text-emerald-600">{(userData?.full_name || 'U')[0].toUpperCase()}</span>
+                                )}
                             </div>
                             <div>
                                 <p className="font-semibold text-xl">{userData?.full_name || 'Not Set'}</p>
