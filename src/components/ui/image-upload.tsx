@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { X, Upload, Loader2, Image as ImageIcon } from 'lucide-react'
@@ -16,6 +16,7 @@ interface ImageUploadProps {
 
 export function ImageUpload({ value, onChange, disabled, maxFiles = 5, bucket = 'product-images' }: ImageUploadProps) {
     const [uploading, setUploading] = useState(false)
+    const fileInputRef = useRef<HTMLInputElement>(null)
 
     const onUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
@@ -55,6 +56,9 @@ export function ImageUpload({ value, onChange, disabled, maxFiles = 5, bucket = 
             alert('Failed to upload image')
         } finally {
             setUploading(false)
+            if (fileInputRef.current) {
+                fileInputRef.current.value = ''
+            }
         }
     }
 
@@ -78,12 +82,12 @@ export function ImageUpload({ value, onChange, disabled, maxFiles = 5, bucket = 
             </div>
             {value.length < maxFiles && (
                 <div className="flex items-center gap-2">
-                    <Button type="button" disabled={disabled || uploading} variant="secondary" onClick={() => document.getElementById('image-upload')?.click()}>
+                    <Button type="button" disabled={disabled || uploading} variant="secondary" onClick={() => fileInputRef.current?.click()}>
                         {uploading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
                         Upload Image
                     </Button>
                     <input
-                        id="image-upload"
+                        ref={fileInputRef}
                         type="file"
                         accept="image/*"
                         className="hidden"
