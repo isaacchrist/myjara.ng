@@ -22,9 +22,10 @@ function PulseAnimation() {
 interface GeoLocationCaptureProps {
     onLocationCaptured: (data: { lat: number, lng: number, marketName: string, accuracy: number }) => void
     initialMarket?: string
+    hideMarketSelector?: boolean  // Add this prop for non-market businesses
 }
 
-export function GeoLocationCapture({ onLocationCaptured, initialMarket }: GeoLocationCaptureProps) {
+export function GeoLocationCapture({ onLocationCaptured, initialMarket, hideMarketSelector = false }: GeoLocationCaptureProps) {
     const [status, setStatus] = useState<'idle' | 'requesting' | 'success' | 'error' | 'manual'>('idle')
     const [coords, setCoords] = useState<{ lat: number, lng: number, accuracy: number } | null>(null)
     const [market, setMarket] = useState<string>(initialMarket || '')
@@ -55,8 +56,11 @@ export function GeoLocationCapture({ onLocationCaptured, initialMarket }: GeoLoc
                 setCoords({ lat: latitude, lng: longitude, accuracy })
                 setStatus('success')
 
-                // If market is already selected, verify completion
-                if (market) {
+                // If market selector is hidden, auto-complete with empty market name
+                if (hideMarketSelector) {
+                    onLocationCaptured({ lat: latitude, lng: longitude, marketName: '', accuracy })
+                } else if (market) {
+                    // If market is already selected, verify completion
                     onLocationCaptured({ lat: latitude, lng: longitude, marketName: market, accuracy })
                 }
             },
@@ -136,22 +140,24 @@ export function GeoLocationCapture({ onLocationCaptured, initialMarket }: GeoLoc
                         </div>
                     </div>
 
-                    <div className="space-y-2 text-left w-full">
-                        <label className="text-sm font-medium">Which market is this?</label>
-                        <Select value={market} onValueChange={handleMarketChange}>
-                            <SelectTrigger className="bg-white">
-                                <SelectValue placeholder="Select Market" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {ABUJA_MARKETS.map(m => (
-                                    <SelectItem key={m.name} value={m.name}>{m.name}</SelectItem>
-                                ))}
-                                <SelectItem value="Other">Other / Not Listed</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
+                    {!hideMarketSelector && (
+                        <div className="space-y-2 text-left w-full">
+                            <label className="text-sm font-medium">Which market is this?</label>
+                            <Select value={market} onValueChange={handleMarketChange}>
+                                <SelectTrigger className="bg-white">
+                                    <SelectValue placeholder="Select Market" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {ABUJA_MARKETS.map(m => (
+                                        <SelectItem key={m.name} value={m.name}>{m.name}</SelectItem>
+                                    ))}
+                                    <SelectItem value="Other">Other / Not Listed</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
 
-                    {!market && (
+                    {!market && !hideMarketSelector && (
                         <p className="text-xs text-amber-600 font-medium">Please select a market to finish.</p>
                     )}
                 </div>

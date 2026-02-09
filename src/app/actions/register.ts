@@ -316,7 +316,11 @@ export async function registerBrand(formData: RegistrationData) {
         subscription_expiry: expiryDate.toISOString(),
         payment_status: 'trial',
         categories: [],
-        frequent_markets: []
+        frequent_markets: [],
+
+        // Public Contact Info (Synced for visibility on storefront)
+        phone: formData.phone,
+        profile_picture_url: formData.profilePictureUrl,
     }
 
     // Check if store was already created by trigger

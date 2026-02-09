@@ -43,7 +43,6 @@ function BrandRegisterForm() {
         businessLocation: {
             lat: null as number | null,
             lng: null as number | null,
-            marketName: '',
             accuracy: 0
         },
 
@@ -75,7 +74,7 @@ function BrandRegisterForm() {
                 // Location
                 latitude: formData.businessLocation.lat,
                 longitude: formData.businessLocation.lng,
-                marketName: formData.businessLocation.marketName,
+                marketName: '', // Wholesalers don't attend markets
                 accuracy: formData.businessLocation.accuracy,
 
                 // Meta
@@ -163,9 +162,11 @@ function BrandRegisterForm() {
                 <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-emerald-600" /> Warehouse / Office Location
                 </h4>
+                <p className="text-sm text-gray-500 mb-3">Capture your warehouse or main office location.</p>
                 <GeoLocationCapture
-                    initialMarket=""
-                    onLocationCaptured={(data) => setFormData(prev => ({ ...prev, businessLocation: data }))}
+                    initialMarket="" // No market for wholesalers
+                    hideMarketSelector={true}
+                    onLocationCaptured={(data) => setFormData(prev => ({ ...prev, businessLocation: { lat: data.lat, lng: data.lng, accuracy: data.accuracy } }))}
                 />
             </div>
 
