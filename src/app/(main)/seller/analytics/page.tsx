@@ -29,11 +29,13 @@ export default async function AnalyticsPage() {
         .eq('store_id', store.id)
 
     // Fetch all orders for analytics
-    const { data: orders } = await supabase
+    type OrderRecord = { id: string; total: number | null; status: string | null; delivery_address: any; created_at: string }
+    const { data: ordersData } = await supabase
         .from('orders')
         .select('id, total, status, delivery_address, created_at')
         .eq('store_id', store.id)
         .order('created_at', { ascending: false })
+    const orders = ordersData as OrderRecord[] | null
 
     const totalOrders = orders?.length || 0
     const totalRevenue = orders?.filter(o => o.status !== 'cancelled' && o.status !== 'pending').reduce((acc, curr) => acc + (curr.total || 0), 0) || 0
@@ -57,10 +59,11 @@ export default async function AnalyticsPage() {
     // Calculate Top Locations
     const locationCounts = orders?.reduce((acc: any, curr) => {
         if (!curr.delivery_address) return acc
-        // Try to extract a meaningful location name. Assuming simple string or object with 'address'/'city'
+
         let loc = 'Unknown'
+        // typeof null is 'object', so explicitly exclude null
         if (typeof curr.delivery_address === 'string') loc = curr.delivery_address
-        else if (typeof curr.delivery_address === 'object') {
+        else if (curr.delivery_address && typeof curr.delivery_address === 'object') {
             // Adapt based on actual JSON structure. 
             // Common pattern: { address: "...", city: "..." }
             const addr = (curr.delivery_address as any).address || (curr.delivery_address as any).street

@@ -70,7 +70,8 @@ function RetailerRegisterForm() {
         selectedPlan: '' as 'basic' | 'pro' | 'exclusive' | '',
         paymentMethod: '' as 'flutterwave' | 'promo_code' | '',
         promoCode: '',
-        profilePictureUrl: ''
+        profilePictureUrl: '',
+        idCardUrl: [] as string[]
     })
 
     const STORAGE_KEY = 'myjara_retailer_registration_v2'
