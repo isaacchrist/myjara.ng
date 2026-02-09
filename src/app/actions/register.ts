@@ -230,7 +230,7 @@ export async function registerBrand(formData: RegistrationData) {
             full_name: formData.fullName,
             role: 'brand_admin', // Wholesaler Role
             phone: formData.phone,
-            shop_type: 'wholesaler',
+            shop_type: 'brand',
             business_name: formData.businessName
         }
     })
@@ -265,29 +265,31 @@ export async function registerBrand(formData: RegistrationData) {
         userId = authData.user.id
         console.log('Brand User Created:', userId)
 
-        // 2. Manually Create Public User (UPSERT)
-        const { error: publicUserError } = await admin.from('users').upsert({
-            id: userId,
-            email: formData.email,
-            full_name: formData.fullName,
-            phone: formData.phone,
-            role: 'brand_admin',
-            avatar_url: formData.profilePictureUrl,
-            // NEW FIELDS (Phase 9)
-            sex: formData.sex,
-            date_of_birth: formData.dateOfBirth,
-            residential_address: formData.residentialAddress,
-            emergency_contacts: [] // Initialize empty array
-        } as any, { onConflict: 'id' })
-
-        if (publicUserError && !publicUserError.message.includes('duplicate key')) {
-            console.error('Public User Create Error:', publicUserError)
-            // Continue anyway if user created? No, might miss role.
-            // But we proceed to store creation.
-        }
+        // 2. Manually Create Public User - MOVED BELOW to run for all paths
     }
 
+
+
     if (!userId) return { success: false, error: 'Could not determine User ID.' }
+
+    // 2. Ensuring Public User Logic (Run effectively as upsert for both paths)
+    const { error: publicUserError } = await admin.from('users').upsert({
+        id: userId,
+        email: formData.email,
+        full_name: formData.fullName,
+        phone: formData.phone,
+        role: 'brand_admin',
+        avatar_url: formData.profilePictureUrl,
+        // NEW FIELDS (Phase 9)
+        sex: formData.sex,
+        date_of_birth: formData.dateOfBirth,
+        residential_address: formData.residentialAddress,
+        emergency_contacts: [] // Initialize empty array
+    } as any, { onConflict: 'id' })
+
+    if (publicUserError && !publicUserError.message.includes('duplicate key')) {
+        console.error('Public User Create/Update Error:', publicUserError)
+    }
 
     // 3. Insert Store Data
     const storeSlug = (formData.businessName || formData.fullName || 'brand')

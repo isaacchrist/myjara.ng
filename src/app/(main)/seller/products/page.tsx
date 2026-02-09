@@ -14,13 +14,11 @@ export default async function SellerProductsPage({ searchParams }: { searchParam
     if (!user) redirect('/login')
 
     // Get store
-    const { data: store } = await supabase
-        .from('stores')
-        .select('*')
-        .eq('owner_id', user.id)
-        .single() as any
+    // Get Active Store
+    const { getActiveStore } = await import('@/lib/store-context')
+    const storeData = await getActiveStore()
 
-    if (!store) {
+    if (!storeData) {
         return (
             // ... (No Store Found UI - omitted for brevity, keeping same if possible or re-rendering)
             <div className="p-8 max-w-4xl mx-auto">
@@ -34,6 +32,9 @@ export default async function SellerProductsPage({ searchParams }: { searchParam
             </div>
         )
     }
+    const { activeStore: store } = storeData
+
+
 
     // Get Store Categories Metadata
     let storeCategories: any[] = []

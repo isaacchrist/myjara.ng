@@ -8,13 +8,15 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { useSellerStore } from '@/context/seller-store-context'
 
 export default function SellerProfilePage() {
     const router = useRouter()
+    const { store } = useSellerStore()
     const [loading, setLoading] = useState(true)
     const [user, setUser] = useState<any>(null)
     const [userData, setUserData] = useState<any>(null)
-    const [store, setStore] = useState<any>(null)
+    // const [store, setStore] = useState<any>(null)
 
     useEffect(() => {
         const fetchData = async () => {
@@ -34,12 +36,9 @@ export default function SellerProfilePage() {
                 .single()
             setUserData(userData)
 
-            const { data: store } = await supabase
-                .from('stores')
-                .select('*')
-                .eq('owner_id', user.id)
-                .single()
-            setStore(store)
+            // store is already available from context
+
+            setLoading(false)
 
             setLoading(false)
         }

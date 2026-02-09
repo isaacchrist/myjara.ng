@@ -14,6 +14,7 @@ import { ArrowLeft, Save, Plus, Trash2, MapPin, Store, Tag, Check } from 'lucide
 import { toast } from 'sonner'
 import { PRODUCT_CATEGORIES } from '@/lib/constants'
 import { ProfilePictureUpload } from '@/components/shared/profile-picture-upload'
+import { useSellerStore } from '@/context/seller-store-context'
 
 // Plan limits for categories
 const PLAN_LIMITS: Record<string, number> = {
@@ -24,10 +25,11 @@ const PLAN_LIMITS: Record<string, number> = {
 
 export default function EditProfilePage() {
     const router = useRouter()
+    const { store } = useSellerStore()
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [user, setUser] = useState<any>(null)
-    const [store, setStore] = useState<any>(null)
+    // const [store, setStore] = useState<any>(null)
 
     // Form States
     const [phone, setPhone] = useState('')
@@ -52,10 +54,10 @@ export default function EditProfilePage() {
             }
 
             const { data: userData } = await supabase.from('users').select('*').eq('id', user.id).single() as any
-            const { data: storeData } = await supabase.from('stores').select('*').eq('owner_id', user.id).single() as any
+            // const { data: storeData } = await supabase.from('stores').select('*').eq('owner_id', user.id).single() as any
 
             setUser(userData)
-            setStore(storeData)
+            // setStore(storeData)
 
             // Populate Form
             if (userData) {
@@ -64,11 +66,17 @@ export default function EditProfilePage() {
                 setContacts(userData.emergency_contacts || [])
                 setProfilePictureUrl(userData.avatar_url || '')
             }
-            if (storeData) {
-                setLat(storeData.latitude)
-                setLng(storeData.longitude)
-                setStoreDescription(storeData.description || '')
-                setSelectedCategories(storeData.categories || [])
+            if (userData) {
+                setPhone(userData.phone || '')
+                setAddress(userData.residential_address || '')
+                setContacts(userData.emergency_contacts || [])
+                setProfilePictureUrl(userData.avatar_url || '')
+            }
+            if (store) {
+                setLat(store.latitude)
+                setLng(store.longitude)
+                setStoreDescription(store.description || '')
+                setSelectedCategories(store.categories || [])
             }
             setLoading(false)
         }

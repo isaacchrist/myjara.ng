@@ -9,13 +9,15 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { useSellerStore } from '@/context/seller-store-context'
 import { ABUJA_MARKETS } from '@/lib/constants'
 
 export default function MarketDaysPage() {
     const router = useRouter()
     const { toast } = useToast()
+    const { store } = useSellerStore()
     const [loading, setLoading] = useState(true)
-    const [store, setStore] = useState<any>(null)
+    // const [store, setStore] = useState<any>(null)
     const [upcomingMarkets, setUpcomingMarkets] = useState<any[]>([])
     const [enrolledMarkets, setEnrolledMarkets] = useState<any[]>([])
 
@@ -28,13 +30,9 @@ export default function MarketDaysPage() {
                 return
             }
 
-            const { data: store } = await supabase
-                .from('stores')
-                .select('*')
-                .eq('owner_id', user.id)
-                .single()
+            if (!store) return
 
-            setStore(store)
+            // store is already available from context
 
             // Simulate fetching next market days for Abuja Markets
             // In a real app, this would come from a 'market_days' table
@@ -68,7 +66,7 @@ export default function MarketDaysPage() {
             setLoading(false)
         }
         fetchData()
-    }, [router])
+    }, [router, store])
 
     const handleEnlist = async (market: any) => {
         if (!store) return

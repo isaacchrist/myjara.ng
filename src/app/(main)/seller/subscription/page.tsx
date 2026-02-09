@@ -3,21 +3,23 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, CreditCard, Ticket, CheckCircle2, Loader2 } from 'lucide-react'
+import { ArrowLeft, CreditCard, Ticket, Check, Loader2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import { SUBSCRIPTION_PLANS } from '@/lib/constants'
+import { useSellerStore } from '@/context/seller-store-context'
+import { SUBSCRIPTION_PLANS, WHOLESALER_PLANS } from '@/lib/constants'
 
 export default function SubscriptionPage() {
     const router = useRouter()
     const { toast } = useToast()
+    const { store } = useSellerStore()
     const [loading, setLoading] = useState(true)
     const [processing, setProcessing] = useState(false)
-    const [store, setStore] = useState<any>(null)
+    // const [store, setStore] = useState<any>(null)
     const [selectedPlan, setSelectedPlan] = useState('')
     const [promoCode, setPromoCode] = useState('')
     const [paymentMethod, setPaymentMethod] = useState<'flutterwave' | 'promo_code' | ''>('')
@@ -31,18 +33,13 @@ export default function SubscriptionPage() {
                 return
             }
 
-            const { data: store } = await supabase
-                .from('stores')
-                .select('*')
-                .eq('owner_id', user.id)
-                .single()
+            if (!store) return
 
-            setStore(store)
             setSelectedPlan((store as any)?.subscription_plan || 'basic')
             setLoading(false)
         }
         fetchData()
-    }, [router])
+    }, [router, store])
 
     const handleSubscribe = async () => {
         if (!selectedPlan) {
@@ -133,7 +130,7 @@ export default function SubscriptionPage() {
             {/* Plans */}
             <h2 className="text-lg font-semibold mb-4">Choose a Plan</h2>
             <div className="grid md:grid-cols-3 gap-4 mb-6">
-                {SUBSCRIPTION_PLANS.map(plan => (
+                {(store?.shop_type === 'brand' ? WHOLESALER_PLANS : SUBSCRIPTION_PLANS).map(plan => (
                     <Card
                         key={plan.id}
                         onClick={() => setSelectedPlan(plan.id)}
@@ -143,7 +140,7 @@ export default function SubscriptionPage() {
                             }`}
                     >
                         <CardContent className="p-6">
-                            {plan.id === 'pro' && (
+                            {(plan.id === 'pro' || plan.id === 'supplier_pro') && (
                                 <Badge className="absolute top-2 right-2 bg-emerald-500">Popular</Badge>
                             )}
                             <h3 className="text-lg font-bold">{plan.name}</h3>
@@ -154,7 +151,7 @@ export default function SubscriptionPage() {
                             <ul className="space-y-2 text-sm text-gray-600">
                                 {plan.features.map((feature, i) => (
                                     <li key={i} className="flex items-center gap-2">
-                                        <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                                        <Check className="h-4 w-4 text-emerald-500" />
                                         {feature}
                                     </li>
                                 ))}

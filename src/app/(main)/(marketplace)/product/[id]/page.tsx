@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { ShareButton } from '@/components/marketplace/share-button'
+import { ContactSellerButton } from '@/components/marketplace/contact-seller-button'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -143,9 +144,10 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                                         </div>
                                     )}
                                 </div>
-                                <Button className="w-full mt-4 bg-emerald-600 hover:bg-emerald-700">
-                                    Contact Seller
-                                </Button>
+                                <ContactSellerButton
+                                    storeId={product.store_id}
+                                    storeName={product.store?.name}
+                                />
                             </div>
                         </div>
                     </div>

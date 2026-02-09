@@ -24,8 +24,14 @@ export default async function RetailerDashboardPage() {
 
     const isWholesaler = userData?.role === 'brand_admin'
 
-    // 2. Fetch Store Data
-    const { data: store } = await supabase.from('stores').select('*').eq('owner_id', user.id).single() as any
+    // 2. Fetch Store Data (Active Store)
+    const { getActiveStore } = await import('@/lib/store-context')
+    const storeData = await getActiveStore()
+
+    // If no store, redirect (layout handles this but good to be safe)
+    if (!storeData) redirect('/onboarding/store')
+
+    const { activeStore: store } = storeData
 
     // 3. Fetch Products Count (if store exists)
     let productCount = 0
@@ -34,20 +40,25 @@ export default async function RetailerDashboardPage() {
         productCount = count || 0
     }
 
-    // 4. Fetch Order Stats
-    const [ordersRes, spendRes] = await Promise.all([
-        supabase.from('orders').select('*', { count: 'exact', head: true }).eq('customer_id', user.id),
-        supabase.from('orders').select('total_amount').eq('customer_id', user.id).neq('status', 'cancelled')
+    // 4. Fetch Order Stats (Sales)
+    const [ordersRes, revenueRes] = await Promise.all([
+        supabase.from('orders').select('*', { count: 'exact', head: true }).eq('store_id', store.id),
+        supabase.from('orders').select('total_amount').eq('store_id', store.id).neq('status', 'cancelled').neq('status', 'pending')
+        // Revenue typically counts paid/completed orders, but for now we exclude cancelled/pending? 
+        // Or maybe just 'paid', 'shipped', 'delivered'? Let's keep it simple: non-cancelled, non-pending.
+        // Actually, simple "Total Volume" might be better, but "Revenue" implies income. 
+        // Let's stick to non-cancelled for now to match broad "Sales" definition, or maybe status 'paid' and above.
+        // For simplicity in this fix, we'll exclude cancelled.
     ])
 
     const totalOrders = ordersRes.count || 0
-    const totalSpend = (spendRes.data as any[])?.reduce((acc: number, curr: any) => acc + (curr.total_amount || 0), 0) || 0
+    const totalRevenue = (revenueRes.data as any[])?.reduce((acc: number, curr: any) => acc + (curr.total_amount || 0), 0) || 0
 
-    // 5. Recent Orders
+    // 5. Recent Orders (Sales)
     const { data: recentOrders } = await supabase
         .from('orders')
         .select('id, total_amount, status, created_at')
-        .eq('customer_id', user.id)
+        .eq('store_id', store.id)
         .order('created_at', { ascending: false })
         .limit(5)
 
@@ -230,7 +241,7 @@ export default async function RetailerDashboardPage() {
                         </div>
                         <div className="mt-4">
                             <p className="text-2xl font-bold text-gray-900">{totalOrders}</p>
-                            <p className="text-sm text-gray-500">Orders Placed</p>
+                            <p className="text-sm text-gray-500">Orders Received</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -240,8 +251,8 @@ export default async function RetailerDashboardPage() {
                             <TrendingUp className="h-5 w-5 text-purple-600" />
                         </div>
                         <div className="mt-4">
-                            <p className="text-2xl font-bold text-gray-900">{formatPrice(totalSpend)}</p>
-                            <p className="text-sm text-gray-500">Total Spent</p>
+                            <p className="text-2xl font-bold text-gray-900">{formatPrice(totalRevenue)}</p>
+                            <p className="text-sm text-gray-500">Total Revenue</p>
                         </div>
                     </CardContent>
                 </Card>

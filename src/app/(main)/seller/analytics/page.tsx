@@ -2,7 +2,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { TrendingUp, Users, ShoppingBag, DollarSign, MapPin } from 'lucide-react'
+import { TrendingUp, ShoppingBag, DollarSign, MapPin, Package } from 'lucide-react'
 import { redirect } from 'next/navigation'
 
 export default async function AnalyticsPage() {
@@ -13,11 +13,14 @@ export default async function AnalyticsPage() {
         redirect('/login')
     }
 
-    const { data: store } = await (supabase.from('stores').select('*').eq('owner_id', user.id).single() as any)
+    const { getActiveStore } = await import('@/lib/store-context')
+    const storeData = await getActiveStore()
 
-    if (!store) {
+    if (!storeData) {
         redirect('/register/seller')
     }
+
+    const { activeStore: store } = storeData
 
     // Fetch Products Count
     const { count: productCount } = await supabase
@@ -25,22 +28,32 @@ export default async function AnalyticsPage() {
         .select('*', { count: 'exact', head: true })
         .eq('store_id', store.id)
 
-    // Fetch basic order stats (Mocking breakdown for now as we don't track viewer roles yet)
-    // In a real scenario, we'd log page views with user roles.
+    // Fetch basic order stats (Sales)
+    const [ordersRes, revenueRes] = await Promise.all([
+        supabase.from('orders').select('*', { count: 'exact', head: true }).eq('store_id', store.id),
+        supabase.from('orders').select('total_amount').eq('store_id', store.id).neq('status', 'cancelled').neq('status', 'pending')
+    ])
+
+    const totalOrders = ordersRes.count || 0
+    const totalRevenue = (revenueRes.data as any[])?.reduce((acc: number, curr: any) => acc + (curr.total_amount || 0), 0) || 0
+
+    // Mocking visits for now as we don't track page views yet
+    const totalVisits = 0 // Placeholder until analytics service is built
+    const conversionRate = totalVisits > 0 ? ((totalOrders / totalVisits) * 100).toFixed(1) : '0.0'
 
     const stats = [
-        { label: 'Total Revenue', value: '₦0', icon: DollarSign, change: '+0% from last month' },
-        { label: 'Store Visits', value: '124', icon: Users, change: '+12% from last month' },
-        { label: 'Total Products', value: productCount || 0, icon: ShoppingBag, change: 'Active items' },
-        { label: 'Conversion Rate', value: '0%', icon: TrendingUp, change: 'Based on visits' },
+        { label: 'Total Revenue', value: '₦' + totalRevenue.toLocaleString(), icon: DollarSign, change: 'Lifetime sales' },
+        { label: 'Total Orders', value: totalOrders.toString(), icon: ShoppingBag, change: 'Lifetime orders' },
+        { label: 'Total Products', value: (productCount || 0).toString(), icon: Package, change: 'Active items' },
+        { label: 'Avg Order Value', value: totalOrders > 0 ? '₦' + Math.round(totalRevenue / totalOrders).toLocaleString() : '₦0', icon: TrendingUp, change: 'Per order' },
     ]
 
     return (
-        <div className="p-8 max-w-7xl mx-auto space-y-8">
+        <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
             <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
 
             {/* Key Metrics */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 {stats.map((stat) => (
                     <Card key={stat.label}>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

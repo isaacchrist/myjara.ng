@@ -39,10 +39,10 @@ export async function updateProfile(formData: ProfileUpdateData) {
 
     // 1. Update User Data
     const updateData: Record<string, any> = {}
-    if (formData.phone) updateData.phone = formData.phone
-    if (formData.residentialAddress) updateData.residential_address = formData.residentialAddress
-    if (formData.emergencyContacts) updateData.emergency_contacts = formData.emergencyContacts
-    if (formData.profilePictureUrl) updateData.avatar_url = formData.profilePictureUrl
+    if (formData.phone !== undefined) updateData.phone = formData.phone
+    if (formData.residentialAddress !== undefined) updateData.residential_address = formData.residentialAddress
+    if (formData.emergencyContacts !== undefined) updateData.emergency_contacts = formData.emergencyContacts
+    if (formData.profilePictureUrl !== undefined) updateData.avatar_url = formData.profilePictureUrl
 
     if (Object.keys(updateData).length > 0) {
         const { error: userError } = await (supabase
@@ -73,8 +73,8 @@ export async function updateProfile(formData: ProfileUpdateData) {
     }
 
     // SYNC Public Contact Info
-    if (formData.phone) storeUpdate.phone = formData.phone
-    if (formData.profilePictureUrl) storeUpdate.profile_picture_url = formData.profilePictureUrl
+    if (formData.phone !== undefined) storeUpdate.phone = formData.phone
+    if (formData.profilePictureUrl !== undefined) storeUpdate.profile_picture_url = formData.profilePictureUrl
 
     if (Object.keys(storeUpdate).length > 0) {
         const { error: storeError } = await (supabase

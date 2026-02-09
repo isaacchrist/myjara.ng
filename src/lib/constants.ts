@@ -38,6 +38,21 @@ export const SUBSCRIPTION_PLANS = [
     }
 ]
 
+export const WHOLESALER_PLANS = [
+    {
+        id: 'supplier_basic',
+        name: 'Supplier Basic',
+        price: 15000,
+        features: ['List up to 50 Products', 'Verify 2 Retailers', 'Basic Analytics']
+    },
+    {
+        id: 'supplier_pro',
+        name: 'Supplier Pro',
+        price: 45000,
+        features: ['Unlimited Products', 'Unlimited Retailers', 'Advanced Market Trends', 'Priority Support']
+    }
+]
+
 export const ABUJA_LOCATIONS = [
     {
         lga: 'Abaji',

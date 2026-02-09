@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { Package, ShoppingCart, Eye, TrendingUp, Gift, Plus } from 'lucide-react'
+import { Package, ShoppingCart, Eye, TrendingUp, Gift, Plus, Store } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -30,7 +30,7 @@ export default async function DashboardPage() {
     // (Dead code block removed)
     // Retailers are redirected to / above.
 
-    const { data: store } = await supabase.from('stores').select('id, name, slug').eq('owner_id', user.id).single() as any
+    const { data: store } = await supabase.from('stores').select('id, name, slug, status, shop_type').eq('owner_id', user.id).single() as any
 
     // Stats Data Containers
     let totalOrders = 0
@@ -184,37 +184,72 @@ export default async function DashboardPage() {
                     </CardContent>
                 </Card>
 
-                {/* Quick Actions (Replaced Jara Stats for now as it's complex) */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Quick Actions</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid gap-4">
-                            <Link
-                                href="/dashboard/products/new"
-                                className="flex items-center gap-3 rounded-lg border border-gray-200 p-4 transition-colors hover:border-emerald-500 hover:bg-emerald-50"
-                            >
-                                <Package className="h-6 w-6 text-emerald-600" />
-                                <span className="font-medium text-gray-900">Add Product</span>
-                            </Link>
-                            <Link
-                                href="/dashboard/jara"
-                                className="flex items-center gap-3 rounded-lg border border-gray-200 p-4 transition-colors hover:border-amber-500 hover:bg-amber-50"
-                            >
-                                <Gift className="h-6 w-6 text-amber-600" />
-                                <span className="font-medium text-gray-900">Set Jara Offer</span>
-                            </Link>
-                            <Link
-                                href="/dashboard/analytics"
-                                className="flex items-center gap-3 rounded-lg border border-gray-200 p-4 transition-colors hover:border-purple-500 hover:bg-purple-50"
-                            >
-                                <TrendingUp className="h-6 w-6 text-purple-600" />
-                                <span className="font-medium text-gray-900">Analytics</span>
-                            </Link>
-                        </div>
-                    </CardContent>
-                </Card>
+                {/* Quick Actions & Store Info */}
+                <div className="space-y-6">
+                    {/* Store Card */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Store className="h-5 w-5" />
+                                Your Store
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {store ? (
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center">
+                                        <p className="font-semibold text-lg">{store.name}</p>
+                                        <Badge variant={store.status === 'active' ? 'default' : 'secondary'}>
+                                            {store.status}
+                                        </Badge>
+                                    </div>
+                                    <div className="text-sm text-gray-500 space-y-1">
+                                        <p><strong>Slug:</strong> {store.slug}</p>
+                                        <p><strong>Type:</strong> {store.shop_type || 'Wholesaler'}</p>
+                                    </div>
+                                    <div className="pt-2">
+                                        <Link href={`/store/${store.slug}`} className="text-emerald-600 hover:underline text-sm">
+                                            View Storefront →
+                                        </Link>
+                                    </div>
+                                </div>
+                            ) : (
+                                <p className="text-gray-500">No store info available.</p>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Quick Actions</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid gap-4">
+                                <Link
+                                    href="/dashboard/products/new"
+                                    className="flex items-center gap-3 rounded-lg border border-gray-200 p-4 transition-colors hover:border-emerald-500 hover:bg-emerald-50"
+                                >
+                                    <Package className="h-6 w-6 text-emerald-600" />
+                                    <span className="font-medium text-gray-900">Add Product</span>
+                                </Link>
+                                <Link
+                                    href="/dashboard/jara"
+                                    className="flex items-center gap-3 rounded-lg border border-gray-200 p-4 transition-colors hover:border-amber-500 hover:bg-amber-50"
+                                >
+                                    <Gift className="h-6 w-6 text-amber-600" />
+                                    <span className="font-medium text-gray-900">Set Jara Offer</span>
+                                </Link>
+                                <Link
+                                    href="/dashboard/analytics"
+                                    className="flex items-center gap-3 rounded-lg border border-gray-200 p-4 transition-colors hover:border-purple-500 hover:bg-purple-50"
+                                >
+                                    <TrendingUp className="h-6 w-6 text-purple-600" />
+                                    <span className="font-medium text-gray-900">Analytics</span>
+                                </Link>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
         </div>
     )
