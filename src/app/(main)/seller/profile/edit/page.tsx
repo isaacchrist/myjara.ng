@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Save, Plus, Trash2, MapPin, Store, Tag, Check } from 'lucide-react'
+import { ArrowLeft, Save, Plus, Trash2, MapPin, Store, Tag, Check, CreditCard } from 'lucide-react'
 import { toast } from 'sonner'
 import { PRODUCT_CATEGORIES } from '@/lib/constants'
 import { ProfilePictureUpload } from '@/components/shared/profile-picture-upload'
@@ -43,6 +43,11 @@ export default function EditProfilePage() {
     const [lat, setLat] = useState<number | null>(null)
     const [lng, setLng] = useState<number | null>(null)
     const [gettingLocation, setGettingLocation] = useState(false)
+
+    // Settlement Account
+    const [bankName, setBankName] = useState('')
+    const [accountNumber, setAccountNumber] = useState('')
+    const [accountName, setAccountName] = useState('')
 
     useEffect(() => {
         const fetchData = async () => {
@@ -77,6 +82,9 @@ export default function EditProfilePage() {
                 setLng(store.longitude)
                 setStoreDescription(store.description || '')
                 setSelectedCategories(store.categories || [])
+                setBankName((store as any).bank_name || '')
+                setAccountNumber((store as any).account_number || '')
+                setAccountName((store as any).account_name || '')
             }
             setLoading(false)
         }
@@ -150,7 +158,10 @@ export default function EditProfilePage() {
             longitude: lng || undefined,
             storeDescription,
             categories: selectedCategories,
-            profilePictureUrl
+            profilePictureUrl,
+            bankName,
+            accountNumber,
+            accountName
         })
 
         setSaving(false)
@@ -362,6 +373,51 @@ export default function EditProfilePage() {
                         </CardContent>
                     </Card>
                 )}
+
+                {/* Settlement Account */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <CreditCard className="h-5 w-5 text-emerald-500" />
+                            Settlement Account
+                        </CardTitle>
+                        <CardDescription>
+                            Add your bank account details to receive payments from sales
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div>
+                            <Label htmlFor="bankName">Bank Name</Label>
+                            <Input
+                                id="bankName"
+                                value={bankName}
+                                onChange={(e) => setBankName(e.target.value)}
+                                placeholder="e.g., Access Bank, GTBank, UBA"
+                            />
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <Label htmlFor="accountNumber">Account Number</Label>
+                                <Input
+                                    id="accountNumber"
+                                    value={accountNumber}
+                                    onChange={(e) => setAccountNumber(e.target.value)}
+                                    placeholder="10-digit account number"
+                                    maxLength={10}
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="accountName">Account Name</Label>
+                                <Input
+                                    id="accountName"
+                                    value={accountName}
+                                    onChange={(e) => setAccountName(e.target.value)}
+                                    placeholder="Account holder name"
+                                />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
 
                 <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={saving}>
                     {saving ? 'Saving...' : 'Save Changes'}

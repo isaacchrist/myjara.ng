@@ -11,9 +11,10 @@ interface ImageUploadProps {
     onChange: (value: string[]) => void;
     disabled?: boolean;
     maxFiles?: number;
+    bucket?: string;
 }
 
-export function ImageUpload({ value, onChange, disabled, maxFiles = 5 }: ImageUploadProps) {
+export function ImageUpload({ value, onChange, disabled, maxFiles = 5, bucket = 'product-images' }: ImageUploadProps) {
     const [uploading, setUploading] = useState(false)
 
     const onUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,7 +36,7 @@ export function ImageUpload({ value, onChange, disabled, maxFiles = 5 }: ImageUp
 
         try {
             const { error: uploadError } = await supabase.storage
-                .from('product-images')
+                .from(bucket)
                 .upload(filePath, file)
 
             if (uploadError) {
@@ -44,7 +45,7 @@ export function ImageUpload({ value, onChange, disabled, maxFiles = 5 }: ImageUp
 
             // 2. Get Url
             const { data: { publicUrl } } = supabase.storage
-                .from('product-images')
+                .from(bucket)
                 .getPublicUrl(filePath)
 
             onChange([...value, publicUrl])

@@ -165,24 +165,28 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     jara_buy_quantity,
                     jara_get_quantity,
                     primary_image_url,
-                    stores!inner (
+                    stores!inner(
                         id,
                         name,
                         slug,
                         logo_url,
-                        status
+                        profile_picture_url,
+                        status,
+                        owner: users(
+                            avatar_url
+                        )
                     ),
-                    categories (
+                    categories(
                         id,
                         name
                     )
-                `)
+                        `)
                 .eq('status', 'active')
                 .eq('stores.status', 'active')
                 .limit(50)
 
             if (query) {
-                dbQuery = dbQuery.ilike('name', `%${query}%`)
+                dbQuery = dbQuery.ilike('name', `% ${query} % `)
             }
             if (categoryIds.length > 0) {
                 dbQuery = dbQuery.in('category_id', categoryIds)
@@ -216,6 +220,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     store_name: p.stores?.name || 'Unknown Store',
                     store_slug: p.stores?.slug || '',
                     store_logo_url: p.stores?.logo_url,
+                    store_profile_pic: p.stores?.profile_picture_url,
+                    store_owner_avatar: p.stores?.owner?.avatar_url,
                     category_id: p.categories?.id,
                     category_name: p.categories?.name,
                     cities: []
@@ -270,7 +276,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                                         <Button
                                             size="sm"
                                             variant={sort === 'price_asc' ? 'default' : 'outline'}
-                                            className={`${sort === 'price_asc' ? 'bg-emerald-600 hover:bg-emerald-700' : 'text-emerald-700 border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800'}`}
+                                            className={`${sort === 'price_asc' ? 'bg-emerald-600 hover:bg-emerald-700' : 'text-emerald-700 border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800'} `}
                                         >
                                             Cheapest
                                         </Button>
@@ -279,7 +285,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                                         <Button
                                             size="sm"
                                             variant={sort === 'jara_desc' ? 'default' : 'outline'}
-                                            className={`${sort === 'jara_desc' ? 'bg-emerald-800 hover:bg-emerald-900' : 'text-emerald-700 border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800'}`}
+                                            className={`${sort === 'jara_desc' ? 'bg-emerald-800 hover:bg-emerald-900' : 'text-emerald-700 border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800'} `}
                                         >
                                             Best Jara
                                         </Button>
@@ -288,7 +294,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                                         <Button
                                             size="sm"
                                             variant={sort === 'hybrid' ? 'default' : 'outline'}
-                                            className={`${sort === 'hybrid' ? 'bg-emerald-500 hover:bg-emerald-600' : 'text-emerald-700 border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800'}`}
+                                            className={`${sort === 'hybrid' ? 'bg-emerald-500 hover:bg-emerald-600' : 'text-emerald-700 border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800'} `}
                                         >
                                             Best Value
                                         </Button>
@@ -337,7 +343,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                                 </h1>
                                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                                     {resultsCount} products found
-                                    {city && ` in ${city}`}
+                                    {city && ` in ${city} `}
                                 </p>
                             </div>
 
@@ -363,6 +369,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                                         storeName={product.store_name || 'Unknown Store'}
                                         storeSlug={product.store_slug || ''}
                                         imageUrl={product.primary_image_url}
+                                        retailerAvatar={product.store_profile_pic || product.store_owner_avatar || product.store_logo_url}
                                         cities={product.cities || []}
                                     />
                                 ))}

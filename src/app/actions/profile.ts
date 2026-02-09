@@ -14,6 +14,11 @@ export interface ProfileUpdateData {
     longitude?: number | null;
     storeDescription?: string;
     categories?: string[]; // Array of category IDs
+
+    // Settlement Account
+    bankName?: string;
+    accountNumber?: string;
+    accountName?: string;
 }
 
 export async function updateProfile(formData: ProfileUpdateData) {
@@ -75,6 +80,11 @@ export async function updateProfile(formData: ProfileUpdateData) {
     // SYNC Public Contact Info
     if (formData.phone !== undefined) storeUpdate.phone = formData.phone
     if (formData.profilePictureUrl !== undefined) storeUpdate.profile_picture_url = formData.profilePictureUrl
+
+    // Settlement Account
+    if (formData.bankName !== undefined) storeUpdate.bank_name = formData.bankName
+    if (formData.accountNumber !== undefined) storeUpdate.account_number = formData.accountNumber
+    if (formData.accountName !== undefined) storeUpdate.account_name = formData.accountName
 
     if (Object.keys(storeUpdate).length > 0) {
         const { error: storeError } = await (supabase

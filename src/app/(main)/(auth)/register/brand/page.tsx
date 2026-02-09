@@ -47,7 +47,8 @@ function BrandRegisterForm() {
         },
 
         agreedToPolicy: false,
-        profilePictureUrl: ''
+        profilePictureUrl: '',
+        cacUrl: [] as string[] // New
     })
 
     const handleRegister = async () => {
@@ -81,7 +82,8 @@ function BrandRegisterForm() {
                 categoryId: '', // Optional for Brand?
                 subcategoryId: '',
                 agreedToPolicy: formData.agreedToPolicy,
-                profilePictureUrl: formData.profilePictureUrl
+                profilePictureUrl: formData.profilePictureUrl,
+                cacUrl: formData.cacUrl?.[0] || '' // Pick first or empty
             }
 
             // Call Server Action
@@ -130,10 +132,7 @@ function BrandRegisterForm() {
             </div>
             <div className="space-y-2">
                 <label className="text-sm font-medium">Phone Number</label>
-                <div className="flex items-center justify-between p-3 bg-gray-50 border rounded-md">
-                    <span className="font-mono font-medium text-gray-700">{formData.phone}</span>
-                    <Button variant="link" size="sm" className="h-auto p-0 text-emerald-600" onClick={() => setStep('phone_entry')}>Change</Button>
-                </div>
+                <Input type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} placeholder="08012345678" />
             </div>
             <div className="space-y-2">
                 <label className="text-sm font-medium">Email Address</label>
@@ -148,6 +147,17 @@ function BrandRegisterForm() {
 
     const renderStep2 = () => (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+            <div className="space-y-2">
+                <label className="text-sm font-medium">CAC Certification</label>
+                <p className="text-xs text-gray-500 mb-2">Upload your CAC certificate for business verification.</p>
+                <ImageUpload
+                    value={formData.cacUrl}
+                    onChange={(urls) => setFormData(prev => ({ ...prev, cacUrl: urls }))}
+                    maxFiles={1}
+                    bucket="product-images"
+                />
+            </div>
+
             <div className="space-y-2">
                 <label className="text-sm font-medium">Business Description</label>
                 <textarea
@@ -198,7 +208,7 @@ function BrandRegisterForm() {
                         {step > 1 ? (
                             <Button variant="outline" onClick={() => setStep(1)}>Back</Button>
                         ) : (
-                            <Button variant="outline" onClick={() => setStep('phone_entry')}>Change Number</Button>
+                            <Button variant="outline" onClick={() => setStep('phone_entry')}>Back</Button>
                         )}
 
                         {step === 1 ? (

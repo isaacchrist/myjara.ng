@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { User, MapPin, CreditCard, Store, Phone, Mail, Calendar, ArrowLeft, Edit } from 'lucide-react'
+import { User, MapPin, CreditCard, Store, Phone, Mail, Calendar, ArrowLeft, Edit, FileCheck, FileImage, FileText } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -248,10 +248,110 @@ export default function SellerProfilePage() {
                                         )}
                                     </div>
                                 </div>
+                                {store.description && (
+                                    <div>
+                                        <p className="text-sm text-gray-500">Business Description</p>
+                                        <p className="text-sm mt-1 leading-relaxed">{store.description}</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ) : (
                         <p className="text-gray-500">No store found. Please contact support.</p>
+                    )}
+                </CardContent>
+            </Card>
+
+            {/* Verification Documents */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <FileCheck className="h-5 w-5 text-emerald-500" />
+                        Verification Documents
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        {(store as any)?.id_card_url ? (
+                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div className="flex items-center gap-3">
+                                    <FileImage className="h-8 w-8 text-gray-400" />
+                                    <div>
+                                        <p className="font-medium text-sm">Valid ID Card</p>
+                                        <p className="text-xs text-gray-500">Uploaded for verification</p>
+                                    </div>
+                                </div>
+                                <Button variant="outline" size="sm" asChild>
+                                    <a href={(store as any).id_card_url} target="_blank" rel="noopener noreferrer">View</a>
+                                </Button>
+                            </div>
+                        ) : null}
+
+                        {(store as any)?.cac_url ? (
+                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div className="flex items-center gap-3">
+                                    <FileText className="h-8 w-8 text-gray-400" />
+                                    <div>
+                                        <p className="font-medium text-sm">CAC Certificate</p>
+                                        <p className="text-xs text-gray-500">Business registration document</p>
+                                    </div>
+                                </div>
+                                <Button variant="outline" size="sm" asChild>
+                                    <a href={(store as any).cac_url} target="_blank" rel="noopener noreferrer">View</a>
+                                </Button>
+                            </div>
+                        ) : null}
+
+                        {!(store as any)?.id_card_url && !(store as any)?.cac_url && (
+                            <div className="text-center py-4 bg-gray-50 rounded-lg">
+                                <p className="text-gray-500 text-sm">No verification documents uploaded.</p>
+                            </div>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Settlement Account */}
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                        <CreditCard className="h-5 w-5 text-emerald-500" />
+                        Settlement Account
+                    </CardTitle>
+                    <Button variant="outline" size="sm" asChild>
+                        <Link href="/seller/profile/edit">
+                            {(store as any)?.bank_name ? 'Update' : 'Add Account'}
+                        </Link>
+                    </Button>
+                </CardHeader>
+                <CardContent>
+                    {(store as any)?.bank_name && (store as any)?.account_number ? (
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div className="space-y-3">
+                                <div>
+                                    <p className="text-sm text-gray-500">Bank Name</p>
+                                    <p className="font-semibold">{(store as any).bank_name}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">Account Number</p>
+                                    <p className="font-mono font-semibold">{(store as any).account_number}</p>
+                                </div>
+                            </div>
+                            <div className="space-y-3">
+                                <div>
+                                    <p className="text-sm text-gray-500">Account Name</p>
+                                    <p className="font-semibold">{(store as any).account_name || 'Not Set'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-center py-6 bg-gray-50 rounded-lg">
+                            <p className="text-gray-500 mb-2">No settlement account configured.</p>
+                            <p className="text-sm text-gray-400 mb-3">Add your bank account details to receive payments.</p>
+                            <Button asChild className="bg-emerald-600 hover:bg-emerald-700">
+                                <Link href="/seller/profile/edit">Add Bank Account</Link>
+                            </Button>
+                        </div>
                     )}
                 </CardContent>
             </Card>

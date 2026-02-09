@@ -170,6 +170,7 @@ function RetailerRegisterForm() {
 
                 agreedToPolicy: formData.agreedToPolicy,
                 profilePictureUrl: formData.profilePictureUrl,
+                idCardUrl: formData.idCardUrl?.[0] || '', // Pick first or empty
 
                 // New Fields - Sanitize empty strings to undefined
                 // Utilize truthiness check which works for empty string and undefined
@@ -249,19 +250,28 @@ function RetailerRegisterForm() {
     const renderStep1 = () => (
         <div className="space-y-4 max-w-md mx-auto animate-in fade-in slide-in-from-right-4">
             <div className="flex flex-col items-center py-4">
-                <label className="text-sm font-medium text-gray-700 mb-3">Profile Picture *</label>
+                <label className="text-sm font-medium text-gray-700 mb-3">Profile Picture</label>
                 <ProfilePictureUpload value={formData.profilePictureUrl} onChange={(url) => setFormData(prev => ({ ...prev, profilePictureUrl: url || '' }))} />
             </div>
+
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Valid ID Card</label>
+                <p className="text-xs text-gray-500 mb-2">Upload a valid government ID (Voters Card, NIN, Driver's License)</p>
+                <ImageUpload
+                    value={formData.idCardUrl}
+                    onChange={(urls) => setFormData(prev => ({ ...prev, idCardUrl: urls }))}
+                    maxFiles={1}
+                    bucket="product-images" // Temporary reuse of public bucket
+                />
+            </div>
+
             <div className="space-y-2">
                 <label className="text-sm font-medium">Full Name</label>
                 <Input name="fullName" value={formData.fullName} onChange={handleChange} placeholder="Chidinma Okafor" />
             </div>
             <div className="space-y-2">
                 <label className="text-sm font-medium">Phone Number</label>
-                <div className="flex items-center justify-between p-3 bg-gray-50 border rounded-md">
-                    <span className="font-mono font-medium text-gray-700">{formData.phone}</span>
-                    <Button variant="link" size="sm" className="h-auto p-0 text-emerald-600" onClick={() => setStep('phone_entry')}>Change</Button>
-                </div>
+                <Input name="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="08012345678" />
             </div>
             <div className="space-y-2">
                 <label className="text-sm font-medium">Email Address</label>
@@ -330,6 +340,7 @@ function RetailerRegisterForm() {
                 <p className="text-sm text-gray-500 mb-4">We need to capture your exact shop location.</p>
                 <GeoLocationCapture
                     initialMarket={formData.shopType === 'market_day' ? (formData.choosenMarkets[0] || '') : ''}
+                    hideMarketSelector={formData.shopType !== 'market_day'}
                     onLocationCaptured={(data) => setFormData(prev => ({ ...prev, businessLocation: data }))}
                 />
             </div>
@@ -443,7 +454,7 @@ function RetailerRegisterForm() {
                         {step > 1 ? (
                             <Button variant="outline" onClick={() => setStep(prev => typeof prev === 'number' ? (prev - 1) as any : prev)}>Back</Button>
                         ) : (
-                            <Button variant="outline" onClick={() => setStep('phone_entry')}>Change Number</Button>
+                            <Button variant="outline" onClick={() => setStep('phone_entry')}>Back</Button>
                         )}
 
                         {step < 4 ? (

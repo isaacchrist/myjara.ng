@@ -22,6 +22,10 @@ export interface RegistrationData {
     marketName: string | null;
     accuracy: number;
 
+    // Validation
+    idCardUrl?: string; // Retailer
+    cacUrl?: string;    // Brand
+
     // Meta
     categories?: string[]; // Array of category IDs (New)
     categoryId: string;
@@ -167,6 +171,7 @@ export async function registerRetailer(formData: RegistrationData) {
         // Public Contact Info (Synced for visibility)
         phone: formData.phone,
         profile_picture_url: formData.profilePictureUrl,
+        id_card_url: formData.idCardUrl,
     }
 
     // Map usage of categories if passed differently
@@ -321,6 +326,7 @@ export async function registerBrand(formData: RegistrationData) {
         // Public Contact Info (Synced for visibility on storefront)
         phone: formData.phone,
         profile_picture_url: formData.profilePictureUrl,
+        cac_url: formData.cacUrl,
     }
 
     // Check if store was already created by trigger
