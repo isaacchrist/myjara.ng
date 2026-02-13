@@ -10,16 +10,19 @@ import {
     Wallet,
     Settings,
     BarChart3,
-    Store
+    Store,
+    MessageSquare
 } from 'lucide-react'
 import StoreSwitcher from '@/components/store-switcher'
 
 interface SidebarProps {
     stores: any[]
     activeStoreId?: string
+    shopType?: string
+    unreadCount?: number
 }
 
-export function SellerSidebar({ stores, activeStoreId }: SidebarProps) {
+export function SellerSidebar({ stores, activeStoreId, shopType, unreadCount = 0 }: SidebarProps) {
     const pathname = usePathname()
 
     const routes = [
@@ -36,17 +39,17 @@ export function SellerSidebar({ stores, activeStoreId }: SidebarProps) {
             active: pathname.includes('/seller/orders'),
         },
         {
-            href: '/seller/products', // This page might not exist yet? Or is it /seller/dashboard/products?
-            // Actually existing routes seem to be /seller/products/new
-            // Let's assume we want a product list page. For now point to dashboard or create one later.
-            // Based on task.md, we have seller/products/[id]/edit. So a list must exist?
-            // "Product Editing: Create seller/products/[id]/edit/page.tsx"
-            // Wait, do we have a product list page? 
-            // implementation_plan.md phase 16 mentions "Product Editing".
-            // Let's double check if /seller/products exists. If not, maybe just New Product for now.
+            href: '/seller/products',
             label: 'Products',
             icon: Package,
             active: pathname.includes('/seller/products'),
+        },
+        {
+            href: '/seller/messages',
+            label: 'Messages',
+            icon: MessageSquare,
+            active: pathname.includes('/seller/messages'),
+            badge: unreadCount > 0 ? unreadCount : undefined
         },
         {
             href: '/seller/analytics',
@@ -71,7 +74,7 @@ export function SellerSidebar({ stores, activeStoreId }: SidebarProps) {
     return (
         <div className="flex h-full w-64 flex-col border-r bg-gray-50/50 dark:bg-gray-900/50">
             <div className="p-6">
-                <StoreSwitcher items={stores} currentStoreId={activeStoreId} />
+                <StoreSwitcher items={stores} currentStoreId={activeStoreId} shopType={shopType} />
             </div>
             <div className="flex-1 space-y-1 px-3">
                 {routes.map((route) => (
@@ -79,14 +82,21 @@ export function SellerSidebar({ stores, activeStoreId }: SidebarProps) {
                         key={route.href}
                         href={route.href}
                         className={cn(
-                            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:text-emerald-600",
+                            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:text-emerald-600 justify-between",
                             route.active
                                 ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20"
                                 : "text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
                         )}
                     >
-                        <route.icon className="h-4 w-4" />
-                        {route.label}
+                        <div className="flex items-center gap-3">
+                            <route.icon className="h-4 w-4" />
+                            {route.label}
+                        </div>
+                        {(route as any).badge && (
+                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-[10px] font-bold text-white">
+                                {(route as any).badge > 99 ? '99+' : (route as any).badge}
+                            </span>
+                        )}
                     </Link>
                 ))}
             </div>

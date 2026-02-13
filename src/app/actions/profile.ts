@@ -14,11 +14,18 @@ export interface ProfileUpdateData {
     longitude?: number | null;
     storeDescription?: string;
     categories?: string[]; // Array of category IDs
+    subcategories?: string[]; // Array of subcategory IDs
 
     // Settlement Account
     bankName?: string;
     accountNumber?: string;
     accountName?: string;
+
+    // Store Gallery
+    galleryUrls?: string[];
+
+    // Market Day Locations
+    frequentMarkets?: string[];
 }
 
 export async function updateProfile(formData: ProfileUpdateData) {
@@ -77,6 +84,10 @@ export async function updateProfile(formData: ProfileUpdateData) {
         storeUpdate.categories = formData.categories
     }
 
+    if (formData.subcategories !== undefined) {
+        storeUpdate.subcategories = formData.subcategories
+    }
+
     // SYNC Public Contact Info
     if (formData.phone !== undefined) storeUpdate.phone = formData.phone
     if (formData.profilePictureUrl !== undefined) storeUpdate.profile_picture_url = formData.profilePictureUrl
@@ -85,6 +96,12 @@ export async function updateProfile(formData: ProfileUpdateData) {
     if (formData.bankName !== undefined) storeUpdate.bank_name = formData.bankName
     if (formData.accountNumber !== undefined) storeUpdate.account_number = formData.accountNumber
     if (formData.accountName !== undefined) storeUpdate.account_name = formData.accountName
+
+    // Gallery URLs
+    if (formData.galleryUrls !== undefined) storeUpdate.gallery_urls = formData.galleryUrls
+
+    // Market Day Locations
+    if (formData.frequentMarkets !== undefined) storeUpdate.frequent_markets = formData.frequentMarkets
 
     if (Object.keys(storeUpdate).length > 0) {
         const { error: storeError } = await (supabase

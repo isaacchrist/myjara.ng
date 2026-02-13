@@ -171,6 +171,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                         slug,
                         logo_url,
                         profile_picture_url,
+                        settings,
                         status,
                         owner: users(
                             avatar_url
@@ -208,24 +209,31 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 errorMessage = 'Unable to load products. Please try again.'
             } else if (data) {
                 // Transform the data to match expected format
-                products = data.map((p: any) => ({
-                    id: p.id,
-                    name: p.name,
-                    description: p.description,
-                    price: p.price,
-                    jara_buy_quantity: p.jara_buy_quantity,
-                    jara_get_quantity: p.jara_get_quantity,
-                    primary_image_url: p.primary_image_url,
-                    store_id: p.stores?.id,
-                    store_name: p.stores?.name || 'Unknown Store',
-                    store_slug: p.stores?.slug || '',
-                    store_logo_url: p.stores?.logo_url,
-                    store_profile_pic: p.stores?.profile_picture_url,
-                    store_owner_avatar: p.stores?.owner?.avatar_url,
-                    category_id: p.categories?.id,
-                    category_name: p.categories?.name,
-                    cities: []
-                }))
+                products = data.map((p: any) => {
+                    const settings = p.stores?.settings as any
+                    const theme = settings?.theme
+                    const brandColor = theme?.primaryColor
+
+                    return {
+                        id: p.id,
+                        name: p.name,
+                        description: p.description,
+                        price: p.price,
+                        jara_buy_quantity: p.jara_buy_quantity,
+                        jara_get_quantity: p.jara_get_quantity,
+                        primary_image_url: p.primary_image_url,
+                        store_id: p.stores?.id,
+                        store_name: p.stores?.name || 'Unknown Store',
+                        store_slug: p.stores?.slug || '',
+                        store_logo_url: p.stores?.logo_url,
+                        store_profile_pic: p.stores?.profile_picture_url,
+                        store_owner_avatar: p.stores?.owner?.avatar_url,
+                        category_id: p.categories?.id,
+                        category_name: p.categories?.name,
+                        cities: [],
+                        brand_color: brandColor
+                    }
+                })
             }
         }
     } catch (e) {
@@ -371,6 +379,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                                         imageUrl={product.primary_image_url}
                                         retailerAvatar={product.store_profile_pic || product.store_owner_avatar || product.store_logo_url}
                                         cities={product.cities || []}
+                                        brandColor={product.brand_color}
                                     />
                                 ))}
                             </div>

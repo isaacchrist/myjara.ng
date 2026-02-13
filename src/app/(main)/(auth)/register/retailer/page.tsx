@@ -71,7 +71,9 @@ function RetailerRegisterForm() {
         paymentMethod: '' as 'flutterwave' | 'promo_code' | '',
         promoCode: '',
         profilePictureUrl: '',
-        idCardUrl: [] as string[]
+
+        idCardUrl: [] as string[],
+        storeImages: [] as string[]
     })
 
     const STORAGE_KEY = 'myjara_retailer_registration_v2'
@@ -323,6 +325,19 @@ function RetailerRegisterForm() {
                     className="w-full rounded-md border border-input px-3 py-2 text-sm min-h-[80px]"
                     placeholder="Tell us about what you sell..."
                 />
+            </div>
+
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Store Photos (Optional)</label>
+                <div className="bg-gray-50 p-4 rounded-lg border border-dashed border-gray-200">
+                    <p className="text-xs text-gray-500 mb-3">Add photos of your shop, products, or shelf display. These will be shown on your store page.</p>
+                    <ImageUpload
+                        value={formData.storeImages}
+                        onChange={(urls) => setFormData(prev => ({ ...prev, storeImages: urls }))}
+                        maxFiles={5}
+                        bucket="store-images"
+                    />
+                </div>
             </div>
 
             <div className="space-y-2">

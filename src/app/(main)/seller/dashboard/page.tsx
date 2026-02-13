@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { redirect } from 'next/navigation'
-import { Package, ShoppingCart, TrendingUp, Plus, User, MapPin, CreditCard, Settings, Store, AlertCircle } from 'lucide-react'
+import { Package, ShoppingCart, TrendingUp, Plus, User, MapPin, CreditCard, Settings, Store, AlertCircle, ArrowRight } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -135,12 +135,12 @@ export default async function RetailerDashboardPage() {
                         <div className="flex items-center gap-3">
                             <MapPin className="h-5 w-5 text-emerald-600" />
                             <div>
-                                <p className="font-medium text-emerald-900">Add Your Store Location</p>
-                                <p className="text-sm text-emerald-700">Help customers find you by adding your precise location.</p>
+                                <p className="font-medium text-emerald-900">Add Market Day Location</p>
+                                <p className="text-sm text-emerald-700">Help customers find you by adding your market schedule.</p>
                             </div>
                         </div>
                         <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                            <Link href="/seller/profile/edit">Add Location</Link>
+                            <Link href="/seller/profile/edit">Manage Locations</Link>
                         </Button>
                     </CardContent>
                 </Card>
@@ -269,6 +269,39 @@ export default async function RetailerDashboardPage() {
                 </Card>
             </div>
 
+            {/* Product Categories Overview */}
+            {
+                productCount > 0 && (
+                    <div className="space-y-4">
+                        <h2 className="text-xl font-semibold text-gray-900">Your Categories</h2>
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                            {/* Placeholder for dynamic categories - ideally we fetch this */}
+                            <Card className="hover:border-emerald-200 transition-colors cursor-pointer group">
+                                <CardContent className="p-6 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-10 w-10 rounded-lg bg-emerald-100 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                                            📦
+                                        </div>
+                                        <div>
+                                            <p className="font-medium text-gray-900">All Products</p>
+                                            <p className="text-sm text-gray-500">{productCount} items</p>
+                                        </div>
+                                    </div>
+                                    <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
+                                </CardContent>
+                            </Card>
+                            {/* We could fetch actual categories here if needed */}
+                            <Card className="border-dashed border-gray-200 hover:border-emerald-200 hover:bg-gray-50 transition-colors cursor-pointer" >
+                                <Link href="/seller/profile/edit" className="flex items-center justify-center h-full p-6 text-gray-500 hover:text-emerald-600 gap-2">
+                                    <Plus className="h-5 w-5" />
+                                    <span className="font-medium">Manage Categories</span>
+                                </Link>
+                            </Card>
+                        </div>
+                    </div>
+                )
+            }
+
             <div className="grid gap-6 lg:grid-cols-3">
                 {/* Recent Orders */}
                 <Card className="lg:col-span-2">
@@ -353,7 +386,7 @@ export default async function RetailerDashboardPage() {
                     </CardContent>
                 </Card>
             </div>
-        </div>
+        </div >
     )
 }
 

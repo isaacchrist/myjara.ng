@@ -32,6 +32,7 @@ export interface RegistrationData {
     subcategoryId: string;
     agreedToPolicy: boolean;
     profilePictureUrl?: string; // Optional
+    storeImages?: string[];   // Store gallery pictures
 
     // New Fields for Persistence
     selectedPlan?: 'basic' | 'pro' | 'exclusive';
@@ -172,6 +173,7 @@ export async function registerRetailer(formData: RegistrationData) {
         phone: formData.phone,
         profile_picture_url: formData.profilePictureUrl,
         id_card_url: formData.idCardUrl,
+        gallery_urls: formData.storeImages || [],
     }
 
     // Map usage of categories if passed differently
@@ -190,6 +192,7 @@ export async function registerRetailer(formData: RegistrationData) {
         .maybeSingle() as any
 
     let storeError = null
+    let storeId: string | null = null
 
     if (existingTriggerStore) {
         // UPDATE existing store
@@ -199,24 +202,106 @@ export async function registerRetailer(formData: RegistrationData) {
             .update(storeData)
             .eq('id', existingTriggerStore.id)
         storeError = error
+        storeId = existingTriggerStore.id
     } else {
         // INSERT new store
-        const { error } = await admin
+        const { data, error } = await admin
             .from('stores')
             .insert(storeData)
+            .select('id')
+            .single()
         storeError = error
+        storeId = (data as any)?.id
     }
 
     if (storeError) {
         console.error('Store Insert Error:', storeError)
         return {
             success: false,
+            // @ts-ignore
             error: `Account created but Store data failed to save: ${storeError.message}`
         }
     }
 
-    console.log('Store Created Successfully')
+    console.log('Store Created Successfully', storeData)
+
+    // 4. Send Welcome Message from Admin (Fire and forget)
+    try {
+        if (storeId) {
+            await sendWelcomeMessage(admin, storeId, formData.fullName)
+        } else {
+            console.warn('Store ID not available for welcome message.')
+        }
+    } catch (e) {
+        console.error('Failed to send welcome message:', e)
+    }
+
     return { success: true }
+}
+
+// Helper to send welcome message
+async function sendWelcomeMessage(supabaseAdmin: any, storeId: string, userName: string) {
+    if (!storeId) return
+
+    // 1. Find an Admin User
+    const { data: adminUser } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .eq('role', 'admin')
+        .limit(1)
+        .maybeSingle()
+
+    if (!adminUser) {
+        console.log('No admin user found to send welcome message')
+        return
+    }
+
+    // 2. Create Chat Room (Admin <-> New Store)
+    const { data: existingRoom } = await supabaseAdmin
+        .from('chat_rooms')
+        .select('id')
+        .eq('user_id', adminUser.id)
+        .eq('store_id', storeId)
+        .maybeSingle()
+
+    let roomId = existingRoom?.id
+
+    if (!roomId) {
+        const { data: newRoom, error: roomError } = await supabaseAdmin
+            .from('chat_rooms')
+            .insert({
+                user_id: adminUser.id,
+                store_id: storeId
+            })
+            .select('id')
+            .single()
+
+        if (roomError) {
+            console.error('Error creating welcome chat room:', roomError)
+            return
+        }
+        roomId = newRoom.id
+    }
+
+    // 3. Send Message
+    const welcomeText = `Hello ${userName}! 👋\n\nWelcome to MyJara! We're excited to have you on board.\n\nYour store is now set up. You can start adding products, configuring your delivery settings, and sharing your store link.\n\nIf you have any questions or need verification, feel free to reply here. Our team is here to help!\n\nBest regards,\nThe MyJara Team`
+
+    const { error: msgError } = await supabaseAdmin
+        .from('messages')
+        .insert({
+            room_id: roomId,
+            sender_id: adminUser.id,
+            content: welcomeText,
+            is_read: false
+        })
+
+    if (msgError) {
+        console.error('Error sending welcome message:', msgError)
+    } else {
+        console.log('Welcome message sent to store:', storeId)
+    }
+
+
 }
 
 export async function registerBrand(formData: RegistrationData) {
@@ -327,6 +412,7 @@ export async function registerBrand(formData: RegistrationData) {
         phone: formData.phone,
         profile_picture_url: formData.profilePictureUrl,
         cac_url: formData.cacUrl,
+        gallery_urls: formData.storeImages || [],
     }
 
     // Check if store was already created by trigger
@@ -337,20 +423,27 @@ export async function registerBrand(formData: RegistrationData) {
         .maybeSingle() as any
 
     let storeError = null
+    let brandStoreId: string | null = null
 
     if (existingBrandStore) {
         // UPDATE existing store
-        const { error } = await (admin as any)
+        const { data, error } = await (admin as any)
             .from('stores')
             .update(storeData)
             .eq('id', existingBrandStore.id)
+            .select('id')
+            .single()
         storeError = error
+        brandStoreId = data?.id
     } else {
         // INSERT new store
-        const { error } = await admin
+        const { data, error } = await admin
             .from('stores')
             .insert(storeData)
+            .select('id')
+            .single()
         storeError = error
+        brandStoreId = (data as any)?.id
     }
 
     if (storeError) {
@@ -359,6 +452,19 @@ export async function registerBrand(formData: RegistrationData) {
             success: false,
             error: `Account created but Store data failed to save: ${storeError.message}`
         }
+    }
+
+    console.log('Brand Store Created Successfully', storeData)
+
+    // 4. Send Welcome Message from Admin (Fire and forget)
+    try {
+        if (brandStoreId) {
+            await sendWelcomeMessage(admin, brandStoreId, formData.fullName)
+        } else {
+            console.warn('Brand Store ID not available for welcome message.')
+        }
+    } catch (e) {
+        console.error('Failed to send welcome message to brand:', e)
     }
 
     return { success: true }

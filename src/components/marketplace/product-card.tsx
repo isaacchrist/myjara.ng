@@ -19,6 +19,7 @@ export interface ProductCardProps {
     imageUrl?: string
     cities?: string[]
     variant?: 'grid' | 'list'
+    brandColor?: string
 }
 
 export function ProductCard({
@@ -33,13 +34,16 @@ export function ProductCard({
     imageUrl,
     cities = [],
     variant = 'grid',
+    brandColor,
 }: ProductCardProps) {
     const jaraText = formatJara(jaraBuyQty, jaraGetQty)
 
     return (
         <div className={variant === 'list' ? 'block h-40 w-full' : ''}>
-            <Card className={`group h-full overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${variant === 'list' ? 'flex flex-row' : ''
-                }`}>
+            <Card
+                className={`group h-full overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${variant === 'list' ? 'flex flex-row' : ''}`}
+                style={brandColor ? { borderColor: brandColor, borderWidth: '1px' } : undefined}
+            >
                 {/* Clickable Product Link */}
                 <Link href={`/product/${id}`} className="contents">
                     {/* Image */}

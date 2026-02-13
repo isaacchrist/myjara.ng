@@ -49,7 +49,9 @@ function BrandRegisterForm() {
 
         agreedToPolicy: false,
         profilePictureUrl: '',
-        cacUrl: [] as string[] // New
+
+        cacUrl: [] as string[], // New
+        storeImages: [] as string[] // Gallery
     })
 
     const handleRegister = async () => {
@@ -157,6 +159,19 @@ function BrandRegisterForm() {
                     maxFiles={1}
                     bucket="product-images"
                 />
+            </div>
+
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Warehouse / Office Photos (Optional)</label>
+                <div className="bg-gray-50 p-4 rounded-lg border border-dashed border-gray-200">
+                    <p className="text-xs text-gray-500 mb-3">Add photos of your warehouse, office, or products. These will be shown on your profile.</p>
+                    <ImageUpload
+                        value={formData.storeImages}
+                        onChange={(urls) => setFormData(prev => ({ ...prev, storeImages: urls }))}
+                        maxFiles={5}
+                        bucket="store-images"
+                    />
+                </div>
             </div>
 
             <div className="space-y-2">

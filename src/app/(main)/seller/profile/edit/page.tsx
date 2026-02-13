@@ -10,10 +10,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Save, Plus, Trash2, MapPin, Store, Tag, Check, CreditCard } from 'lucide-react'
+import { ArrowLeft, Save, Plus, Trash2, MapPin, Store, Tag, Check, CreditCard, ImageIcon, Calendar } from 'lucide-react'
 import { toast } from 'sonner'
-import { PRODUCT_CATEGORIES } from '@/lib/constants'
+import { PRODUCT_CATEGORIES, ABUJA_MARKETS } from '@/lib/constants'
 import { ProfilePictureUpload } from '@/components/shared/profile-picture-upload'
+import { ImageUpload } from '@/components/ui/image-upload'
 import { useSellerStore } from '@/context/seller-store-context'
 
 // Plan limits for categories
@@ -37,7 +38,10 @@ export default function EditProfilePage() {
     const [contacts, setContacts] = useState<{ name: string, number: string }[]>([])
     const [storeDescription, setStoreDescription] = useState('')
     const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+    const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([])
     const [profilePictureUrl, setProfilePictureUrl] = useState('')
+    const [galleryUrls, setGalleryUrls] = useState<string[]>([])
+    const [frequentMarkets, setFrequentMarkets] = useState<string[]>([])
 
     // Location (for market day)
     const [lat, setLat] = useState<number | null>(null)
@@ -82,9 +86,12 @@ export default function EditProfilePage() {
                 setLng(store.longitude)
                 setStoreDescription(store.description || '')
                 setSelectedCategories(store.categories || [])
+                setSelectedSubcategories((store as any).subcategories || [])
                 setBankName((store as any).bank_name || '')
                 setAccountNumber((store as any).account_number || '')
                 setAccountName((store as any).account_name || '')
+                setGalleryUrls(Array.isArray((store as any).gallery_urls) ? (store as any).gallery_urls : [])
+                setFrequentMarkets(Array.isArray((store as any).frequent_markets) ? (store as any).frequent_markets : [])
             }
             setLoading(false)
         }
@@ -158,10 +165,13 @@ export default function EditProfilePage() {
             longitude: lng || undefined,
             storeDescription,
             categories: selectedCategories,
+            subcategories: selectedSubcategories,
             profilePictureUrl,
             bankName,
             accountNumber,
-            accountName
+            accountName,
+            galleryUrls,
+            frequentMarkets
         })
 
         setSaving(false)
@@ -245,6 +255,61 @@ export default function EditProfilePage() {
                             />
                             <p className="text-xs text-gray-500">Visible to customers on your store page</p>
                         </div>
+
+                        {/* Store Gallery */}
+                        <div className="space-y-2 pt-4 border-t">
+                            <Label className="flex items-center gap-2">
+                                <ImageIcon className="h-4 w-4 text-emerald-600" />
+                                Store Photos
+                            </Label>
+                            <p className="text-xs text-gray-500 mb-2">Add photos of your store/shop. The first image will be your storefront banner.</p>
+                            <ImageUpload
+                                value={galleryUrls}
+                                onChange={(urls) => setGalleryUrls(urls)}
+                                maxFiles={6}
+                                bucket="store-images"
+                            />
+                        </div>
+
+                        {/* Market Day Locations (Only for market_day) */}
+                        {store?.shop_type === 'market_day' && (
+                            <div className="space-y-4 pt-4 border-t">
+                                <Label className="flex items-center gap-2">
+                                    <Calendar className="h-4 w-4 text-emerald-600" />
+                                    Market Schedules
+                                </Label>
+                                <p className="text-xs text-gray-500 mb-2">Select the markets you actively sell in. This helps customers find you on market days.</p>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {ABUJA_MARKETS.map(market => {
+                                        const isSelected = frequentMarkets.includes(market.name)
+                                        return (
+                                            <div
+                                                key={market.name}
+                                                onClick={() => {
+                                                    setFrequentMarkets(prev =>
+                                                        isSelected
+                                                            ? prev.filter(m => m !== market.name)
+                                                            : [...prev, market.name]
+                                                    )
+                                                }}
+                                                className={`
+                                                    cursor-pointer rounded-lg border p-3 transition-all hover:shadow-sm
+                                                    ${isSelected ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 bg-white hover:border-gray-300'}
+                                                `}
+                                            >
+                                                <div className="flex items-start justify-between">
+                                                    <div>
+                                                        <h4 className={`text-sm font-medium ${isSelected ? 'text-emerald-900' : 'text-gray-900'}`}>{market.name}</h4>
+                                                        <p className="text-xs text-gray-500 mt-1">{market.days.join(', ')}</p>
+                                                    </div>
+                                                    {isSelected && <Check className="h-4 w-4 text-emerald-600" />}
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 
@@ -260,26 +325,57 @@ export default function EditProfilePage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                            {PRODUCT_CATEGORIES.map(category => (
-                                <button
-                                    key={category.id}
-                                    type="button"
-                                    onClick={() => toggleCategory(category.id)}
-                                    className={`p-3 rounded-lg border text-left transition-all ${selectedCategories.includes(category.id)
-                                        ? 'bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500'
-                                        : 'bg-white border-gray-200 hover:border-emerald-300'
-                                        }`}
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-lg">{category.icon}</span>
-                                        <span className="text-sm font-medium truncate">{category.name}</span>
-                                        {selectedCategories.includes(category.id) && (
-                                            <Check className="h-4 w-4 text-emerald-600 ml-auto shrink-0" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {PRODUCT_CATEGORIES.map(category => {
+                                const isSelected = selectedCategories.includes(category.id)
+                                return (
+                                    <div key={category.id} className="space-y-2">
+                                        <div
+                                            onClick={() => toggleCategory(category.id)}
+                                            className={`
+                                                cursor-pointer flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all
+                                                ${isSelected ? 'border-emerald-600 bg-emerald-50' : 'border-gray-100 hover:border-emerald-200 hover:bg-gray-50'}
+                                            `}
+                                        >
+                                            <span className="text-2xl mb-2">{category.icon}</span>
+                                            <span className={`text-sm font-medium text-center ${isSelected ? 'text-emerald-900' : 'text-gray-700'}`}>
+                                                {category.name}
+                                            </span>
+                                            {isSelected && <Check className="h-4 w-4 text-emerald-600 mt-2" />}
+                                        </div>
+
+                                        {/* Subcategories (Only if parent selected) */}
+                                        {isSelected && category.subcategories && (
+                                            <div className="pl-3 border-l-2 border-emerald-100 space-y-1 mt-2">
+                                                {category.subcategories.map(sub => {
+                                                    const isSubSelected = selectedSubcategories.includes(sub.id)
+                                                    return (
+                                                        <div
+                                                            key={sub.id}
+                                                            onClick={() => {
+                                                                setSelectedSubcategories(prev =>
+                                                                    isSubSelected
+                                                                        ? prev.filter(id => id !== sub.id)
+                                                                        : [...prev, sub.id]
+                                                                )
+                                                            }}
+                                                            className={`
+                                                                cursor-pointer text-xs px-2 py-1.5 rounded-md transition-colors flex items-center gap-2
+                                                                ${isSubSelected ? 'bg-emerald-100 text-emerald-800 font-medium' : 'text-gray-500 hover:bg-gray-100'}
+                                                            `}
+                                                        >
+                                                            <div className={`w-3 h-3 flex items-center justify-center rounded-sm border ${isSubSelected ? 'bg-emerald-600 border-emerald-600' : 'border-gray-300'}`}>
+                                                                {isSubSelected && <Check className="h-2 w-2 text-white" />}
+                                                            </div>
+                                                            {sub.name}
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
                                         )}
                                     </div>
-                                </button>
-                            ))}
+                                )
+                            })}
                         </div>
                         {selectedCategories.length >= categoryLimit && (
                             <p className="text-sm text-amber-600 mt-3">

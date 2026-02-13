@@ -27,10 +27,23 @@ export default async function SellerLayout({
 
     const { activeStore, stores } = storeData
 
+    // Fetch unread messages count for badge
+    const { count: unreadCount } = await supabase
+        .from('messages')
+        .select('chat_rooms!inner(store_id)', { count: 'exact', head: true })
+        .eq('is_read', false)
+        .neq('sender_id', user.id) // Messages sent by others
+        .eq('chat_rooms.store_id', activeStore.id)
+
     return (
         <div className="flex min-h-[calc(100vh-4rem)]">
             <div className="hidden border-r md:block">
-                <SellerSidebar stores={stores} activeStoreId={activeStore.id} />
+                <SellerSidebar
+                    stores={stores}
+                    activeStoreId={activeStore.id}
+                    shopType={activeStore.shop_type}
+                    unreadCount={unreadCount || 0}
+                />
             </div>
             <main className="flex-1 w-full">
                 {/* Dynamically import Provider if needed, but it's small */}

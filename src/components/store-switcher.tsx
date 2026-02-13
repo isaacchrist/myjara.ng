@@ -27,12 +27,14 @@ type StoreSwitcherProps = {
     items: Store[]
     className?: string
     currentStoreId?: string
+    shopType?: string
 }
 
 export default function StoreSwitcher({
     items = [],
     className,
-    currentStoreId
+    currentStoreId,
+    shopType
 }: StoreSwitcherProps) {
     const [open, setOpen] = React.useState(false)
     const router = useRouter()
@@ -100,17 +102,21 @@ export default function StoreSwitcher({
                         </DropdownMenuItem>
                     ))}
                 </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                    className="cursor-pointer text-emerald-600 font-medium"
-                    onSelect={() => {
-                        setOpen(false)
-                        router.push("/onboarding/store")
-                    }}
-                >
-                    <PlusCircle className="mr-2 h-5 w-5" />
-                    Create Store
-                </DropdownMenuItem>
+                {shopType !== 'market_day' && (
+                    <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                            className="cursor-pointer text-emerald-600 font-medium"
+                            onSelect={() => {
+                                setOpen(false)
+                                router.push("/onboarding/store")
+                            }}
+                        >
+                            <PlusCircle className="mr-2 h-5 w-5" />
+                            Create Store
+                        </DropdownMenuItem>
+                    </>
+                )}
             </DropdownMenuContent>
         </DropdownMenu>
     )

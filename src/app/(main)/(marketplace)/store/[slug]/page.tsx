@@ -2,9 +2,11 @@ import { notFound } from "next/navigation"
 import Image from "next/image"
 import { createClient } from "@/lib/supabase/server"
 import { ProductCard } from "@/components/marketplace/product-card"
+import { StoreProductGrid } from "@/components/marketplace/store-product-grid"
 import { Badge } from "@/components/ui/badge"
 import { MapPin, Phone, Store, Building, Calendar, Package } from "lucide-react"
 import { CopyPhoneButton } from "@/components/marketplace/copy-phone-button"
+import { StoreGalleryBanner } from "@/components/marketplace/store-gallery"
 
 export default async function StorePage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params
@@ -66,19 +68,18 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
     // Use Owner Data (fallback to store data if specific overrides exist, usually user data is master)
     const profilePic = store.owner?.avatar_url || store.profile_picture_url || store.logo_url
     const contactPhone = store.owner?.phone || store.phone
+    // Parse gallery images (from gallery_urls JSONB or banner_url fallback)
+    const galleryImages: string[] = Array.isArray(store.gallery_urls) ? store.gallery_urls : []
+    if (galleryImages.length === 0 && store.banner_url) {
+        galleryImages.push(store.banner_url)
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
             {/* Store Banner & Header */}
             <div className="bg-white pb-8 shadow-sm">
-                {/* Banner Area */}
-                <div
-                    className="h-48 w-full bg-cover bg-center"
-                    style={{
-                        backgroundColor: primaryColor + '20',
-                        backgroundImage: store.banner_url ? `url(${store.banner_url})` : 'none'
-                    }}
-                />
+                {/* Banner Area — Gallery or Gradient */}
+                <StoreGalleryBanner images={galleryImages} storeName={store.name} />
 
                 <div className="container mx-auto px-4">
                     <div className="relative -mt-16 mb-6 flex flex-col items-center sm:flex-row sm:items-end sm:gap-6">
@@ -150,33 +151,16 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
                 </div>
 
                 {products && products.length > 0 ? (
-                    <div className={
-                        layout === 'list'
-                            ? "flex flex-col gap-4 max-w-3xl"
-                            : "grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
-                    }>
-                        {products.map((product: any) => {
-                            const primaryImage = product.product_images?.find((img: any) => img.is_primary)?.url
-                                || product.product_images?.[0]?.url
-
-                            return (
-                                <ProductCard
-                                    key={product.id}
-                                    id={product.id}
-                                    name={product.name}
-                                    price={product.price}
-                                    jaraBuyQty={product.jara_buy_quantity}
-                                    jaraGetQty={product.jara_get_quantity}
-                                    storeName={product.store.name}
-                                    storeSlug={product.store.slug}
-                                    retailerAvatar={profilePic}
-                                    imageUrl={primaryImage}
-                                    cities={cities}
-                                    variant={layout}
-                                />
-                            )
-                        })}
-                    </div>
+                    <StoreProductGrid
+                        products={products}
+                        categories={products.map((p: any) => p.category_id).filter((v: any, i: any, a: any) => a.indexOf(v) === i)}
+                        storeName={store.name}
+                        storeSlug={store.slug}
+                        retailerAvatar={profilePic}
+                        cities={cities}
+                        layout={layout}
+                        brandColor={primaryColor}
+                    />
                 ) : (
                     <div className="py-20 text-center">
                         <p className="text-gray-500">No products found in this store.</p>
