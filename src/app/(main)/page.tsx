@@ -5,61 +5,48 @@ import { SearchBar } from '@/components/marketplace/search-bar'
 import { ProductCard } from '@/components/marketplace/product-card'
 import { Badge } from '@/components/ui/badge'
 import { MarketDayBanner } from '@/components/marketplace/market-day-banner'
+import { createClient } from '@/lib/supabase/server'
+import { PRODUCT_CATEGORIES } from '@/lib/constants'
 
-// Mock data for featured products
-const featuredProducts = [
-  {
-    id: '1',
-    name: 'Premium Basmati Rice (50kg)',
-    price: 48000,
-    jaraBuyQty: 5,
-    jaraGetQty: 1,
-    storeName: 'FoodMart Nigeria',
-    storeSlug: 'foodmart',
-    cities: ['Lagos', 'Abuja'],
-  },
-  {
-    id: '2',
-    name: 'Wireless Bluetooth Earbuds Pro',
-    price: 15000,
-    jaraBuyQty: 10,
-    jaraGetQty: 2,
-    storeName: 'TechZone',
-    storeSlug: 'techzone',
-    cities: ['Lagos', 'Port Harcourt'],
-  },
-  {
-    id: '3',
-    name: 'Organic Shea Butter (500g)',
-    price: 3500,
-    jaraBuyQty: 3,
-    jaraGetQty: 1,
-    storeName: 'NaturalGlow',
-    storeSlug: 'naturalglow',
-    cities: ['Kano', 'Kaduna'],
-  },
-  {
-    id: '4',
-    name: 'Men\'s Casual Polo Shirt',
-    price: 8500,
-    jaraBuyQty: 4,
-    jaraGetQty: 1,
-    storeName: 'StyleHub',
-    storeSlug: 'stylehub',
-    cities: ['Lagos', 'Ibadan'],
-  },
-]
+export const dynamic = 'force-dynamic'
 
-const categories = [
-  { name: 'Electronics', slug: 'electronics', icon: '📱', count: 234 },
-  { name: 'Fashion', slug: 'fashion', icon: '👕', count: 567 },
-  { name: 'Food & Groceries', slug: 'food-groceries', icon: '🍎', count: 891 },
-  { name: 'Health & Beauty', slug: 'health-beauty', icon: '💄', count: 345 },
-  { name: 'Home & Garden', slug: 'home-garden', icon: '🏠', count: 234 },
-  { name: 'Sports', slug: 'sports-outdoors', icon: '⚽', count: 123 },
-]
+export default async function HomePage() {
+  const supabase = await createClient()
 
-export default function HomePage() {
+  // 1. Fetch Featured Products (Active, have Jara offer, limit 8)
+  const { data: featuredProducts } = await supabase
+    .from('products')
+    .select(`
+      *,
+      store:stores(name, slug),
+      product_images(url, is_primary)
+    `)
+    .eq('status', 'active')
+    .gt('jara_get_quantity', 0)
+    .order('created_at', { ascending: false })
+    .limit(8)
+
+  // 2. Fetch Category Counts
+  // We'll fetch all active product category_ids to count them
+  const { data: productCategories } = await supabase
+    .from('products')
+    .select('category_id')
+    .eq('status', 'active')
+
+  const categoryCounts = ((productCategories as any[]) || []).reduce((acc: Record<string, number>, curr) => {
+    const id = curr.category_id
+    acc[id] = (acc[id] || 0) + 1
+    return acc
+  }, {})
+
+  // Map constants to display format
+  const categories = PRODUCT_CATEGORIES.map(cat => ({
+    name: cat.name,
+    slug: cat.id,
+    icon: cat.icon,
+    count: categoryCounts[cat.id] || 0
+  })).sort((a, b) => b.count - a.count).slice(0, 6) // Top 6 categories by count or just first 6
+
   return (
     <div>
       <MarketDayBanner />
@@ -105,7 +92,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* How Jara Works */}
+      {/* How Jara Works Teaser */}
       <section className="border-y border-gray-100 bg-white py-12 dark:border-gray-800 dark:bg-gray-950">
         <div className="container mx-auto px-4">
           <div className="grid gap-8 md:grid-cols-3">
@@ -143,6 +130,11 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+          <div className="mt-10 text-center">
+            <Link href="/how-jara-works" className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 hover:underline">
+              Learn exactly how it works →
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -167,14 +159,36 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
-            {featuredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                {...product}
-              />
-            ))}
-          </div>
+          {featuredProducts && featuredProducts.length > 0 ? (
+            <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+              {featuredProducts.map((product: any) => {
+                // Basic mapping to ensure product card gets necessary props
+                // Note: product-card expects `product_images` array or we find primary info
+                const primaryImage = product.product_images?.find((img: any) => img.is_primary)?.url
+                  || product.product_images?.[0]?.url
+
+                return (
+                  <ProductCard
+                    key={product.id}
+                    id={product.id}
+                    name={product.name}
+                    price={product.price}
+                    jaraBuyQty={product.jara_buy_quantity}
+                    jaraGetQty={product.jara_get_quantity}
+                    storeName={product.store?.name}
+                    storeSlug={product.store?.slug}
+                    cities={[]} // Featured products on homepage might not show logistics city, or we fetch it if critical
+                    imageUrl={primaryImage}
+                  // Pass other props if needed
+                  />
+                )
+              })}
+            </div>
+          ) : (
+            <div className="mt-12 text-center text-gray-500 py-10 bg-gray-50 rounded-xl">
+              <p>No featured products available at the moment.</p>
+            </div>
+          )}
 
           <div className="mt-8 text-center md:hidden">
             <Button variant="outline" asChild>
@@ -202,7 +216,7 @@ export default function HomePage() {
                 className="group flex flex-col items-center rounded-xl bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md dark:bg-gray-950 dark:border dark:border-gray-800"
               >
                 <span className="text-4xl">{category.icon}</span>
-                <h3 className="mt-3 font-medium text-gray-900 group-hover:text-emerald-600 dark:text-gray-200 dark:group-hover:text-emerald-500">
+                <h3 className="mt-3 font-medium text-gray-900 group-hover:text-emerald-600 dark:text-gray-200 dark:group-hover:text-emerald-500 text-center">
                   {category.name}
                 </h3>
                 <p className="mt-1 text-xs text-gray-400">
@@ -244,7 +258,7 @@ export default function HomePage() {
                 className="shrink-0 bg-white text-emerald-600 hover:bg-gray-100 dark:bg-gray-900 dark:text-emerald-500 dark:hover:bg-gray-800"
                 asChild
               >
-                <Link href="/register/brand">
+                <Link href="/register/retailer">
                   Start Selling
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>

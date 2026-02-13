@@ -20,7 +20,10 @@ export function StoreGalleryBanner({ images, storeName }: StoreGalleryProps) {
 
     if (!images || images.length === 0) {
         return (
-            <div className="h-48 md:h-56 w-full bg-gradient-to-br from-emerald-50 to-emerald-100" />
+            <div className="h-48 md:h-56 w-full bg-gradient-to-br from-emerald-50 via-emerald-100 to-teal-50 flex flex-col items-center justify-center gap-2">
+                <span className="text-4xl">📷</span>
+                <p className="text-sm text-emerald-600 font-medium">No store photos yet</p>
+            </div>
         )
     }
 

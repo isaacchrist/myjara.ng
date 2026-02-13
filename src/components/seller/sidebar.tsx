@@ -11,7 +11,9 @@ import {
     Settings,
     BarChart3,
     Store,
-    MessageSquare
+    MessageSquare,
+    Calendar,
+    AlertTriangle
 } from 'lucide-react'
 import StoreSwitcher from '@/components/store-switcher'
 
@@ -25,7 +27,7 @@ interface SidebarProps {
 export function SellerSidebar({ stores, activeStoreId, shopType, unreadCount = 0 }: SidebarProps) {
     const pathname = usePathname()
 
-    const routes = [
+    const baseRoutes = [
         {
             href: '/seller/dashboard',
             label: 'Overview',
@@ -64,12 +66,40 @@ export function SellerSidebar({ stores, activeStoreId, shopType, unreadCount = 0
             active: pathname === '/seller/wallet',
         },
         {
-            href: '/seller/profile',
+            href: '/seller/profile/edit',
             label: 'Settings',
             icon: Settings,
             active: pathname.includes('/seller/profile'),
         },
     ]
+
+    // Add Market Days for non-wholesaler shop types
+    const routes = shopType !== 'brand'
+        ? [
+            ...baseRoutes.slice(0, 4),
+            {
+                href: '/seller/market-days',
+                label: 'Market Days',
+                icon: Calendar,
+                active: pathname.includes('/seller/market-days'),
+            },
+            ...baseRoutes.slice(4),
+            {
+                href: '/customer/disputes',
+                label: 'Disputes',
+                icon: AlertTriangle,
+                active: pathname.includes('/disputes'),
+            },
+        ]
+        : [
+            ...baseRoutes,
+            {
+                href: '/customer/disputes',
+                label: 'Disputes',
+                icon: AlertTriangle,
+                active: pathname.includes('/disputes'),
+            },
+        ]
 
     return (
         <div className="flex h-full w-64 flex-col border-r bg-gray-50/50 dark:bg-gray-900/50">

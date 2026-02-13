@@ -4,9 +4,10 @@ import { createClient } from "@/lib/supabase/server"
 import { ProductCard } from "@/components/marketplace/product-card"
 import { StoreProductGrid } from "@/components/marketplace/store-product-grid"
 import { Badge } from "@/components/ui/badge"
-import { MapPin, Phone, Store, Building, Calendar, Package } from "lucide-react"
+import { MapPin, Phone, Store, Building, Calendar, Package, ExternalLink } from "lucide-react"
 import { CopyPhoneButton } from "@/components/marketplace/copy-phone-button"
 import { StoreGalleryBanner } from "@/components/marketplace/store-gallery"
+import { ABUJA_MARKETS } from "@/lib/constants"
 
 export default async function StorePage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params
@@ -74,6 +75,12 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
         galleryImages.push(store.banner_url)
     }
 
+    // Get market day locations for market_day stores
+    const frequentMarkets: string[] = Array.isArray(store.frequent_markets) ? store.frequent_markets : []
+    const marketLocations = frequentMarkets
+        .map(name => ABUJA_MARKETS.find(m => m.name === name))
+        .filter(Boolean) as typeof ABUJA_MARKETS
+
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
             {/* Store Banner & Header */}
@@ -134,12 +141,50 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
 
                     {/* Description */}
                     {store.description && (
-                        <p className="max-w-2xl text-gray-600">
-                            {store.description}
-                        </p>
+                        <div className="max-w-3xl mb-4">
+                            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">About this Store</h3>
+                            <p className="text-gray-600 leading-relaxed">
+                                {store.description}
+                            </p>
+                        </div>
                     )}
                 </div>
             </div>
+
+            {/* Market Day Locations — Only for market_day stores */}
+            {storeType === 'market_day' && marketLocations.length > 0 && (
+                <div className="container mx-auto mt-6 px-4">
+                    <div className="bg-white rounded-xl border shadow-sm p-6">
+                        <h2 className="text-lg font-bold flex items-center gap-2 mb-4">
+                            <Calendar className="h-5 w-5 text-orange-500" />
+                            Market Day Locations
+                        </h2>
+                        <p className="text-sm text-gray-500 mb-4">Find this seller at the following markets:</p>
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {marketLocations.map(market => (
+                                <div
+                                    key={market.name}
+                                    className="flex items-center justify-between p-4 rounded-lg border bg-gradient-to-r from-orange-50 to-amber-50"
+                                >
+                                    <div>
+                                        <p className="font-semibold text-gray-900">{market.name}</p>
+                                        <p className="text-sm text-orange-600">{market.days.join(', ')}</p>
+                                    </div>
+                                    <a
+                                        href={`https://www.google.com/maps/search/?api=1&query=${market.lat},${market.lng}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white text-xs font-semibold rounded-lg hover:bg-emerald-700 transition-colors shrink-0"
+                                    >
+                                        <MapPin className="h-3.5 w-3.5" />
+                                        Open Map
+                                    </a>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Products Section */}
             <div className="container mx-auto mt-8 px-4">
@@ -170,4 +215,3 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
         </div>
     )
 }
-

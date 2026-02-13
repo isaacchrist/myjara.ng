@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { redirect } from 'next/navigation'
-import { Package, ShoppingCart, TrendingUp, Plus, User, MapPin, CreditCard, Settings, Store, AlertCircle, ArrowRight } from 'lucide-react'
+import { Package, ShoppingCart, TrendingUp, Plus, User, MapPin, CreditCard, Settings, Store, AlertCircle, ArrowRight, ImageIcon, Calendar } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -128,19 +128,37 @@ export default async function RetailerDashboardPage() {
                 </Card>
             )}
 
-            {/* Location Prompt */}
-            {store && (!store.latitude || !store.longitude) && !isWholesaler && (
+            {/* Market Day Location Prompt — Only for market_day retailers */}
+            {store && store.shop_type === 'market_day' && (!store.latitude || !store.longitude) && (
                 <Card className="border-emerald-200 bg-emerald-50 mb-6">
                     <CardContent className="p-4 flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <MapPin className="h-5 w-5 text-emerald-600" />
+                            <Calendar className="h-5 w-5 text-emerald-600" />
                             <div>
-                                <p className="font-medium text-emerald-900">Add Market Day Location</p>
-                                <p className="text-sm text-emerald-700">Help customers find you by adding your market schedule.</p>
+                                <p className="font-medium text-emerald-900">Manage Market Day Locations</p>
+                                <p className="text-sm text-emerald-700">Add GPS for your frequent markets so customers can find you.</p>
                             </div>
                         </div>
                         <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                            <Link href="/seller/profile/edit">Manage Locations</Link>
+                            <Link href="/seller/market-days">Manage Markets</Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* Store Pictures Prompt */}
+            {store && (!Array.isArray((store as any).gallery_urls) || (store as any).gallery_urls.length === 0) && (
+                <Card className="border-blue-200 bg-blue-50 mb-6">
+                    <CardContent className="p-4 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <ImageIcon className="h-5 w-5 text-blue-600" />
+                            <div>
+                                <p className="font-medium text-blue-900">Add Store Photos</p>
+                                <p className="text-sm text-blue-700">Upload photos of your store to attract more customers.</p>
+                            </div>
+                        </div>
+                        <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white">
+                            <Link href="/seller/profile/edit">Add Photos</Link>
                         </Button>
                     </CardContent>
                 </Card>
@@ -178,16 +196,47 @@ export default async function RetailerDashboardPage() {
                             </div>
                         </div>
                         <div className="mt-4 pt-4 border-t">
-                            <Link href="/seller/profile" className="text-sm text-emerald-600 hover:underline">
-                                View Full Profile →
+                            <Link href="/seller/profile/edit" className="text-sm text-emerald-600 hover:underline">
+                                Edit Profile →
                             </Link>
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* Store Card */}
-                <Card>
-                    <CardHeader>
+                {/* Store Card — with picture */}
+                <Card className="overflow-hidden">
+                    {/* Store Picture Header */}
+                    {store && (
+                        <div className="relative h-32 bg-gradient-to-br from-emerald-100 to-emerald-50">
+                            {Array.isArray((store as any).gallery_urls) && (store as any).gallery_urls.length > 0 ? (
+                                <>
+                                    <Image
+                                        src={(store as any).gallery_urls[0]}
+                                        alt={store.name}
+                                        fill
+                                        className="object-cover"
+                                    />
+                                    <Link
+                                        href="/seller/profile/edit"
+                                        className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity"
+                                    >
+                                        <span className="bg-white/90 text-gray-900 px-4 py-2 rounded-lg text-sm font-semibold shadow">
+                                            Change Store Photo
+                                        </span>
+                                    </Link>
+                                </>
+                            ) : (
+                                <Link
+                                    href="/seller/profile/edit"
+                                    className="absolute inset-0 flex flex-col items-center justify-center gap-2 hover:bg-emerald-100 transition-colors"
+                                >
+                                    <ImageIcon className="h-8 w-8 text-emerald-400" />
+                                    <span className="text-sm font-medium text-emerald-700">Add Store Photo</span>
+                                </Link>
+                            )}
+                        </div>
+                    )}
+                    <CardHeader className="pb-2">
                         <CardTitle className="flex items-center gap-2">
                             <Store className="h-5 w-5" />
                             Your Store
@@ -212,6 +261,11 @@ export default async function RetailerDashboardPage() {
                                             Location Verified
                                         </p>
                                     )}
+                                </div>
+                                <div className="pt-2 border-t">
+                                    <Link href="/seller/profile/edit" className="text-sm text-emerald-600 hover:underline">
+                                        Edit Store Info →
+                                    </Link>
                                 </div>
                             </div>
                         ) : (
@@ -370,7 +424,7 @@ export default async function RetailerDashboardPage() {
                                 </Link>
                             )}
 
-                            <Link href="/seller/profile" className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                            <Link href="/seller/profile/edit" className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors">
                                 <User className="h-5 w-5 text-purple-600" />
                                 <span className="text-sm font-medium">Edit Profile</span>
                             </Link>

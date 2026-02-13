@@ -75,12 +75,6 @@ export default function EditProfilePage() {
                 setContacts(userData.emergency_contacts || [])
                 setProfilePictureUrl(userData.avatar_url || '')
             }
-            if (userData) {
-                setPhone(userData.phone || '')
-                setAddress(userData.residential_address || '')
-                setContacts(userData.emergency_contacts || [])
-                setProfilePictureUrl(userData.avatar_url || '')
-            }
             if (store) {
                 setLat(store.latitude)
                 setLng(store.longitude)

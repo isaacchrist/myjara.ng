@@ -143,7 +143,7 @@ export async function getChatRoomsAction(role: 'user' | 'store' = 'user', storeI
         .from('chat_rooms')
         .select(`
             *,
-            user:users(full_name, email),
+            user:users(full_name, email, avatar_url),
             store:stores(name, logo_url)
         `)
         .order('updated_at', { ascending: false })
@@ -185,4 +185,52 @@ export async function markMessagesReadAction(roomId: string) {
         .eq('room_id', roomId)
         .neq('sender_id', user.id)
         .eq('is_read', false)
+}
+
+// 6. Search users by name or email (for starting new conversations)
+export async function searchUsersAction(query: string) {
+    if (!query || query.trim().length < 2) return []
+
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return []
+
+    const { data, error } = await supabase
+        .from('users')
+        .select('id, full_name, email, avatar_url, role')
+        .or(`full_name.ilike.%${query}%,email.ilike.%${query}%`)
+        .neq('id', user.id)
+        .limit(10)
+
+    if (error) {
+        console.error('User search error:', error)
+        return []
+    }
+
+    return data || []
+}
+
+// 7. Get or create chat room between current user and another user (via store)
+export async function createChatWithUserAction(targetUserId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return { error: 'Unauthorized' }
+
+    // Find the target user's store
+    const { data: targetStore } = await supabase
+        .from('stores')
+        .select('id')
+        .eq('owner_id', targetUserId)
+        .limit(1)
+        .single()
+
+    if (targetStore) {
+        // Target has a store, create room with their store
+        return getOrCreateChatRoomAction((targetStore as any).id)
+    }
+
+    // If target doesn't have a store, we can't create a standard room
+    // For now, return error
+    return { error: 'User does not have a store to chat with.' }
 }

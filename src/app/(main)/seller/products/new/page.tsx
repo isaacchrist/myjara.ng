@@ -14,6 +14,7 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useSellerStore } from '@/context/seller-store-context'
+import { ABUJA_MARKETS } from '@/lib/constants'
 
 export default function AddProductPage() {
     const router = useRouter()
@@ -40,7 +41,8 @@ export default function AddProductPage() {
         jara_get_quantity: '0',
         jara_name: '',
         jara_description: '',
-        jara_image: [] as string[] // Array for consistency with upload component
+        jara_image: [] as string[], // Array for consistency with upload component
+        market_name: '' // For market_day retailers
     })
 
     useEffect(() => {
@@ -105,11 +107,11 @@ export default function AddProductPage() {
             return
         }
 
-        // 1. Validation: Minimum 2 Images
-        if (formData.images.length < 2) {
+        // 1. Validation: Minimum 1 Image
+        if (formData.images.length < 1) {
             toast({
                 title: 'Validation Error',
-                description: 'Please upload at least 2 images for your product.',
+                description: 'Please upload at least 1 image for your product.',
                 variant: 'destructive'
             })
             return
@@ -155,7 +157,8 @@ export default function AddProductPage() {
 
                 jara_name: formData.jara_is_same ? null : formData.jara_name,
                 jara_description: formData.jara_is_same ? null : formData.jara_description,
-                jara_image_url: (!formData.jara_is_same && formData.jara_image.length > 0) ? formData.jara_image[0] : null
+                jara_image_url: (!formData.jara_is_same && formData.jara_image.length > 0) ? formData.jara_image[0] : null,
+                market_name: formData.market_name || null
             }
 
             const { error } = await supabase.from('products').insert(productData as any)
@@ -251,6 +254,24 @@ export default function AddProductPage() {
                                 ))}
                             </select>
                         </div>
+
+                        {/* Market Selector (market_day retailers only) */}
+                        {store?.shop_type === 'market_day' && (
+                            <div>
+                                <Label>Which market will you sell this at?</Label>
+                                <select
+                                    value={formData.market_name}
+                                    onChange={e => setFormData(prev => ({ ...prev, market_name: e.target.value }))}
+                                    className="w-full rounded-md border px-3 py-2 text-sm bg-white"
+                                >
+                                    <option value="">Select Market (Optional)</option>
+                                    {ABUJA_MARKETS.map(market => (
+                                        <option key={market.name} value={market.name}>{market.name} — {market.days.join(', ')}</option>
+                                    ))}
+                                </select>
+                                <p className="text-xs text-gray-500 mt-1">This helps customers find your products on market day.</p>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 
@@ -258,7 +279,7 @@ export default function AddProductPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle>Product Images</CardTitle>
-                        <CardDescription>Upload at least 2 images of your product.</CardDescription>
+                        <CardDescription>Upload at least 1 image of your product.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <ImageUpload
@@ -383,6 +404,6 @@ export default function AddProductPage() {
                     </Button>
                 </div>
             </form>
-        </div>
+        </div >
     )
 }

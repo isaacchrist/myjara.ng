@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, CreditCard, Ticket, Check, Loader2 } from 'lucide-react'
+import { ArrowLeft, CreditCard, Ticket, Check, Loader2, AlertTriangle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,6 +12,8 @@ import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useSellerStore } from '@/context/seller-store-context'
 import { SUBSCRIPTION_PLANS, WHOLESALER_PLANS } from '@/lib/constants'
+import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3'
+import { validatePromoCodeAction } from '@/app/actions/subscription'
 
 export default function SubscriptionPage() {
     const router = useRouter()
@@ -19,10 +21,11 @@ export default function SubscriptionPage() {
     const { store } = useSellerStore()
     const [loading, setLoading] = useState(true)
     const [processing, setProcessing] = useState(false)
-    // const [store, setStore] = useState<any>(null)
     const [selectedPlan, setSelectedPlan] = useState('')
     const [promoCode, setPromoCode] = useState('')
     const [paymentMethod, setPaymentMethod] = useState<'flutterwave' | 'promo_code' | ''>('')
+    const [userEmail, setUserEmail] = useState('')
+    const [userName, setUserName] = useState('')
 
     useEffect(() => {
         const fetchData = async () => {
@@ -33,6 +36,9 @@ export default function SubscriptionPage() {
                 return
             }
 
+            setUserEmail(user.email || '')
+            setUserName(user.user_metadata?.full_name || user.email || '')
+
             if (!store) return
 
             setSelectedPlan((store as any)?.subscription_plan || 'basic')
@@ -41,41 +47,135 @@ export default function SubscriptionPage() {
         fetchData()
     }, [router, store])
 
+    // Get plans based on store type
+    const plans = store?.shop_type === 'brand' ? WHOLESALER_PLANS : SUBSCRIPTION_PLANS
+    const selectedPlanData = plans.find(p => p.id === selectedPlan)
+    const currentPlan = (store as any)?.subscription_plan || 'basic'
+
+    // Flutterwave config
+    const flwConfig = {
+        public_key: process.env.NEXT_PUBLIC_FLW_PUBLIC_KEY || '',
+        tx_ref: `sub_${store?.id}_${Date.now()}`,
+        amount: selectedPlanData?.price || 0,
+        currency: 'NGN',
+        payment_options: 'card,mobilemoney,ussd',
+        customer: {
+            email: userEmail,
+            phone_number: '',
+            name: userName,
+        },
+        customizations: {
+            title: 'MyJara Subscription',
+            description: `${selectedPlanData?.name || ''} Plan - Monthly`,
+            logo: 'https://myjara.ng/logo.png',
+        },
+    }
+
+    const handleFlutterPayment = useFlutterwave(flwConfig)
+
     const handleSubscribe = async () => {
         if (!selectedPlan) {
             toast({ title: 'Error', description: 'Please select a plan', variant: 'destructive' })
             return
         }
+        if (!paymentMethod) {
+            toast({ title: 'Error', description: 'Please select a payment method', variant: 'destructive' })
+            return
+        }
 
-        setProcessing(true)
-        try {
-            const supabase = createClient()
+        // If same plan and not expired, no change needed
+        const isExpired = store?.subscription_expiry && new Date(store.subscription_expiry) < new Date()
+        if (selectedPlan === currentPlan && !isExpired) {
+            toast({ title: 'No Change', description: 'You are already on this plan.', variant: 'destructive' })
+            return
+        }
 
-            // Calculate new expiry (1 month from now)
-            const expiryDate = new Date()
-            expiryDate.setMonth(expiryDate.getMonth() + 1)
-
-            // Use from() with explicit type bypass
-            const client = supabase as any
-            const { error } = await client
-                .from('stores')
-                .update({
-                    subscription_plan: selectedPlan,
-                    subscription_expiry: expiryDate.toISOString(),
-                    payment_status: 'active'
+        if (paymentMethod === 'flutterwave') {
+            // Check if Flutterwave key is configured
+            const flwKey = process.env.NEXT_PUBLIC_FLW_PUBLIC_KEY
+            if (!flwKey || flwKey === 'placeholder-fw-public' || flwKey.length < 10) {
+                toast({
+                    title: 'Payment Not Available',
+                    description: 'Flutterwave payment is not configured yet. Please use a promo code or contact admin.',
+                    variant: 'destructive'
                 })
-                .eq('id', store.id)
+                return
+            }
 
-            if (error) throw error
+            setProcessing(true)
+            handleFlutterPayment({
+                callback: async (response) => {
+                    if (response.status === 'successful' || response.status === 'completed') {
+                        // Payment confirmed — now update subscription
+                        try {
+                            const supabase = createClient()
+                            const expiryDate = new Date()
+                            expiryDate.setMonth(expiryDate.getMonth() + 1)
 
-            toast({ title: 'Success!', description: 'Subscription updated successfully!' })
-            router.push('/seller/dashboard')
+                            const { error } = await (supabase as any)
+                                .from('stores')
+                                .update({
+                                    subscription_plan: selectedPlan,
+                                    subscription_expiry: expiryDate.toISOString(),
+                                    payment_status: 'active'
+                                })
+                                .eq('id', store?.id)
 
-        } catch (error: any) {
-            console.error('Subscription error:', error)
-            toast({ title: 'Error', description: error.message || 'Failed to update subscription', variant: 'destructive' })
-        } finally {
-            setProcessing(false)
+                            if (error) throw error
+
+                            toast({ title: 'Payment Successful!', description: `Your plan has been upgraded to ${selectedPlanData?.name}.` })
+                            router.push('/seller/dashboard')
+                        } catch (err: any) {
+                            toast({ title: 'Error', description: 'Payment received but subscription update failed. Contact support.', variant: 'destructive' })
+                        }
+                    } else {
+                        toast({ title: 'Payment Failed', description: 'The transaction was not successful. No changes were made.', variant: 'destructive' })
+                    }
+                    closePaymentModal()
+                    setProcessing(false)
+                },
+                onClose: () => {
+                    setProcessing(false)
+                }
+            })
+        } else if (paymentMethod === 'promo_code') {
+            if (!promoCode.trim()) {
+                toast({ title: 'Error', description: 'Please enter a promo code', variant: 'destructive' })
+                return
+            }
+
+            setProcessing(true)
+            try {
+                const result = await validatePromoCodeAction(promoCode)
+                if (!result.success) {
+                    toast({ title: 'Invalid Code', description: result.error, variant: 'destructive' })
+                    setProcessing(false)
+                    return
+                }
+
+                // Promo valid — update subscription
+                const supabase = createClient()
+                const expiryDate = new Date()
+                expiryDate.setMonth(expiryDate.getMonth() + 1)
+
+                const { error } = await (supabase as any)
+                    .from('stores')
+                    .update({
+                        subscription_plan: selectedPlan,
+                        subscription_expiry: expiryDate.toISOString(),
+                        payment_status: 'active'
+                    })
+                    .eq('id', store?.id)
+
+                if (error) throw error
+
+                toast({ title: 'Success!', description: `Promo code applied. Your plan is now ${selectedPlanData?.name}.` })
+                router.push('/seller/dashboard')
+            } catch (err: any) {
+                toast({ title: 'Error', description: err.message || 'Failed to apply promo code', variant: 'destructive' })
+            } finally {
+                setProcessing(false)
+            }
         }
     }
 
@@ -88,6 +188,7 @@ export default function SubscriptionPage() {
     }
 
     const isExpired = store?.subscription_expiry && new Date(store.subscription_expiry) < new Date()
+    const planChanged = selectedPlan !== currentPlan
 
     return (
         <div className="p-8 max-w-4xl mx-auto">
@@ -130,7 +231,7 @@ export default function SubscriptionPage() {
             {/* Plans */}
             <h2 className="text-lg font-semibold mb-4">Choose a Plan</h2>
             <div className="grid md:grid-cols-3 gap-4 mb-6">
-                {(store?.shop_type === 'brand' ? WHOLESALER_PLANS : SUBSCRIPTION_PLANS).map(plan => (
+                {plans.map(plan => (
                     <Card
                         key={plan.id}
                         onClick={() => setSelectedPlan(plan.id)}
@@ -209,13 +310,23 @@ export default function SubscriptionPage() {
                 </Card>
             </div>
 
+            {/* Info banner */}
+            {!planChanged && !isExpired && (
+                <div className="mb-4 flex items-center gap-3 rounded-lg bg-amber-50 border border-amber-200 p-4">
+                    <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
+                    <p className="text-sm text-amber-800">
+                        You are currently on the <strong className="capitalize">{currentPlan}</strong> plan. Select a different plan to upgrade or downgrade.
+                    </p>
+                </div>
+            )}
+
             <Button
                 onClick={handleSubscribe}
-                disabled={!selectedPlan || !paymentMethod || processing}
+                disabled={!selectedPlan || !paymentMethod || processing || (!planChanged && !isExpired)}
                 className="w-full bg-emerald-600 hover:bg-emerald-700 py-6 text-lg"
             >
                 {processing && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                {isExpired ? 'Renew Subscription' : 'Update Subscription'}
+                {isExpired ? 'Renew Subscription' : planChanged ? 'Upgrade Plan' : 'No Changes to Apply'}
             </Button>
         </div>
     )
