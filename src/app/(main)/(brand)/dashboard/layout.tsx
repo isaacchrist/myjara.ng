@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Image from 'next/image'
@@ -45,6 +46,7 @@ export default function DashboardLayout({
     const [verificationStatus, setVerificationStatus] = useState<'pending' | 'approved' | 'unverified' | 'rejected'>('approved') // Default approved to avoid flicker
     const [isAdminMode, setIsAdminMode] = useState(false)
     const [loading, setLoading] = useState(true)
+    const router = useRouter()
     const supabase = createClient()
 
     useEffect(() => {
@@ -53,21 +55,35 @@ export default function DashboardLayout({
             const { data: { user } } = await supabase.auth.getUser()
 
             if (user) {
-                // Fetch Store for User
-                const { data: storeData } = await (supabase.from('stores') as any)
-                    .select('name, logo_url')
-                    .eq('owner_id', user.id)
-                    .single() as { data: { name: string; logo_url: string | null } | null }
-                if (storeData) setStore(storeData)
-
-                // Fetch Verification Status
+                // Fetch User Role & Status
                 const { data: userData } = await (supabase.from('users') as any)
-                    .select('verification_status')
+                    .select('role, verification_status')
                     .eq('id', user.id)
                     .single()
 
-                if (userData) {
-                    setVerificationStatus((userData as any).verification_status || 'pending')
+                // Redirect Retailers to the correct dashboard
+                if (userData?.role === 'retailer') {
+                    router.push('/seller/dashboard')
+                    return
+                }
+
+                // Fetch Store for User
+                const { data: storeData } = await (supabase.from('stores') as any)
+                    .select('name, logo_url, is_verified')
+                    .eq('owner_id', user.id)
+                    .single() as { data: { name: string; logo_url: string | null; is_verified: boolean } | null }
+
+                if (storeData) setStore(storeData)
+
+                // Determine Verification Status
+                // If either Auth User is approved OR Store is verified, count as approved
+                const userVerified = (userData as any)?.verification_status === 'approved'
+                const storeVerified = storeData?.is_verified === true
+
+                if (userVerified || storeVerified) {
+                    setVerificationStatus('approved')
+                } else {
+                    setVerificationStatus((userData as any)?.verification_status || 'pending')
                 }
             } else {
                 // 2. Try Admin Key Sessions

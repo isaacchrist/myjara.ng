@@ -234,3 +234,26 @@ export async function createChatWithUserAction(targetUserId: string) {
     // For now, return error
     return { error: 'User does not have a store to chat with.' }
 }
+
+// 8. Search Stores (for Customer Inbox to start new chats)
+export async function searchStoresAction(query: string) {
+    if (!query || query.trim().length < 2) return []
+
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return []
+
+    const { data, error } = await supabase
+        .from('stores')
+        .select('id, name, logo_url, shop_type')
+        .ilike('name', `%${query}%`)
+        .eq('status', 'active')
+        .limit(10)
+
+    if (error) {
+        console.error('Store search error:', error)
+        return []
+    }
+
+    return data || []
+}
