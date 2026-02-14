@@ -32,7 +32,7 @@ export function Footer() {
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/how-it-works" className="text-sm text-gray-500 hover:text-emerald-600">
+                                <Link href="/how-jara-works" className="text-sm text-gray-500 hover:text-emerald-600">
                                     How Jara Works
                                 </Link>
                             </li>
@@ -49,8 +49,8 @@ export function Footer() {
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/support" className="text-sm text-gray-500 hover:text-emerald-600">
-                                    Retailer Plans
+                                <Link href="/seller/support" className="text-sm text-gray-500 hover:text-emerald-600">
+                                    Retailer Support
                                 </Link>
                             </li>
                             <li>

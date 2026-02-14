@@ -146,23 +146,7 @@ export default async function RetailerDashboardPage() {
                 </Card>
             )}
 
-            {/* Store Pictures Prompt */}
-            {store && (!Array.isArray((store as any).gallery_urls) || (store as any).gallery_urls.length === 0) && (
-                <Card className="border-blue-200 bg-blue-50 mb-6">
-                    <CardContent className="p-4 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <ImageIcon className="h-5 w-5 text-blue-600" />
-                            <div>
-                                <p className="font-medium text-blue-900">Add Store Photos</p>
-                                <p className="text-sm text-blue-700">Upload photos of your store to attract more customers.</p>
-                            </div>
-                        </div>
-                        <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white">
-                            <Link href="/seller/profile/edit">Add Photos</Link>
-                        </Button>
-                    </CardContent>
-                </Card>
-            )}
+            {/* Store Pictures Prompt - REMOVED per user feedback */}
 
             {/* Profile & Store Info */}
             <div className="grid gap-6 lg:grid-cols-2">

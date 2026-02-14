@@ -130,9 +130,7 @@ export default function HowJaraWorksPage() {
                                     <CheckCircle2 className="h-5 w-5" />
                                 </div>
                                 <h3 className="mb-2 font-bold text-gray-900">{item.title}</h3>
-                                <Link href="/how-jara-works" className="text-sm text-gray-500 hover:text-emerald-600">
-                                    How Jara Works
-                                </Link>
+                                <p className="text-sm text-gray-600">{item.desc}</p>
                             </motion.div>
                         ))}
                     </div>

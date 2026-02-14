@@ -13,7 +13,8 @@ import {
     Store,
     MessageSquare,
     Calendar,
-    AlertTriangle
+    AlertTriangle,
+    Headphones
 } from 'lucide-react'
 import StoreSwitcher from '@/components/store-switcher'
 
@@ -88,7 +89,13 @@ export function SellerSidebar({ stores, activeStoreId, shopType, unreadCount = 0
                 href: '/seller/disputes',
                 label: 'Disputes',
                 icon: AlertTriangle,
-                active: pathname.includes('/disputes'),
+                active: pathname.includes('/seller/disputes'),
+            },
+            {
+                href: '/seller/support',
+                label: 'Support',
+                icon: Headphones,
+                active: pathname.includes('/seller/support'),
             },
         ]
         : [
@@ -97,7 +104,13 @@ export function SellerSidebar({ stores, activeStoreId, shopType, unreadCount = 0
                 href: '/seller/disputes',
                 label: 'Disputes',
                 icon: AlertTriangle,
-                active: pathname.includes('/disputes'),
+                active: pathname.includes('/seller/disputes'),
+            },
+            {
+                href: '/seller/support',
+                label: 'Support',
+                icon: Headphones,
+                active: pathname.includes('/seller/support'),
             },
         ]
 
