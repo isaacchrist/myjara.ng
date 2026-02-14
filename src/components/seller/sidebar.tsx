@@ -85,7 +85,7 @@ export function SellerSidebar({ stores, activeStoreId, shopType, unreadCount = 0
             },
             ...baseRoutes.slice(4),
             {
-                href: '/customer/disputes',
+                href: '/seller/disputes',
                 label: 'Disputes',
                 icon: AlertTriangle,
                 active: pathname.includes('/disputes'),
@@ -94,7 +94,7 @@ export function SellerSidebar({ stores, activeStoreId, shopType, unreadCount = 0
         : [
             ...baseRoutes,
             {
-                href: '/customer/disputes',
+                href: '/seller/disputes',
                 label: 'Disputes',
                 icon: AlertTriangle,
                 active: pathname.includes('/disputes'),
