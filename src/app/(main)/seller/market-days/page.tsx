@@ -11,6 +11,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useSellerStore } from '@/context/seller-store-context'
 import { ABUJA_MARKETS } from '@/lib/constants'
+import { updateProfile } from '@/app/actions/profile'
 
 export default function MarketDaysPage() {
     const router = useRouter()
@@ -82,15 +83,12 @@ export default function MarketDaysPage() {
         if (!store) return
         setSaving(true)
         try {
-            const supabase = createClient()
-            const { error } = await (supabase as any)
-                .from('stores')
-                .update({ frequent_markets: markets })
-                .eq('id', store.id)
-
-            if (error) throw error
-
-            toast({ title: 'Saved', description: 'Market list updated successfully.' })
+            const result = await updateProfile({ frequentMarkets: markets })
+            if (result.success) {
+                toast({ title: 'Saved', description: 'Market list updated successfully.' })
+            } else {
+                throw new Error(result.error || 'Failed to save')
+            }
         } catch (err: any) {
             toast({ title: 'Error', description: err.message || 'Failed to save', variant: 'destructive' })
         } finally {
@@ -107,20 +105,17 @@ export default function MarketDaysPage() {
         setCapturingGps(marketName)
         navigator.geolocation.getCurrentPosition(
             async (position) => {
-                // Save GPS to store's latitude/longitude (simple approach)
-                // In a more complex system, each market would have its own GPS in a junction table
+                // Save GPS to store's latitude/longitude via server action
                 try {
-                    const supabase = createClient()
-                    const { error } = await (supabase as any)
-                        .from('stores')
-                        .update({
-                            latitude: position.coords.latitude,
-                            longitude: position.coords.longitude
-                        })
-                        .eq('id', store?.id)
-
-                    if (error) throw error
-                    toast({ title: 'GPS Captured!', description: `Location saved for ${marketName}` })
+                    const result = await updateProfile({
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    })
+                    if (result.success) {
+                        toast({ title: 'GPS Captured!', description: `Location saved for ${marketName}` })
+                    } else {
+                        throw new Error(result.error || 'Failed to save')
+                    }
                 } catch (err) {
                     toast({ title: 'Error', description: 'Failed to save location', variant: 'destructive' })
                 } finally {

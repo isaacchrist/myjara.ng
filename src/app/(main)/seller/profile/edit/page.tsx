@@ -90,7 +90,7 @@ export default function EditProfilePage() {
             setLoading(false)
         }
         fetchData()
-    }, [router])
+    }, [router, store])
 
     const handleAddContact = () => {
         if (contacts.length >= 2) return

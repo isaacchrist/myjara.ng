@@ -14,7 +14,7 @@ export async function getActiveStore() {
     // We explicitly cast the result or use a defined type if available, but for now 'any[]' avoids the 'never' inference
     const { data: stores } = await supabase
         .from('stores')
-        .select('id, name, slug, shop_type, status, role:owner_id')
+        .select('*')
         .eq('owner_id', user.id) as { data: any[] | null }
 
     if (!stores || stores.length === 0) return null
