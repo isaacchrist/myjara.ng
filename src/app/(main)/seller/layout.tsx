@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { SellerSidebar } from '@/components/seller/sidebar'
+import { MobileBottomNav } from '@/components/seller/mobile-bottom-nav'
 import { getActiveStore } from '@/lib/store-context'
 import { SellerStoreProvider } from '@/context/seller-store-context'
 
@@ -45,13 +46,18 @@ export default async function SellerLayout({
                     unreadCount={unreadCount || 0}
                 />
             </div>
-            <main className="flex-1 w-full">
-                {/* Dynamically import Provider if needed, but it's small */}
-                {/* We need to import it at top too */}
+            <main className="flex-1 w-full pb-20 md:pb-0">
                 <SellerStoreProvider store={activeStore}>
                     {children}
                 </SellerStoreProvider>
             </main>
+            {/* Mobile bottom navigation - only visible below md breakpoint */}
+            <MobileBottomNav
+                shopType={activeStore.shop_type}
+                unreadCount={unreadCount || 0}
+                storeSlug={activeStore.slug}
+            />
         </div>
     )
 }
+

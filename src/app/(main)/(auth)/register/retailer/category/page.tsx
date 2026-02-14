@@ -94,18 +94,97 @@ function CategorySelectionContent() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col items-center py-12 px-4">
-            <div className="w-full max-w-5xl space-y-8">
+        <div className="min-h-screen bg-gray-50 flex flex-col items-center py-8 md:py-12 px-4">
+            <div className="w-full max-w-5xl space-y-6 md:space-y-8">
                 <div className="text-center space-y-2">
-                    <h1 className="text-3xl font-bold text-gray-900">What do you sell?</h1>
-                    <p className="text-gray-500 max-w-xl mx-auto">
-                        Select up to 5 categories or subcategories that best describe your business. You can add more later based on your plan.
+                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900">What do you sell?</h1>
+                    <p className="text-gray-500 max-w-xl mx-auto text-sm md:text-base">
+                        Select up to 5 categories or subcategories that best describe your business.
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start h-[600px]">
+                {/* Selection Chips */}
+                {selectedCategories.length > 0 && (
+                    <div className="flex flex-wrap gap-2 justify-center">
+                        <span className="text-sm font-medium text-gray-600 mr-1">Selected:</span>
+                        <span className="text-sm font-bold text-emerald-600">{selectedCategories.length}/5</span>
+                    </div>
+                )}
+
+                {/* Mobile: Accordion layout / Desktop: Side-by-side panels */}
+                {/* MOBILE VIEW */}
+                <div className="md:hidden space-y-2">
+                    {categories.map(cat => {
+                        const isSelected = selectedCategories.includes(cat.id)
+                        const isExpanded = viewingCategory === cat.id
+                        const childSelectedCount = cat.subcategories.filter(sub => selectedCategories.includes(sub.id)).length
+
+                        return (
+                            <div key={cat.id} className="rounded-xl border bg-white overflow-hidden">
+                                {/* Category header row */}
+                                <div
+                                    onClick={() => setViewingCategory(isExpanded ? null : cat.id)}
+                                    className={`flex items-center justify-between p-4 cursor-pointer touch-manipulation transition-colors ${isExpanded ? 'bg-emerald-50 border-b border-emerald-100' : ''}`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-2xl">{cat.icon}</span>
+                                        <div>
+                                            <span className={`text-sm font-medium ${isExpanded ? 'text-emerald-900' : 'text-gray-700'}`}>{cat.name}</span>
+                                            {(childSelectedCount > 0 || isSelected) && (
+                                                <span className="block text-xs text-emerald-600 font-medium">
+                                                    {isSelected ? 'Selected' : `${childSelectedCount} selected`}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <div
+                                            onClick={(e) => { e.stopPropagation(); toggleSelection(cat.id) }}
+                                            className={`h-6 w-6 rounded border-2 flex items-center justify-center transition-colors touch-manipulation ${isSelected ? 'bg-emerald-600 border-emerald-600' : 'border-gray-300'}`}
+                                        >
+                                            {isSelected && <Check className="h-4 w-4 text-white" />}
+                                        </div>
+                                        <ChevronRight className={`h-5 w-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-90 text-emerald-500' : ''}`} />
+                                    </div>
+                                </div>
+
+                                {/* Expanded subcategories */}
+                                {isExpanded && cat.subcategories.length > 0 && (
+                                    <div className="p-3 space-y-2 bg-gray-50/50">
+                                        {cat.subcategories.map(sub => {
+                                            const isSubSelected = selectedCategories.includes(sub.id)
+                                            return (
+                                                <button
+                                                    key={sub.id}
+                                                    onClick={() => toggleSelection(sub.id)}
+                                                    className={`w-full text-left px-4 py-3 rounded-lg text-sm transition-all flex items-center justify-between touch-manipulation min-h-[48px] ${isSubSelected
+                                                        ? 'bg-emerald-600 text-white shadow-md active:bg-emerald-700'
+                                                        : 'bg-white border border-gray-100 active:bg-emerald-50'
+                                                        }`}
+                                                >
+                                                    <span className="font-medium">{sub.name}</span>
+                                                    {isSubSelected && <CheckCircle2 className="h-4 w-4" />}
+                                                    {!isSubSelected && <div className="h-4 w-4 rounded-full border border-gray-300" />}
+                                                </button>
+                                            )
+                                        })}
+                                    </div>
+                                )}
+
+                                {isExpanded && cat.subcategories.length === 0 && (
+                                    <div className="p-4 text-center text-gray-400 text-sm">
+                                        No subcategories. Use the checkbox above to select this category directly.
+                                    </div>
+                                )}
+                            </div>
+                        )
+                    })}
+                </div>
+
+                {/* DESKTOP VIEW */}
+                <div className="hidden md:grid grid-cols-12 gap-6 items-start h-[600px]">
                     {/* Main Categories List (Left) */}
-                    <div className="md:col-span-5 flex flex-col gap-2 h-full overflow-y-auto pr-2">
+                    <div className="col-span-5 flex flex-col gap-2 h-full overflow-y-auto pr-2">
                         <h3 className="font-semibold text-gray-700 ml-1 mb-2">Categories</h3>
                         {categories.map(cat => {
                             const isSelected = selectedCategories.includes(cat.id)
@@ -117,8 +196,8 @@ function CategorySelectionContent() {
                                     key={cat.id}
                                     onClick={() => setViewingCategory(cat.id)}
                                     className={`cursor-pointer group relative rounded-xl border p-3 transition-all flex items-center justify-between ${isViewing
-                                            ? 'border-emerald-500 bg-emerald-50 ring-1 ring-emerald-500 shadow-sm'
-                                            : 'border-white bg-white hover:border-emerald-200'
+                                        ? 'border-emerald-500 bg-emerald-50 ring-1 ring-emerald-500 shadow-sm'
+                                        : 'border-white bg-white hover:border-emerald-200'
                                         }`}
                                 >
                                     <div className="flex items-center gap-3">
@@ -136,7 +215,6 @@ function CategorySelectionContent() {
                                     </div>
 
                                     <div className="flex items-center gap-2">
-                                        {/* Allow selecting parent directly too? */}
                                         <div
                                             onClick={(e) => { e.stopPropagation(); toggleSelection(cat.id) }}
                                             className={`h-5 w-5 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-emerald-600 border-emerald-600' : 'border-gray-300 hover:border-emerald-400 bg-white'
@@ -152,7 +230,7 @@ function CategorySelectionContent() {
                     </div>
 
                     {/* Subcategories Panel (Right) */}
-                    <div className="md:col-span-7 h-full">
+                    <div className="col-span-7 h-full">
                         <h3 className="font-semibold text-gray-700 ml-1 mb-2">Subcategories</h3>
                         <Card className="h-full border-2 border-emerald-100 bg-white/50 backdrop-blur-sm shadow-sm overflow-hidden flex flex-col">
                             <CardContent className="p-0 flex-1 overflow-y-auto">
@@ -172,8 +250,8 @@ function CategorySelectionContent() {
                                                             key={sub.id}
                                                             onClick={() => toggleSelection(sub.id)}
                                                             className={`w-full text-left px-4 py-3 rounded-lg text-sm transition-all flex items-center justify-between group ${isSelected
-                                                                    ? 'bg-emerald-600 text-white shadow-md'
-                                                                    : 'bg-white border border-gray-100/50 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200'
+                                                                ? 'bg-emerald-600 text-white shadow-md'
+                                                                : 'bg-white border border-gray-100/50 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200'
                                                                 }`}
                                                         >
                                                             <span className="font-medium">{sub.name}</span>
