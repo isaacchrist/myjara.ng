@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense, useEffect } from 'react'
+import { useState, useRef, Suspense, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Store, User, Mail, Lock, ArrowRight, Loader2, CheckCircle2, MapPin, Calendar, ShoppingBag, CreditCard, Ticket, Phone } from 'lucide-react'
@@ -79,14 +79,22 @@ function RetailerRegisterForm() {
     const STORAGE_KEY = 'myjara_retailer_registration_v2'
 
     // Load/Save Storage
+    const hasInitialized = useRef(false)
+
+    // Redirect to category selection if phone present but no category
     useEffect(() => {
         if (urlPhone && !urlCategory && !urlCategories) {
             const params = new URLSearchParams(searchParams.toString())
             router.push(`/register/retailer/category?${params.toString()}`)
         }
-    }, [urlPhone, urlCategory, urlCategories, router, searchParams])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []) // Only run once on mount
 
+    // Load saved form data from sessionStorage (once on mount)
     useEffect(() => {
+        if (hasInitialized.current) return
+        hasInitialized.current = true
+
         const saved = sessionStorage.getItem(STORAGE_KEY)
         if (saved) {
             try {
@@ -101,9 +109,12 @@ function RetailerRegisterForm() {
                 setFormData(prev => ({ ...prev, ...parsed }))
             } catch (e) { console.error(e) }
         }
-    }, [urlCategories, urlCategory, urlSubcategory, urlPhone])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []) // Only run once on mount
 
+    // Save form data to sessionStorage (debounced)
     useEffect(() => {
+        if (!hasInitialized.current) return // Don't save before initial load
         const timeout = setTimeout(() => {
             sessionStorage.setItem(STORAGE_KEY, JSON.stringify(formData))
         }, 500)

@@ -127,23 +127,23 @@ function BrandRegisterForm() {
             </div>
             <div className="space-y-2">
                 <label className="text-sm font-medium">Business / Brand Name</label>
-                <Input value={formData.businessName} onChange={e => setFormData({ ...formData, businessName: e.target.value })} placeholder="My Brand Global Ltd." />
+                <Input name="businessName" value={formData.businessName} onChange={e => setFormData(prev => ({ ...prev, businessName: e.target.value }))} placeholder="My Brand Global Ltd." />
             </div>
             <div className="space-y-2">
                 <label className="text-sm font-medium">Contact Person Name</label>
-                <Input value={formData.fullName} onChange={e => setFormData({ ...formData, fullName: e.target.value })} placeholder="Manager Name" />
+                <Input name="fullName" value={formData.fullName} onChange={e => setFormData(prev => ({ ...prev, fullName: e.target.value }))} placeholder="Manager Name" />
             </div>
             <div className="space-y-2">
                 <label className="text-sm font-medium">Phone Number</label>
-                <Input type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} placeholder="08012345678" />
+                <Input name="phone" type="tel" value={formData.phone} onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))} placeholder="08012345678" />
             </div>
             <div className="space-y-2">
                 <label className="text-sm font-medium">Email Address</label>
-                <Input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="contact@mybrand.com" />
+                <Input name="email" type="email" value={formData.email} onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))} placeholder="contact@mybrand.com" />
             </div>
             <div className="space-y-2">
                 <label className="text-sm font-medium">Password</label>
-                <Input type="password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} placeholder="••••••••" />
+                <Input name="password" type="password" value={formData.password} onChange={e => setFormData(prev => ({ ...prev, password: e.target.value }))} placeholder="••••••••" />
             </div>
         </div>
     )
@@ -178,7 +178,7 @@ function BrandRegisterForm() {
                 <label className="text-sm font-medium">Business Description</label>
                 <textarea
                     value={formData.businessDescription}
-                    onChange={e => setFormData({ ...formData, businessDescription: e.target.value })}
+                    onChange={e => setFormData(prev => ({ ...prev, businessDescription: e.target.value }))}
                     className="w-full rounded-md border border-input px-3 py-2 text-sm min-h-[100px]"
                     placeholder="Describe what you supply..."
                 />
