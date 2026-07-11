@@ -28,6 +28,9 @@ export interface ProfileUpdateData {
 
     // Social Links (merged into stores.settings.social, alongside theme)
     socialLinks?: { facebook?: string; instagram?: string; twitter?: string; whatsapp?: string; tiktok?: string };
+
+    // Brand color (merged into stores.settings.theme.primaryColor, alongside social)
+    themeColor?: string;
 }
 
 export async function updateProfile(formData: ProfileUpdateData) {
@@ -101,16 +104,21 @@ export async function updateProfile(formData: ProfileUpdateData) {
     // Market Day Locations
     if (formData.frequentMarkets !== undefined) storeUpdate.frequent_markets = formData.frequentMarkets
 
-    // Social Links -- settings is a shared JSONB blob (also holds theme), so
-    // merge rather than overwrite.
-    if (formData.socialLinks !== undefined) {
+    // Social Links / theme color -- settings is a shared JSONB blob, so merge
+    // rather than overwrite. Both share one fetch so setting both in the same
+    // call doesn't clobber one with a stale read of the other.
+    if (formData.socialLinks !== undefined || formData.themeColor !== undefined) {
         const { data: existingStore } = await (supabase.from('stores') as any)
             .select('settings')
             .eq('owner_id', user.id)
             .single()
+        const existingSettings = existingStore?.settings || {}
         storeUpdate.settings = {
-            ...(existingStore?.settings || {}),
-            social: formData.socialLinks,
+            ...existingSettings,
+            ...(formData.socialLinks !== undefined && { social: formData.socialLinks }),
+            ...(formData.themeColor !== undefined && {
+                theme: { ...(existingSettings.theme || {}), primaryColor: formData.themeColor },
+            }),
         }
     }
 

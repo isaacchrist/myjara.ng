@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { BrandOnboardingDialog } from './onboarding-dialog'
 
 // Brands might have different plans, but reusing for simplicity as per requirement "wholesaler accounts"
 // Usually wholesalers don't pay subscription? Or do they? Assuming YES for now or just generic registration.
@@ -29,6 +30,7 @@ function BrandRegisterForm() {
     const [step, setStep] = useState<1 | 2 | 3 | 'phone_entry'>('phone_entry')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
+    const [onboarding, setOnboarding] = useState<{ slug: string; tag?: string } | null>(null)
 
     // Form State
     const [formData, setFormData] = useState({
@@ -134,9 +136,14 @@ function BrandRegisterForm() {
                 throw new Error(result.error || 'Registration failed')
             }
 
-            // Success Redirect
+            // Sign the new account in so the dashboard/store tabs opened from the
+            // onboarding dialog actually work (registerBrand creates the auth user
+            // server-side via the admin API, which doesn't establish a session).
+            const supabase = createClient()
+            await supabase.auth.signInWithPassword({ email: formData.email, password: formData.password })
+
             toast({ title: 'Application Submitted!', description: 'Your Wholesaler account is pending verification.' })
-            router.push(result.tag ? `/verification-pending?tag=${encodeURIComponent(result.tag)}` : '/verification-pending')
+            setOnboarding({ slug: result.slug || '', tag: result.tag })
 
         } catch (err: any) {
             console.error('Registration error:', err)
@@ -341,6 +348,14 @@ function BrandRegisterForm() {
                     </CardFooter>
                 </Card>
             </div>
+
+            {onboarding && (
+                <BrandOnboardingDialog
+                    open={!!onboarding}
+                    slug={onboarding.slug}
+                    onDone={() => router.push(onboarding.tag ? `/verification-pending?tag=${encodeURIComponent(onboarding.tag)}` : '/verification-pending')}
+                />
+            )}
         </div>
     )
 }

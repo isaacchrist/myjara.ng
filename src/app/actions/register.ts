@@ -474,5 +474,5 @@ export async function registerBrand(formData: RegistrationData) {
     }
 
     const { data: tagRow } = await admin.from('users').select('tag').eq('id', userId).maybeSingle() as any
-    return { success: true, tag: tagRow?.tag }
+    return { success: true, tag: tagRow?.tag, slug: storeSlug }
 }
