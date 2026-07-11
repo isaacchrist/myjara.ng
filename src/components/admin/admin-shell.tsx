@@ -20,7 +20,8 @@ import {
     CheckCircle,
     Bug,
     Lightbulb,
-    Package
+    Package,
+    Tag
 } from 'lucide-react'
 import { logoutAdmin } from '@/app/actions/admin-auth'
 import { getAdminNotificationsAction, markAllAdminNotificationsReadAction } from '@/app/actions/notifications'
@@ -36,6 +37,7 @@ const sidebarItems = [
     { icon: CheckCircle, label: 'Verification', href: '/admin/verification', badge: true }, // Added Verification
     { icon: FolderTree, label: 'Categories', href: '/admin/categories' },
     { icon: CreditCard, label: 'Transactions', href: '/admin/transactions' },
+    { icon: Tag, label: 'Pricing', href: '/admin/pricing' },
     { icon: MessageSquare, label: 'Messages', href: '/admin/messages' }, // Added Messages explicitly if missing
     { icon: Users, label: 'Users', href: '/admin/users' },
     { icon: BarChart3, label: 'Analytics', href: '/admin/analytics' },

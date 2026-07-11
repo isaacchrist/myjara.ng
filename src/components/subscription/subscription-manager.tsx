@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { createClient } from "@/lib/supabase/client"
 import { useToast } from "@/hooks/use-toast"
-import { SUBSCRIPTION_PLANS, WHOLESALER_PLANS } from "@/lib/constants"
+import { getActivePlansAction, type SubscriptionPlan } from "@/app/actions/plans"
 import { useFlutterwave, closePaymentModal } from "flutterwave-react-v3"
 import { validatePromoCodeAction } from "@/app/actions/subscription"
 
@@ -24,11 +24,14 @@ type Store = {
 // Shared by /seller/subscription and /dashboard/subscription so retailer and
 // wholesaler plan purchases (Flutterwave + promo code, writing directly to
 // stores.subscription_plan/subscription_expiry -- the column middleware
-// actually enforces) don't drift into two copies.
+// actually enforces) don't drift into two copies. Plans themselves come from
+// subscription_plans (admin-editable, see /admin/pricing), not a hardcoded
+// constant, so prices can differ per shop_type.
 export function SubscriptionManager({ backHref, onSuccessHref }: { backHref: string; onSuccessHref: string }) {
     const router = useRouter()
     const { toast } = useToast()
     const [store, setStore] = useState<Store | null>(null)
+    const [plans, setPlans] = useState<SubscriptionPlan[]>([])
     const [loading, setLoading] = useState(true)
     const [processing, setProcessing] = useState(false)
     const [selectedPlan, setSelectedPlan] = useState("")
@@ -57,14 +60,15 @@ export function SubscriptionManager({ backHref, onSuccessHref }: { backHref: str
             if (storeData) {
                 setStore(storeData)
                 setSelectedPlan(storeData.subscription_plan || "basic")
+                const activePlans = await getActivePlansAction(storeData.shop_type || "physical")
+                setPlans(activePlans)
             }
             setLoading(false)
         }
         fetchData()
     }, [router])
 
-    const plans = store?.shop_type === "brand" ? WHOLESALER_PLANS : SUBSCRIPTION_PLANS
-    const selectedPlanData = plans.find((p) => p.id === selectedPlan)
+    const selectedPlanData = plans.find((p) => p.plan_key === selectedPlan)
     const currentPlan = store?.subscription_plan || "basic"
 
     const flwConfig = {
@@ -230,12 +234,12 @@ export function SubscriptionManager({ backHref, onSuccessHref }: { backHref: str
                 {plans.map((plan) => (
                     <Card
                         key={plan.id}
-                        onClick={() => setSelectedPlan(plan.id)}
-                        className={`relative cursor-pointer transition-all hover:shadow-lg ${selectedPlan === plan.id ? "border-emerald-500 ring-2 ring-emerald-500" : "border-gray-200"
+                        onClick={() => setSelectedPlan(plan.plan_key)}
+                        className={`relative cursor-pointer transition-all hover:shadow-lg ${selectedPlan === plan.plan_key ? "border-emerald-500 ring-2 ring-emerald-500" : "border-gray-200"
                             }`}
                     >
                         <CardContent className="p-6">
-                            {(plan.id === "pro" || plan.id === "supplier_pro") && (
+                            {(plan.plan_key === "pro" || plan.plan_key === "supplier_pro") && (
                                 <Badge className="absolute top-2 right-2 bg-emerald-500">Popular</Badge>
                             )}
                             <h3 className="text-lg font-bold">{plan.name}</h3>

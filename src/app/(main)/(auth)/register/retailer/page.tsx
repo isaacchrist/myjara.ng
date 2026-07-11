@@ -12,8 +12,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
-import { ABUJA_MARKETS, SUBSCRIPTION_PLANS } from '@/lib/constants'
+import { ABUJA_MARKETS } from '@/lib/constants'
 import { validatePromoCodeAction } from '@/app/actions/subscription'
+import { getActivePlansAction, type SubscriptionPlan } from '@/app/actions/plans'
 import { useToast } from '@/hooks/use-toast'
 
 function RetailerRegisterForm() {
@@ -120,6 +121,14 @@ function RetailerRegisterForm() {
         }, 500)
         return () => clearTimeout(timeout)
     }, [formData])
+
+    // Plans depend on the shop type chosen earlier in the flow, so retailers
+    // see the same admin-edited prices/tiers they'll actually be charged
+    // (previously a flat, hardcoded list regardless of shop type).
+    const [plans, setPlans] = useState<SubscriptionPlan[]>([])
+    useEffect(() => {
+        getActivePlansAction(formData.shopType || 'physical').then(setPlans)
+    }, [formData.shopType])
 
     // Category Name Fetch
     const [categoryDisplay, setCategoryDisplay] = useState('')
@@ -407,9 +416,9 @@ function RetailerRegisterForm() {
 
     const renderStep3 = () => (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-right-4">
-            {SUBSCRIPTION_PLANS.map(plan => (
-                <div key={plan.id} onClick={() => setFormData(p => ({ ...p, selectedPlan: plan.id as any }))} className={`relative cursor-pointer border rounded-xl p-6 transition-all hover:shadow-lg ${formData.selectedPlan === plan.id ? 'border-emerald-500 ring-2 ring-emerald-500 shadow-xl scale-[1.02]' : 'border-gray-200'}`}>
-                    {plan.id === 'pro' && <div className="absolute top-0 right-0 bg-emerald-500 text-white text-xs px-2 py-1 rounded-bl-lg rounded-tr-lg font-bold">POPULAR</div>}
+            {plans.map(plan => (
+                <div key={plan.id} onClick={() => setFormData(p => ({ ...p, selectedPlan: plan.plan_key as any }))} className={`relative cursor-pointer border rounded-xl p-6 transition-all hover:shadow-lg ${formData.selectedPlan === plan.plan_key ? 'border-emerald-500 ring-2 ring-emerald-500 shadow-xl scale-[1.02]' : 'border-gray-200'}`}>
+                    {plan.plan_key === 'pro' && <div className="absolute top-0 right-0 bg-emerald-500 text-white text-xs px-2 py-1 rounded-bl-lg rounded-tr-lg font-bold">POPULAR</div>}
                     <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
                     <div className="mt-2 mb-4"><span className="text-3xl font-bold">₦{plan.price.toLocaleString()}</span><span className="text-gray-500 text-sm">/mo</span></div>
                     <ul className="space-y-2 text-sm text-gray-600 mb-4">{plan.features.map((f, i) => <li key={i} className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-500" /> {f}</li>)}</ul>

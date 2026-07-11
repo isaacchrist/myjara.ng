@@ -23,41 +23,8 @@ export function sellerHasMarketDays(shopType?: string) {
     return shopType !== 'brand'
 }
 
-export const SUBSCRIPTION_PLANS = [
-    {
-        id: 'basic',
-        name: 'Basic Plan',
-        price: 2000,
-        features: ['Standard Search', 'Access to Market Days', 'Basic Support']
-    },
-    {
-        id: 'pro',
-        name: 'Pro Plan',
-        price: 5000,
-        features: ['Priority Search', 'Advanced Analytics', 'Email Support', 'Jara Deal Alerts']
-    },
-    {
-        id: 'exclusive',
-        name: 'Exclusive Plan',
-        price: 7500,
-        features: ['Top Visibility', 'Dedicated Manager', 'Premium Jara Offers', 'Instant Notifications']
-    }
-]
-
-export const WHOLESALER_PLANS = [
-    {
-        id: 'supplier_basic',
-        name: 'Supplier Basic',
-        price: 15000,
-        features: ['List up to 50 Products', 'Verify 2 Retailers', 'Basic Analytics']
-    },
-    {
-        id: 'supplier_pro',
-        name: 'Supplier Pro',
-        price: 45000,
-        features: ['Unlimited Products', 'Unlimited Retailers', 'Advanced Market Trends', 'Priority Support']
-    }
-]
+// Subscription plans moved to the subscription_plans DB table (migration
+// 032), admin-editable at /admin/pricing -- see src/app/actions/plans.ts.
 
 export const ABUJA_LOCATIONS = [
     {
