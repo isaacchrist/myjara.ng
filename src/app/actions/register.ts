@@ -408,7 +408,9 @@ export async function registerBrand(formData: RegistrationData) {
         subscription_plan: 'pro', // Assume Wholesalers get Pro or Custom features? Or 'basic'.
         subscription_expiry: expiryDate.toISOString(),
         payment_status: 'trial',
-        categories: [],
+        categories: formData.categories && formData.categories.length > 0
+            ? formData.categories
+            : [formData.categoryId, formData.subcategoryId].filter(Boolean),
         frequent_markets: [],
 
         // Public Contact Info (Synced for visibility on storefront)

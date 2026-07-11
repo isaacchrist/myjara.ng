@@ -37,6 +37,9 @@ function BrandRegisterForm() {
         email: '',
         password: '',
         phone: '',
+        sex: '' as 'male' | 'female' | '',
+        dateOfBirth: '',
+        residentialAddress: '',
 
         // Business
         businessName: '',
@@ -46,6 +49,7 @@ function BrandRegisterForm() {
             lng: null as number | null,
             accuracy: 0
         },
+        categories: [] as string[],
 
         agreedToPolicy: false,
         profilePictureUrl: '',
@@ -53,6 +57,35 @@ function BrandRegisterForm() {
         cacUrl: [] as string[], // New
         storeImages: [] as string[] // Gallery
     })
+
+    const [categoryTree, setCategoryTree] = useState<{ id: string; name: string; icon: string | null; subcategories: { id: string; name: string }[] }[]>([])
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            const supabase = createClient()
+            const { data: allCategories } = await supabase
+                .from('categories')
+                .select('id, name, icon, parent_id')
+                .order('sort_order') as any
+            const parents = (allCategories || []).filter((c: any) => !c.parent_id)
+            setCategoryTree(parents.map((p: any) => ({
+                id: p.id,
+                name: p.name,
+                icon: p.icon,
+                subcategories: (allCategories || []).filter((c: any) => c.parent_id === p.id).map((c: any) => ({ id: c.id, name: c.name })),
+            })))
+        }
+        fetchCategories()
+    }, [])
+
+    const toggleCategory = (categoryId: string) => {
+        setFormData(prev => ({
+            ...prev,
+            categories: prev.categories.includes(categoryId)
+                ? prev.categories.filter(id => id !== categoryId)
+                : [...prev.categories, categoryId]
+        }))
+    }
 
     const handleRegister = async () => {
         setLoading(true)
@@ -66,9 +99,9 @@ function BrandRegisterForm() {
                 password: formData.password,
                 fullName: formData.fullName,
                 phone: formData.phone,
-                dateOfBirth: '2000-01-01', // Default or ask? Wholesaler might be corporate.
-                sex: 'male', // Default
-                residentialAddress: 'Office Address', // Default
+                dateOfBirth: formData.dateOfBirth,
+                sex: formData.sex,
+                residentialAddress: formData.residentialAddress,
 
                 // Business
                 businessName: formData.businessName,
@@ -82,7 +115,8 @@ function BrandRegisterForm() {
                 accuracy: formData.businessLocation.accuracy,
 
                 // Meta
-                categoryId: '', // Optional for Brand?
+                categories: formData.categories,
+                categoryId: '',
                 subcategoryId: '',
                 agreedToPolicy: formData.agreedToPolicy,
                 profilePictureUrl: formData.profilePictureUrl,
@@ -145,6 +179,32 @@ function BrandRegisterForm() {
                 <label className="text-sm font-medium">Password</label>
                 <Input name="password" type="password" value={formData.password} onChange={e => setFormData(prev => ({ ...prev, password: e.target.value }))} placeholder="••••••••" />
             </div>
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Contact Person's Sex</label>
+                <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="sex" value="male" checked={formData.sex === 'male'} onChange={() => setFormData(prev => ({ ...prev, sex: 'male' }))} className="w-4 h-4 text-emerald-600" />
+                        <span className="text-sm">Male</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="sex" value="female" checked={formData.sex === 'female'} onChange={() => setFormData(prev => ({ ...prev, sex: 'female' }))} className="w-4 h-4 text-emerald-600" />
+                        <span className="text-sm">Female</span>
+                    </label>
+                </div>
+            </div>
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Contact Person's Date of Birth</label>
+                <Input name="dateOfBirth" type="date" value={formData.dateOfBirth} onChange={e => setFormData(prev => ({ ...prev, dateOfBirth: e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Residential Address</label>
+                <textarea
+                    value={formData.residentialAddress}
+                    onChange={e => setFormData(prev => ({ ...prev, residentialAddress: e.target.value }))}
+                    className="w-full rounded-md border border-input px-3 py-2 text-sm min-h-[80px]"
+                    placeholder="Contact person's home address"
+                />
+            </div>
         </div>
     )
 
@@ -182,6 +242,47 @@ function BrandRegisterForm() {
                     className="w-full rounded-md border border-input px-3 py-2 text-sm min-h-[100px]"
                     placeholder="Describe what you supply..."
                 />
+            </div>
+
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Product Categories</label>
+                <p className="text-xs text-gray-500 mb-2">Select the categories you supply ({formData.categories.length} selected)</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-72 overflow-y-auto pr-1">
+                    {categoryTree.map(category => {
+                        const isSelected = formData.categories.includes(category.id)
+                        return (
+                            <div key={category.id} className="space-y-1">
+                                <button
+                                    type="button"
+                                    onClick={() => toggleCategory(category.id)}
+                                    className={`w-full flex flex-col items-center justify-center p-3 rounded-lg border-2 text-center transition-all ${isSelected ? 'border-emerald-600 bg-emerald-50' : 'border-gray-100 hover:border-emerald-200'
+                                        }`}
+                                >
+                                    <span className="text-xl mb-1">{category.icon}</span>
+                                    <span className={`text-xs font-medium ${isSelected ? 'text-emerald-900' : 'text-gray-700'}`}>{category.name}</span>
+                                </button>
+                                {isSelected && category.subcategories.length > 0 && (
+                                    <div className="pl-2 space-y-1">
+                                        {category.subcategories.map(sub => {
+                                            const isSubSelected = formData.categories.includes(sub.id)
+                                            return (
+                                                <button
+                                                    type="button"
+                                                    key={sub.id}
+                                                    onClick={() => toggleCategory(sub.id)}
+                                                    className={`w-full text-left text-[11px] px-2 py-1 rounded-md ${isSubSelected ? 'bg-emerald-100 text-emerald-800 font-medium' : 'text-gray-500 hover:bg-gray-100'
+                                                        }`}
+                                                >
+                                                    {sub.name}
+                                                </button>
+                                            )
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        )
+                    })}
+                </div>
             </div>
 
             <div className="pt-4 border-t border-gray-100">
@@ -228,7 +329,7 @@ function BrandRegisterForm() {
                         )}
 
                         {step === 1 ? (
-                            <Button onClick={() => setStep(2)} disabled={!formData.fullName || !formData.email || !formData.password}>
+                            <Button onClick={() => setStep(2)} disabled={!formData.fullName || !formData.email || !formData.password || !formData.sex || !formData.dateOfBirth || !formData.residentialAddress}>
                                 Continue <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
                         ) : (
