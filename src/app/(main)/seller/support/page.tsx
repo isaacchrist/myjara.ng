@@ -147,7 +147,7 @@ export default function RetailerSupportPage() {
                         <CardContent className="space-y-4">
                             <div>
                                 <h4 className="font-semibold text-emerald-900">Email Us</h4>
-                                <p className="text-sm text-emerald-700">support@myjara.ng</p>
+                                <p className="text-sm text-emerald-700">support@myjara.com.ng</p>
                             </div>
                             <div>
                                 <h4 className="font-semibold text-emerald-900">Call Us</h4>

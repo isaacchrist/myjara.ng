@@ -37,7 +37,7 @@ export async function updateOrderFulfillmentStatus(orderId: string, newStatus: s
             : `Your order from ${order.store.name} was marked as delivered. We hope you enjoy your purchase!`;
 
         await resend.emails.send({
-            from: 'MyJara <orders@myjara.ng>',
+            from: 'MyJara <orders@myjara.com.ng>',
             to: [order.user.email],
             subject: subject,
             html: `
@@ -51,7 +51,7 @@ export async function updateOrderFulfillmentStatus(orderId: string, newStatus: s
                         <p style="margin: 4px 0 0 0; font-weight: bold; font-family: monospace;">${order.order_number}</p>
                     </div>
 
-                    <a href="https://myjara.ng/orders/${order.id}" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View Order Details</a>
+                    <a href="https://myjara.com.ng/orders/${order.id}" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View Order Details</a>
                     
                     <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #9ca3af; text-align: center;">
                         <p>© 2026 MyJara. All rights reserved.</p>

@@ -17,7 +17,7 @@ export async function sendOrderConfirmationEmail({
 }) {
     try {
         const { data, error } = await resend.emails.send({
-            from: 'MyJara <orders@myjara.ng>',
+            from: 'MyJara <orders@myjara.com.ng>',
             to: [email],
             subject: `Order Confirmed: ${orderNumber}`,
             html: `
@@ -36,7 +36,7 @@ export async function sendOrderConfirmationEmail({
 
                     <p style="font-size: 16px; color: #4b5563; line-height: 1.5; margin-bottom: 32px;">You can track your order status in your MyJara dashboard.</p>
                     
-                    <a href="https://myjara.ng/orders" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View My Order</a>
+                    <a href="https://myjara.com.ng/orders" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View My Order</a>
                     
                     <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #9ca3af; text-align: center;">
                         <p>© 2026 MyJara. All rights reserved.</p>
@@ -70,7 +70,7 @@ export async function sendBrandOrderNotificationEmail({
 }) {
     try {
         const { data, error } = await resend.emails.send({
-            from: 'MyJara <orders@myjara.ng>',
+            from: 'MyJara <orders@myjara.com.ng>',
             to: [email],
             subject: `New Order Received: ${orderNumber}`,
             html: `
@@ -86,7 +86,7 @@ export async function sendBrandOrderNotificationEmail({
                         <p style="margin: 4px 0 0 0; font-weight: bold; font-size: 18px; color: #059669;">${total}</p>
                     </div>
 
-                    <a href="https://myjara.ng/dashboard/orders" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View in Dashboard</a>
+                    <a href="https://myjara.com.ng/dashboard/orders" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View in Dashboard</a>
                     
                     <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #9ca3af; text-align: center;">
                         <p>© 2026 MyJara. All rights reserved.</p>
@@ -110,7 +110,7 @@ export async function sendAccountApprovedEmail({
 }) {
     try {
         const { data, error } = await resend.emails.send({
-            from: 'MyJara <welcome@myjara.ng>',
+            from: 'MyJara <welcome@myjara.com.ng>',
             to: [email],
             subject: 'Account Approved! Welcome to MyJara',
             html: `
@@ -121,7 +121,7 @@ export async function sendAccountApprovedEmail({
                     <p style="font-size: 16px; color: #4b5563; line-height: 1.5;">Your store is now <strong>Active</strong> on the MyJara marketplace. You can now access all features of your dashboard, add products, and start selling.</p>
                     
                     <div style="margin: 32px 0;">
-                        <a href="https://myjara.ng/dashboard" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Go to Dashboard</a>
+                        <a href="https://myjara.com.ng/dashboard" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Go to Dashboard</a>
                     </div>
                     
                     <p style="font-size: 14px; color: #6b7280; line-height: 1.5;">If you have any questions, reply to this email.</p>
@@ -150,7 +150,7 @@ export async function sendPolicyAcceptedEmail({
 }) {
     try {
         const { data, error } = await resend.emails.send({
-            from: 'MyJara <legal@myjara.ng>',
+            from: 'MyJara <legal@myjara.com.ng>',
             to: [email],
             subject: 'Operations Policy Acceptance Confirmation',
             html: `
@@ -198,7 +198,7 @@ export async function sendSubscriptionExpiryReminderEmail({
     try {
         const isExpired = daysLeft <= 0
         const { data, error } = await resend.emails.send({
-            from: 'MyJara <billing@myjara.ng>',
+            from: 'MyJara <billing@myjara.com.ng>',
             to: [email],
             subject: isExpired
                 ? `Your MyJara subscription for ${storeName} has expired`
@@ -243,7 +243,7 @@ export async function sendUnreadMessageEmail({
 }) {
     try {
         const { data, error } = await resend.emails.send({
-            from: 'MyJara <notifications@myjara.ng>',
+            from: 'MyJara <notifications@myjara.com.ng>',
             to: [email],
             subject: `New message from ${senderName}`,
             html: `

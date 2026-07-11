@@ -77,7 +77,7 @@ export default function ContactPage() {
                                 {
                                     icon: Mail,
                                     title: "Email Us",
-                                    value: "support@myjara.ng",
+                                    value: "support@myjara.com.ng",
                                     desc: "For general inquiries and support"
                                 },
                                 {

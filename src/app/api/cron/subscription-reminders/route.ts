@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
             storeName: store.name,
             daysLeft,
             expiryDate: expiryDateLabel,
-            actionLink: `https://myjara.ng${subscriptionLink}`,
+            actionLink: `https://myjara.com.ng${subscriptionLink}`,
         })
 
         await createNotification({

@@ -41,7 +41,7 @@ export function PaymentButton({ order, userEmail, userName }: PaymentButtonProps
         customizations: {
             title: "MyJara Order",
             description: `Payment for Order ${order.order_number}`,
-            logo: "https://myjara.ng/logo.png",
+            logo: "https://myjara.com.ng/logo.png",
         },
         // If the store has a subaccount, we use it for split payments
         subaccounts: order.store.flutterwave_subaccount_id ? [

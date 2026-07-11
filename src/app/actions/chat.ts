@@ -131,7 +131,7 @@ export async function sendMessageAction(roomId: string, content: string, product
                 recipientEmail = room.store.owner.email
                 recipientName = room.store.name // Address store by name usually
                 senderName = room.user.full_name || "Customer"
-                link = `https://myjara.ng/dashboard/support`
+                link = `https://myjara.com.ng/dashboard/support`
                 recipientId = room.store.owner_id
                 inAppLink = room.store.owner.role === 'retailer'
                     ? `/seller/messages/${roomId}`
@@ -142,7 +142,7 @@ export async function sendMessageAction(roomId: string, content: string, product
                 recipientEmail = room.user.email
                 recipientName = room.user.full_name || "Customer"
                 senderName = room.store.name
-                link = `https://myjara.ng/inbox` // Creating this page next
+                link = `https://myjara.com.ng/inbox` // Creating this page next
                 recipientId = room.user_id
                 inAppLink = `/inbox`
             }

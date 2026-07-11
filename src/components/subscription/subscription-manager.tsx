@@ -81,7 +81,7 @@ export function SubscriptionManager({ backHref, onSuccessHref }: { backHref: str
         customizations: {
             title: "MyJara Subscription",
             description: `${selectedPlanData?.name || ""} Plan - Monthly`,
-            logo: "https://myjara.ng/logo.png",
+            logo: "https://myjara.com.ng/logo.png",
         },
     }
 

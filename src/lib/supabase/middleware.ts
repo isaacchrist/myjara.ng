@@ -38,8 +38,8 @@ export async function updateSession(request: NextRequest) {
     const isVercelUrl = hostname.includes('.vercel.app') || hostname.includes('.vercel.sh')
     const isLocalhost = hostname.includes('localhost')
     // The canonical platform domain -- kept in one place since email/subscription
-    // links elsewhere already standardize on myjara.ng.
-    const rootDomain = 'myjara.ng'
+    // links elsewhere already standardize on myjara.com.ng.
+    const rootDomain = 'myjara.com.ng'
 
     if (!isVercelUrl && !isLocalhost) {
         if (hostname.endsWith(`.${rootDomain}`)) {

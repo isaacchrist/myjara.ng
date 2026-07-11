@@ -174,8 +174,8 @@ export default function BrandSettingsPage() {
                         <div className="grid gap-2">
                             <Label htmlFor="slug">Store URL</Label>
                             <div className="rounded-md border bg-gray-50 px-3 py-2 text-sm text-gray-500 space-y-1">
-                                <p><span className="font-medium text-gray-900">{formData.slug}</span>.myjara.ng</p>
-                                <p className="text-xs text-gray-400">or myjara.ng/store/{formData.slug}</p>
+                                <p><span className="font-medium text-gray-900">{formData.slug}</span>.myjara.com.ng</p>
+                                <p className="text-xs text-gray-400">or myjara.com.ng/store/{formData.slug}</p>
                             </div>
                             <p className="text-xs text-gray-500">Contact support to change your store URL. Want your own domain instead? See Custom Domain below.</p>
                         </div>
