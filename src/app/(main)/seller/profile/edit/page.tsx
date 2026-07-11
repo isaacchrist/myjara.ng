@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Save, Plus, Trash2, MapPin, Store, Tag, Check, CreditCard, ImageIcon, Calendar } from 'lucide-react'
 import { toast } from 'sonner'
-import { PRODUCT_CATEGORIES, ABUJA_MARKETS } from '@/lib/constants'
+import { ABUJA_MARKETS } from '@/lib/constants'
 import { ProfilePictureUpload } from '@/components/shared/profile-picture-upload'
 import { ImageUpload } from '@/components/ui/image-upload'
 import { useSellerStore } from '@/context/seller-store-context'
@@ -38,7 +38,7 @@ export default function EditProfilePage() {
     const [contacts, setContacts] = useState<{ name: string, number: string }[]>([])
     const [storeDescription, setStoreDescription] = useState('')
     const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-    const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([])
+    const [categoryTree, setCategoryTree] = useState<{ id: string; name: string; icon: string | null; subcategories: { id: string; name: string }[] }[]>([])
     const [profilePictureUrl, setProfilePictureUrl] = useState('')
     const [galleryUrls, setGalleryUrls] = useState<string[]>([])
     const [frequentMarkets, setFrequentMarkets] = useState<string[]>([])
@@ -65,6 +65,18 @@ export default function EditProfilePage() {
             const { data: userData } = await supabase.from('users').select('*').eq('id', user.id).single() as any
             // const { data: storeData } = await supabase.from('stores').select('*').eq('owner_id', user.id).single() as any
 
+            const { data: allCategories } = await supabase
+                .from('categories')
+                .select('id, name, icon, parent_id')
+                .order('sort_order') as any
+            const parents = (allCategories || []).filter((c: any) => !c.parent_id)
+            setCategoryTree(parents.map((p: any) => ({
+                id: p.id,
+                name: p.name,
+                icon: p.icon,
+                subcategories: (allCategories || []).filter((c: any) => c.parent_id === p.id).map((c: any) => ({ id: c.id, name: c.name })),
+            })))
+
             setUser(userData)
             // setStore(storeData)
 
@@ -80,7 +92,6 @@ export default function EditProfilePage() {
                 setLng(store.longitude)
                 setStoreDescription(store.description || '')
                 setSelectedCategories(store.categories || [])
-                setSelectedSubcategories((store as any).subcategories || [])
                 setBankName((store as any).bank_name || '')
                 setAccountNumber((store as any).account_number || '')
                 setAccountName((store as any).account_name || '')
@@ -159,7 +170,6 @@ export default function EditProfilePage() {
             longitude: lng || undefined,
             storeDescription,
             categories: selectedCategories,
-            subcategories: selectedSubcategories,
             profilePictureUrl,
             bankName,
             accountNumber,
@@ -320,7 +330,7 @@ export default function EditProfilePage() {
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                            {PRODUCT_CATEGORIES.map(category => {
+                            {categoryTree.map(category => {
                                 const isSelected = selectedCategories.includes(category.id)
                                 return (
                                     <div key={category.id} className="space-y-2">
@@ -339,20 +349,14 @@ export default function EditProfilePage() {
                                         </div>
 
                                         {/* Subcategories (Only if parent selected) */}
-                                        {isSelected && category.subcategories && (
+                                        {isSelected && category.subcategories.length > 0 && (
                                             <div className="pl-3 border-l-2 border-emerald-100 space-y-1 mt-2">
                                                 {category.subcategories.map(sub => {
-                                                    const isSubSelected = selectedSubcategories.includes(sub.id)
+                                                    const isSubSelected = selectedCategories.includes(sub.id)
                                                     return (
                                                         <div
                                                             key={sub.id}
-                                                            onClick={() => {
-                                                                setSelectedSubcategories(prev =>
-                                                                    isSubSelected
-                                                                        ? prev.filter(id => id !== sub.id)
-                                                                        : [...prev, sub.id]
-                                                                )
-                                                            }}
+                                                            onClick={() => toggleCategory(sub.id)}
                                                             className={`
                                                                 cursor-pointer text-xs px-2 py-1.5 rounded-md transition-colors flex items-center gap-2
                                                                 ${isSubSelected ? 'bg-emerald-100 text-emerald-800 font-medium' : 'text-gray-500 hover:bg-gray-100'}

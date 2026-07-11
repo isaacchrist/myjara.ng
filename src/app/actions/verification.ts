@@ -64,8 +64,10 @@ export async function rejectWholesalerAction(userId: string) {
     if (userError) return { success: false, error: userError.message }
 
     // Deactivate Store
+    // NOTE: store_status enum is pending|active|suspended -- 'inactive' isn't
+    // a valid value and would error the update.
     await (supabase.from('stores') as any)
-        .update({ status: 'inactive' } as any)
+        .update({ status: 'suspended' } as any)
         .eq('owner_id', userId)
 
     return { success: true }

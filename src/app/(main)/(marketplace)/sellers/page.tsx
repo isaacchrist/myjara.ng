@@ -18,6 +18,9 @@ export default async function RetailerDirectoryPage() {
         .eq('status', 'active')
         .order('created_at', { ascending: false })
 
+    const { data: allCategories } = await supabase.from('categories').select('id, name')
+    const categoryNameById = new Map((allCategories || []).map((c: any) => [c.id, c.name]))
+
     const storeTypeConfig: Record<string, { label: string; icon: any; color: string }> = {
         physical: { label: 'Physical Store', icon: Building, color: 'bg-emerald-100 text-emerald-700' },
         online: { label: 'Online Store', icon: Store, color: 'bg-purple-100 text-purple-700' },
@@ -90,19 +93,9 @@ export default async function RetailerDirectoryPage() {
                                             </p>
 
                                             <div className="flex flex-wrap gap-2 mb-6">
-                                                {(store.categories || []).slice(0, 3).map((cat: string) => (
-                                                    <Badge key={cat} variant="secondary" className="text-xs">
-                                                        {
-                                                            // If cat is UUID, we can't show name easily without join. 
-                                                            // Assuming for now it *might* be IDs.
-                                                            // Actually user asked for name display.
-                                                            // If I can't resolve ID easily here, I'll just show "Category" or skip?
-                                                            // BUT active stores usually have proper setup.
-                                                            // Let's assume it might still be IDs because register.ts saves IDs.
-                                                            // Saving 'Display Names' into stores.categories might be better for this view, but IDs are better for filtering.
-                                                            // I'll show generic "Item" badge or try to check if it looks like ID.
-                                                            cat.length > 20 ? 'Category' : cat
-                                                        }
+                                                {(store.categories || []).slice(0, 3).map((catId: string) => (
+                                                    <Badge key={catId} variant="secondary" className="text-xs">
+                                                        {categoryNameById.get(catId) || 'Category'}
                                                     </Badge>
                                                 ))}
                                                 {(store.categories || []).length > 3 && (

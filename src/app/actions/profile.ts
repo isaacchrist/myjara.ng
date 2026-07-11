@@ -13,8 +13,7 @@ export interface ProfileUpdateData {
     latitude?: number | null;
     longitude?: number | null;
     storeDescription?: string;
-    categories?: string[]; // Array of category IDs
-    subcategories?: string[]; // Array of subcategory IDs
+    categories?: string[]; // Array of category IDs (parents and/or subcategories, flat)
 
     // Settlement Account
     bankName?: string;
@@ -80,12 +79,8 @@ export async function updateProfile(formData: ProfileUpdateData) {
         storeUpdate.description = formData.storeDescription
     }
 
-    if (formData.categories && formData.categories.length > 0) {
+    if (formData.categories !== undefined) {
         storeUpdate.categories = formData.categories
-    }
-
-    if (formData.subcategories !== undefined) {
-        storeUpdate.subcategories = formData.subcategories
     }
 
     // SYNC Public Contact Info

@@ -13,9 +13,13 @@ export default async function AdminUsersPage() {
         .order('created_at', { ascending: false })
 
     // 2. Fetch Stores (to link to users)
+    // NOTE: stores has no is_verified column -- verification lives on
+    // users.verification_status (set by approveWholesalerAction/
+    // rejectWholesalerAction), stores.status just tracks whether the store
+    // is active/suspended as a side effect of that same approval.
     const { data: storesData } = await supabase
         .from('stores')
-        .select('id, name, slug, owner_id, shop_type, market_name, is_verified')
+        .select('id, name, slug, owner_id, shop_type, market_name, status')
 
     // 3. Merge Data
     const users: any[] = (usersData || []).map((user: any) => {
@@ -23,12 +27,9 @@ export default async function AdminUsersPage() {
         return {
             ...user,
             store: userStore,
-            // Assuming 'is_verified' is on the store? Or user?
-            // User table doesn't have is_verified usually, Store does.
-            // But we can check if store is verified for Sellers.
-            // For Customers, maybe email confirmed?
-            // Let's use store verification for sellers, true for customers?
-            is_verified: userStore ? userStore.is_verified : true // Default true for customers (or check email_confirmed_at if exposed)
+            // Customers have no verification concept -- default true. Sellers
+            // are verified once an admin approves them (verification_status).
+            is_verified: userStore ? user.verification_status === 'approved' : true
         }
     })
 

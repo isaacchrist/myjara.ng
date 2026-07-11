@@ -19,7 +19,8 @@ import {
     MessageSquare,
     CheckCircle,
     Bug,
-    Lightbulb
+    Lightbulb,
+    Package
 } from 'lucide-react'
 import { logoutAdmin } from '@/app/actions/admin-auth'
 import { usePathname } from 'next/navigation'
@@ -29,6 +30,7 @@ const sidebarItems = [
     { icon: LayoutDashboard, label: 'Overview', href: '/admin' },
     { icon: Shield, label: 'Disputes', href: '/admin/disputes' },
     { icon: Store, label: 'Stores', href: '/admin/stores' },
+    { icon: Package, label: 'Products', href: '/admin/products' },
     { icon: CheckCircle, label: 'Verification', href: '/admin/verification', badge: true }, // Added Verification
     { icon: FolderTree, label: 'Categories', href: '/admin/categories' },
     { icon: CreditCard, label: 'Transactions', href: '/admin/transactions' },
