@@ -1,9 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Settings, Key, Bell, Shield, Database, Globe } from 'lucide-react'
+import { Settings, Key, Bell, Shield, Database, Globe, Users } from 'lucide-react'
+import { listAdminAccountsAction } from '@/app/actions/admin-auth'
+import { AdminAccountsManager } from '@/components/admin/admin-accounts-manager'
 
-export default function AdminSettingsPage() {
+export default async function AdminSettingsPage() {
+    const adminAccounts = await listAdminAccountsAction()
+
     return (
         <div className="space-y-6">
             <div>
@@ -46,11 +50,14 @@ export default function AdminSettingsPage() {
                             </div>
                             <div>
                                 <CardTitle className="text-white">Security</CardTitle>
-                                <CardDescription className="text-gray-400">Admin access & security</CardDescription>
+                                <CardDescription className="text-gray-400">Master key access</CardDescription>
                             </div>
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
+                        <p className="text-xs text-gray-500">
+                            The master key is a shared break-glass credential set via the <code className="text-gray-400">ADMIN_SECRET_KEY</code> environment variable -- not attributable to any one admin. Prefer individual admin accounts (right) for day-to-day access.
+                        </p>
                         <div>
                             <label className="text-sm text-gray-400">Admin Secret Key</label>
                             <Input type="password" defaultValue="••••••••••••" className="bg-gray-700 border-gray-600 text-white mt-1" disabled />
@@ -59,6 +66,24 @@ export default function AdminSettingsPage() {
                             <Key className="h-4 w-4 mr-2" />
                             Rotate Admin Key
                         </Button>
+                    </CardContent>
+                </Card>
+
+                {/* Admin Accounts */}
+                <Card className="bg-gray-800 border-gray-700">
+                    <CardHeader>
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-emerald-500/20 rounded-lg">
+                                <Users className="h-5 w-5 text-emerald-400" />
+                            </div>
+                            <div>
+                                <CardTitle className="text-white">Admin Accounts</CardTitle>
+                                <CardDescription className="text-gray-400">Individual, attributable admin logins</CardDescription>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <AdminAccountsManager initialAccounts={adminAccounts} />
                     </CardContent>
                 </Card>
 

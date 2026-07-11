@@ -6,10 +6,25 @@ export const dynamic = 'force-dynamic'
 export default async function VerificationPage() {
     const supabase = await createAdminClient()
 
+    // Deliberately narrow (no bank_name/account_number/account_name/
+    // rc_number/tax_id_number/directors_info): identity verification needs
+    // who this is and their KYC details, not settlement/tax data.
     const { data, error } = await supabase
         .from('stores')
         .select(`
-            *,
+            id,
+            name,
+            slug,
+            description,
+            logo_url,
+            created_at,
+            owner_id,
+            settings,
+            phone,
+            shop_type,
+            subscription_plan,
+            categories,
+            frequent_markets,
             owner:users!owner_id (
                 id,
                 full_name,

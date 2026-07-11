@@ -7,9 +7,13 @@ export default async function AdminUsersPage() {
     const supabase = await createAdminClient()
 
     // 1. Fetch Users
+    // Deliberately narrow: this list view has no use for KYC/financial
+    // columns (bank details, tax ID, DOB, address) -- select('*') would ship
+    // them to the browser in the page payload even though the UI never
+    // renders them. Full KYC review happens on /admin/verification instead.
     const { data: usersData } = await supabase
         .from('users')
-        .select('*')
+        .select('id, email, full_name, role, tag, verification_status, created_at')
         .order('created_at', { ascending: false })
 
     // 2. Fetch Stores (to link to users)

@@ -1,7 +1,6 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { getStoreSession } from './admin-auth'
 
 export async function getRetailerStats(storeId: string) {
     const supabase = await createClient()

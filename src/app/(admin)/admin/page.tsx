@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatPrice } from '@/lib/utils'
 import { getAdminSession } from '@/app/actions/admin-auth'
-import { AdminKeyForm } from '@/components/admin/admin-key-form'
+import { AdminLoginForm } from '@/components/admin/admin-login-form'
 import { createAdminClient } from '@/lib/supabase/server'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -21,10 +21,7 @@ export default async function AdminPage() {
                     <h1 className="text-4xl font-extrabold text-white mb-2 tracking-tight">Access Restricted</h1>
                     <p className="text-gray-400">Please provide your credentials below.</p>
                 </div>
-                <AdminKeyForm
-                    title="Platform Administrator"
-                    description="Enter your master key to unlock global controls."
-                />
+                <AdminLoginForm />
             </div>
         )
     }
@@ -52,14 +49,17 @@ export default async function AdminPage() {
 
 
     // Revenue (MTD)
+    // NOTE: orders has no 'completed' status or total_amount column (see
+    // 024_fix_sales_by_location_status.sql) -- delivered/total, same fix as
+    // admin/analytics.
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString()
     const { data: revenueData } = await supabase
         .from('orders')
-        .select('total_amount')
+        .select('total')
         .gte('created_at', startOfMonth)
-        .eq('status', 'completed') as any
+        .eq('status', 'delivered') as any
 
-    const revenueMTD = (revenueData || []).reduce((sum: number, order: any) => sum + (order.total_amount || 0), 0)
+    const revenueMTD = (revenueData || []).reduce((sum: number, order: any) => sum + (order.total || 0), 0)
 
 
     const stats = [
@@ -70,11 +70,12 @@ export default async function AdminPage() {
     ]
 
     // 2. Pending Stores
+    // NOTE: stores has no is_verified column -- status = 'pending' is the
+    // real signal (see admin/stores and admin/users for the same fix).
     const { data: pendingStoresData } = await supabase
         .from('stores')
-        .select('id, name, created_at, slug') // Category might be in a related table via store_product_categories?
-        // Simplifying for Overview: just show name and date
-        .eq('is_verified', false)
+        .select('id, name, created_at, slug')
+        .eq('status', 'pending')
         .order('created_at', { ascending: false })
         .limit(5) as any
 
@@ -88,9 +89,7 @@ export default async function AdminPage() {
     // 3. Recent Transactions
     const { data: recentTxData } = await supabase
         .from('orders')
-        .select('id, total_amount, status, created_at, store_id') // Join store?
-        // .select('*, store:stores(name)') if relations set up?
-        // Let's assume store name fetch or just show store ID if relations tricky without testing.
+        .select('id, total, status, created_at, store_id')
         .order('created_at', { ascending: false })
         .limit(5) as any
 
@@ -104,7 +103,7 @@ export default async function AdminPage() {
         return {
             id: tx.id.slice(0, 8).toUpperCase(),
             store: storeName,
-            amount: tx.total_amount,
+            amount: tx.total,
             status: tx.status
         }
     }))
@@ -210,7 +209,7 @@ export default async function AdminPage() {
                                             <p className="font-medium text-white">{formatPrice(tx.amount)}</p>
                                             <Badge
                                                 className={
-                                                    tx.status === 'success' || tx.status === 'completed' ? 'border-0 bg-green-500/20 text-green-400' :
+                                                    tx.status === 'delivered' || tx.status === 'paid' ? 'border-0 bg-green-500/20 text-green-400' :
                                                         tx.status === 'pending' ? 'border-0 bg-yellow-500/20 text-yellow-400' :
                                                             'border-0 bg-red-500/20 text-red-400'
                                                 }

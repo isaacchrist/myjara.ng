@@ -39,8 +39,6 @@ const sidebarItems = [
 // Protected Items only accessible to APPROVED users
 const protectedItems = ['/dashboard/products', '/dashboard/orders', '/dashboard/wallet', '/dashboard/logistics', '/dashboard/messages', '/dashboard/operations', '/dashboard/analytics']
 
-import { getStoreSession, logoutAdmin, getAdminSession } from '@/app/actions/admin-auth'
-
 export default function DashboardLayout({
     children,
 }: {
@@ -48,72 +46,42 @@ export default function DashboardLayout({
 }) {
     const [store, setStore] = useState<{ name: string; logo_url: string | null } | null>(null)
     const [verificationStatus, setVerificationStatus] = useState<'pending' | 'approved' | 'unverified' | 'rejected'>('approved') // Default approved to avoid flicker
-    const [isAdminMode, setIsAdminMode] = useState(false)
     const [loading, setLoading] = useState(true)
     const router = useRouter()
     const supabase = createClient()
 
     useEffect(() => {
         const fetchData = async () => {
-            // 1. Try Standard Auth
             const { data: { user } } = await supabase.auth.getUser()
 
-            if (user) {
-                // Fetch User Role & Status
-                const { data: userData } = await (supabase.from('users') as any)
-                    .select('role, verification_status')
-                    .eq('id', user.id)
-                    .single()
-
-                // Redirect Retailers to the correct dashboard
-                if (userData?.role === 'retailer') {
-                    router.push('/seller/dashboard')
-                    return
-                }
-
-                // Fetch Store for User
-                const { data: storeData } = await (supabase.from('stores') as any)
-                    .select('name, logo_url, is_verified')
-                    .eq('owner_id', user.id)
-                    .single() as { data: { name: string; logo_url: string | null; is_verified: boolean } | null }
-
-                if (storeData) setStore(storeData)
-
-                // Determine Verification Status
-                // If either Auth User is approved OR Store is verified, count as approved
-                const userVerified = (userData as any)?.verification_status === 'approved'
-                const storeVerified = storeData?.is_verified === true
-
-                if (userVerified || storeVerified) {
-                    setVerificationStatus('approved')
-                } else {
-                    setVerificationStatus((userData as any)?.verification_status || 'pending')
-                }
-            } else {
-                // 2. Try Admin Key Sessions
-                const [storeId, isGlobalAdmin] = await Promise.all([
-                    getStoreSession(),
-                    getAdminSession()
-                ])
-
-                if (isGlobalAdmin) {
-                    setIsAdminMode(true)
-                    setVerificationStatus('approved')
-                }
-
-                if (storeId) {
-                    setIsAdminMode(true)
-                    const { data: storeData } = await (supabase.from('stores') as any)
-                        .select('name, logo_url')
-                        .eq('id', storeId)
-                        .single()
-
-                    if (storeData) {
-                        setStore(storeData)
-                        setVerificationStatus('approved')
-                    }
-                }
+            if (!user) {
+                router.push('/login')
+                return
             }
+
+            // Fetch User Role & Status
+            const { data: userData } = await (supabase.from('users') as any)
+                .select('role, verification_status')
+                .eq('id', user.id)
+                .single()
+
+            // Redirect Retailers to the correct dashboard
+            if (userData?.role === 'retailer') {
+                router.push('/seller/dashboard')
+                return
+            }
+
+            // Fetch Store for User
+            // NOTE: stores has no is_verified column -- verification lives on
+            // users.verification_status, set by approveWholesalerAction.
+            const { data: storeData } = await (supabase.from('stores') as any)
+                .select('name, logo_url')
+                .eq('owner_id', user.id)
+                .single() as { data: { name: string; logo_url: string | null } | null }
+
+            if (storeData) setStore(storeData)
+
+            setVerificationStatus((userData as any)?.verification_status === 'approved' ? 'approved' : ((userData as any)?.verification_status || 'pending'))
             setLoading(false)
         }
 
@@ -122,12 +90,9 @@ export default function DashboardLayout({
 
     const isRestricted = verificationStatus !== 'approved'
 
-
     const handleLogout = async () => {
         await supabase.auth.signOut()
-        if (isAdminMode) {
-            await logoutAdmin()
-        }
+        router.push('/login')
     }
 
     return (
@@ -171,9 +136,9 @@ export default function DashboardLayout({
                                 {store?.name || 'My Store'}
                             </p>
                             <div className="flex items-center gap-1.5">
-                                <span className={`h-1.5 w-1.5 rounded-full ${isAdminMode ? 'bg-purple-500' : (isRestricted ? 'bg-yellow-500' : 'bg-emerald-500')}`} />
+                                <span className={`h-1.5 w-1.5 rounded-full ${isRestricted ? 'bg-yellow-500' : 'bg-emerald-500'}`} />
                                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                                    {isAdminMode ? 'Admin Access' : (isRestricted ? 'Verification Pending' : 'Verified Wholesaler')}
+                                    {isRestricted ? 'Verification Pending' : 'Verified Wholesaler'}
                                 </p>
                             </div>
                         </div>
@@ -237,16 +202,6 @@ export default function DashboardLayout({
                         <Link href="/dashboard/settings" className="text-xs font-semibold text-amber-900 underline hover:text-amber-700">
                             Complete Profile →
                         </Link>
-                    </div>
-                )}
-
-                {/* Admin Mode Banner */}
-                {isAdminMode && (
-                    <div className="bg-purple-50 border-b border-purple-200 px-6 py-2 flex items-center justify-between shadow-sm z-20">
-                        <div className="flex items-center gap-2 text-purple-900 text-sm">
-                            <div className="h-2 w-2 rounded-full bg-purple-500" />
-                            <strong>Admin Access:</strong> You are viewing this dashboard as an Administrator.
-                        </div>
                     </div>
                 )}
 

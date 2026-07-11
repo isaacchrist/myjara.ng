@@ -1,7 +1,6 @@
 import { getAdminSession } from '@/app/actions/admin-auth'
 import { redirect } from 'next/navigation'
-import { AdminKeyForm } from '@/components/admin/admin-key-form'
-import { Card, CardContent } from '@/components/ui/card'
+import { AdminLoginForm } from '@/components/admin/admin-login-form'
 
 export default async function AdminLoginPage() {
     const isAdmin = await getAdminSession()
@@ -26,10 +25,7 @@ export default async function AdminLoginPage() {
                     <p className="text-gray-400">Administrative Access Portal</p>
                 </div>
 
-                <AdminKeyForm
-                    title="Admin Login"
-                    description="Enter your access key to manage the platform."
-                />
+                <AdminLoginForm />
             </div>
         </div>
     )
