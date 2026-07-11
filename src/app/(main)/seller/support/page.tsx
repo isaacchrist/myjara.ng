@@ -9,6 +9,14 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { Loader2, Send } from 'lucide-react'
+import { createSupportTicketAction } from '@/app/actions/disputes'
+
+const TYPE_TO_CAUSE: Record<string, string> = {
+    dispute: 'payment',
+    complaint: 'product_quality',
+    technical: 'account',
+    other: 'other',
+}
 
 export default function RetailerSupportPage() {
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -23,11 +31,17 @@ export default function RetailerSupportPage() {
         e.preventDefault()
         setIsSubmitting(true)
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500))
+        const result = await createSupportTicketAction({
+            subject: formData.subject,
+            description: `[Priority: ${formData.priority}] ${formData.description}`,
+            cause: TYPE_TO_CAUSE[formData.type] || 'other',
+        })
 
-        // In a real app, this would call a server action to send email or save to DB
-        console.log('Support Ticket Submitted:', formData)
+        if (!result.success) {
+            toast.error(result.error || 'Failed to submit ticket. Please try again.')
+            setIsSubmitting(false)
+            return
+        }
 
         toast.success('Support ticket submitted successfully. We will contact you shortly.')
         setFormData({
