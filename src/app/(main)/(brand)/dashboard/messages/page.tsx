@@ -174,6 +174,7 @@ function MessagesContent() {
                             roomId={selectedRoom.id}
                             currentUserId={userId}
                             recipientName={activeTab === 'store' ? (selectedRoom.user?.full_name || "Customer") : (selectedRoom.store?.name || "Store")}
+                            storeId={selectedRoom.store_id}
                             className="h-full border-none shadow-none"
                         />
                     </div>

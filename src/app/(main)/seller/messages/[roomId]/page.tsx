@@ -64,6 +64,7 @@ export default async function VendorChatRoomPage({ params }: ChatRoomPageProps) 
                         roomId={roomId}
                         currentUserId={user.id}
                         recipientName={recipientName}
+                        storeId={room.store_id}
                         className="flex-1"
                     />
                 </Card>

@@ -218,6 +218,7 @@ export default function CustomerInboxPage() {
                                 roomId={selectedRoom.id}
                                 currentUserId={userId}
                                 recipientName={selectedRoom.store?.name || "Store"}
+                                storeId={selectedRoom.store_id}
                                 className="h-full border-none shadow-none"
                             />
                         ) : (

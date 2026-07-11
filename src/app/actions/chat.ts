@@ -80,7 +80,7 @@ export async function getOrCreateChatRoomWithCustomerAction(storeId: string, cus
 }
 
 // 2. Send Message
-export async function sendMessageAction(roomId: string, content: string) {
+export async function sendMessageAction(roomId: string, content: string, productId?: string) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -91,7 +91,8 @@ export async function sendMessageAction(roomId: string, content: string) {
         .insert({
             room_id: roomId,
             sender_id: user.id,
-            content: content
+            content: content,
+            product_id: productId || null
         })
 
     if (error) {
@@ -161,7 +162,7 @@ export async function getMessagesAction(roomId: string) {
 
     const { data, error } = await supabase
         .from('messages')
-        .select('*')
+        .select('*, product:products(id, name, price, store_id, product_images(url, is_primary))')
         .eq('room_id', roomId)
         .order('created_at', { ascending: true })
 
@@ -273,6 +274,28 @@ export async function createChatWithUserAction(targetUserId: string) {
     // If target doesn't have a store, we can't create a standard room
     // For now, return error
     return { error: 'User does not have a store to chat with.' }
+}
+
+// 8b. List a store's active products (for the chat composer's product-attach picker)
+export async function getStoreProductsForChatAction(storeId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return []
+
+    const { data, error } = await supabase
+        .from('products')
+        .select('id, name, price, product_images(url, is_primary)')
+        .eq('store_id', storeId)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(30)
+
+    if (error) {
+        console.error('Error fetching store products for chat:', error)
+        return []
+    }
+
+    return data || []
 }
 
 // 8. Search Stores (for Customer Inbox to start new chats)

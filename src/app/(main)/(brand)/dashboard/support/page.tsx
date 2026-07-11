@@ -125,6 +125,7 @@ export default function BrandSupportPage() {
                             roomId={selectedRoom.id}
                             currentUserId={userId}
                             recipientName={selectedRoom.user?.full_name || "Customer"}
+                            storeId={currentStoreId || undefined}
                             className="h-full border-none shadow-none"
                         />
                     ) : (

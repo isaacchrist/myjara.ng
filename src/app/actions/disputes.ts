@@ -79,6 +79,50 @@ export async function createSupportTicketAction(data: {
     return { success: true }
 }
 
+export async function flagChatAsDisputeAction(roomId: string, reason: string, description: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+        return { success: false, error: 'Unauthorized' }
+    }
+
+    // Resolve customer_id/store_id from the room rather than trusting the
+    // client, and confirm the caller is actually a participant (either the
+    // customer or that store's owner) -- both existing disputes RLS read
+    // policies key off these two columns, so populating them correctly is
+    // what makes the dispute visible to both participants (and admin, via
+    // the service-role client elsewhere) without any new policy.
+    const { data: room } = await (supabase.from('chat_rooms') as any)
+        .select('user_id, store_id, store:stores(owner_id)')
+        .eq('id', roomId)
+        .maybeSingle()
+
+    if (!room) {
+        return { success: false, error: 'Conversation not found' }
+    }
+
+    if (room.user_id !== user.id && room.store?.owner_id !== user.id) {
+        return { success: false, error: 'Not authorized for this conversation' }
+    }
+
+    const { error } = await (supabase.from('disputes') as any).insert({
+        customer_id: room.user_id,
+        store_id: room.store_id,
+        room_id: roomId,
+        reason,
+        description,
+        status: 'pending'
+    })
+
+    if (error) {
+        console.error('Flag chat as dispute error:', error)
+        return { success: false, error: 'Failed to flag conversation' }
+    }
+
+    revalidatePath('/admin/disputes')
+    return { success: true }
+}
+
 export async function resolveDisputeAction(disputeId: string, status: 'resolved' | 'closed') {
     const admin = await createAdminClient()
 
