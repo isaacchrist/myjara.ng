@@ -23,8 +23,10 @@ import {
     Package
 } from 'lucide-react'
 import { logoutAdmin } from '@/app/actions/admin-auth'
+import { getAdminNotificationsAction, markAllAdminNotificationsReadAction } from '@/app/actions/notifications'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { NotificationBell } from '@/components/shared/notification-bell'
 
 const sidebarItems = [
     { icon: LayoutDashboard, label: 'Overview', href: '/admin' },
@@ -140,6 +142,11 @@ export function AdminShell({ children, pendingVerifications = 0 }: { children: R
                     </div>
 
                     <div className="flex items-center gap-4">
+                        <NotificationBell
+                            variant="dark"
+                            fetchFn={getAdminNotificationsAction}
+                            markReadFn={markAllAdminNotificationsReadAction}
+                        />
                         <Link
                             href="/"
                             className="text-sm text-gray-400 hover:text-white"

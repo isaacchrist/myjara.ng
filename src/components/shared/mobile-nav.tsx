@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { Menu, X, Search, ShoppingBag, User, LayoutDashboard, MessageSquare, Store } from 'lucide-react'
+import { Menu, X, Search, ShoppingBag, User, LayoutDashboard, MessageSquare, Store, Bell } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { useRouter } from 'next/navigation'
@@ -74,6 +74,16 @@ export function MobileNav({ user, count, onLogout }: MobileNavProps) {
                         <MessageSquare className="h-5 w-5" />
                         Messages
                     </Link>
+                    {user && (
+                        <Link
+                            href="/notifications"
+                            className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-900"
+                            onClick={() => setIsOpen(false)}
+                        >
+                            <Bell className="h-5 w-5" />
+                            Notifications
+                        </Link>
+                    )}
                     <Link
                         href="/orders"
                         className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-900"

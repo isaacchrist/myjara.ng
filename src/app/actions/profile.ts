@@ -25,6 +25,9 @@ export interface ProfileUpdateData {
 
     // Market Day Locations
     frequentMarkets?: string[];
+
+    // Social Links (merged into stores.settings.social, alongside theme)
+    socialLinks?: { facebook?: string; instagram?: string; twitter?: string; whatsapp?: string; tiktok?: string };
 }
 
 export async function updateProfile(formData: ProfileUpdateData) {
@@ -97,6 +100,19 @@ export async function updateProfile(formData: ProfileUpdateData) {
 
     // Market Day Locations
     if (formData.frequentMarkets !== undefined) storeUpdate.frequent_markets = formData.frequentMarkets
+
+    // Social Links -- settings is a shared JSONB blob (also holds theme), so
+    // merge rather than overwrite.
+    if (formData.socialLinks !== undefined) {
+        const { data: existingStore } = await (supabase.from('stores') as any)
+            .select('settings')
+            .eq('owner_id', user.id)
+            .single()
+        storeUpdate.settings = {
+            ...(existingStore?.settings || {}),
+            social: formData.socialLinks,
+        }
+    }
 
     if (Object.keys(storeUpdate).length > 0) {
         const { error: storeError } = await (supabase

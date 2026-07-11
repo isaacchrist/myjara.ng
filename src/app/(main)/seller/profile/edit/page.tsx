@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Save, Plus, Trash2, MapPin, Store, Tag, Check, CreditCard, ImageIcon, Calendar } from 'lucide-react'
+import { ArrowLeft, Save, Plus, Trash2, MapPin, Store, Tag, Check, CreditCard, ImageIcon, Calendar, Share2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { ABUJA_MARKETS } from '@/lib/constants'
 import { ProfilePictureUpload } from '@/components/shared/profile-picture-upload'
@@ -52,6 +52,11 @@ export default function EditProfilePage() {
     const [bankName, setBankName] = useState('')
     const [accountNumber, setAccountNumber] = useState('')
     const [accountName, setAccountName] = useState('')
+
+    // Social Links
+    const [socialLinks, setSocialLinks] = useState<{ facebook: string; instagram: string; twitter: string; whatsapp: string }>({
+        facebook: '', instagram: '', twitter: '', whatsapp: ''
+    })
 
     useEffect(() => {
         const fetchData = async () => {
@@ -97,6 +102,13 @@ export default function EditProfilePage() {
                 setAccountName((store as any).account_name || '')
                 setGalleryUrls(Array.isArray((store as any).gallery_urls) ? (store as any).gallery_urls : [])
                 setFrequentMarkets(Array.isArray((store as any).frequent_markets) ? (store as any).frequent_markets : [])
+                const social = ((store as any).settings as any)?.social || {}
+                setSocialLinks({
+                    facebook: social.facebook || '',
+                    instagram: social.instagram || '',
+                    twitter: social.twitter || '',
+                    whatsapp: social.whatsapp || '',
+                })
             }
             setLoading(false)
         }
@@ -175,7 +187,8 @@ export default function EditProfilePage() {
             accountNumber,
             accountName,
             galleryUrls,
-            frequentMarkets
+            frequentMarkets,
+            socialLinks
         })
 
         setSaving(false)
@@ -467,6 +480,59 @@ export default function EditProfilePage() {
                         </CardContent>
                     </Card>
                 )}
+
+                {/* Social Links */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Share2 className="h-5 w-5 text-emerald-500" />
+                            Social Links
+                        </CardTitle>
+                        <CardDescription>
+                            Shown on your storefront so customers can find you elsewhere
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <Label htmlFor="facebook">Facebook</Label>
+                                <Input
+                                    id="facebook"
+                                    value={socialLinks.facebook}
+                                    onChange={(e) => setSocialLinks({ ...socialLinks, facebook: e.target.value })}
+                                    placeholder="https://facebook.com/yourstore"
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="instagram">Instagram</Label>
+                                <Input
+                                    id="instagram"
+                                    value={socialLinks.instagram}
+                                    onChange={(e) => setSocialLinks({ ...socialLinks, instagram: e.target.value })}
+                                    placeholder="https://instagram.com/yourstore"
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="twitter">X / Twitter</Label>
+                                <Input
+                                    id="twitter"
+                                    value={socialLinks.twitter}
+                                    onChange={(e) => setSocialLinks({ ...socialLinks, twitter: e.target.value })}
+                                    placeholder="https://x.com/yourstore"
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="whatsapp">WhatsApp Number</Label>
+                                <Input
+                                    id="whatsapp"
+                                    value={socialLinks.whatsapp}
+                                    onChange={(e) => setSocialLinks({ ...socialLinks, whatsapp: e.target.value })}
+                                    placeholder="+234..."
+                                />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
 
                 {/* Settlement Account */}
                 <Card>

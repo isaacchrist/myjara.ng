@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient, createAdminClient } from "@/lib/supabase/server"
+import { createNotification } from "@/app/actions/notifications"
 
 // 1. Get or Create Chat Room (Customer side mainly)
 export async function getOrCreateChatRoomAction(storeId: string) {
@@ -108,7 +109,7 @@ export async function sendMessageAction(roomId: string, content: string, product
                 .from('chat_rooms')
                 .select(`
                     *,
-                    store:stores(name, owner_id, owner:users!owner_id(email, full_name)),
+                    store:stores(name, owner_id, owner:users!owner_id(email, full_name, role)),
                     user:users!user_id(email, full_name)
                 `)
                 .eq('id', roomId)
@@ -121,6 +122,9 @@ export async function sendMessageAction(roomId: string, content: string, product
             let recipientName = ""
             let senderName = ""
             let link = ""
+            let recipientId = ""
+            let inAppLink = ""
+            const preview = content.length > 50 ? content.substring(0, 50) + "..." : content
 
             // If I am the user, send to Store Owner
             if (user.id === room.user_id) {
@@ -128,6 +132,10 @@ export async function sendMessageAction(roomId: string, content: string, product
                 recipientName = room.store.name // Address store by name usually
                 senderName = room.user.full_name || "Customer"
                 link = `https://myjara.ng/dashboard/support`
+                recipientId = room.store.owner_id
+                inAppLink = room.store.owner.role === 'retailer'
+                    ? `/seller/messages/${roomId}`
+                    : `/dashboard/messages?chatId=${roomId}`
             }
             // If I am the Store Owner (or staff), send to User
             else {
@@ -135,6 +143,18 @@ export async function sendMessageAction(roomId: string, content: string, product
                 recipientName = room.user.full_name || "Customer"
                 senderName = room.store.name
                 link = `https://myjara.ng/inbox` // Creating this page next
+                recipientId = room.user_id
+                inAppLink = `/inbox`
+            }
+
+            if (recipientId) {
+                await createNotification({
+                    userId: recipientId,
+                    type: 'message',
+                    title: `New message from ${senderName}`,
+                    body: preview,
+                    link: inAppLink,
+                })
             }
 
             if (recipientEmail) {
@@ -143,7 +163,7 @@ export async function sendMessageAction(roomId: string, content: string, product
                     email: recipientEmail,
                     recipientName,
                     senderName,
-                    messagePreview: content.length > 50 ? content.substring(0, 50) + "..." : content,
+                    messagePreview: preview,
                     actionLink: link
                 })
             }

@@ -180,6 +180,54 @@ export async function sendPolicyAcceptedEmail({
     }
 }
 
+export async function sendSubscriptionExpiryReminderEmail({
+    email,
+    fullName,
+    storeName,
+    daysLeft,
+    expiryDate,
+    actionLink
+}: {
+    email: string;
+    fullName: string;
+    storeName: string;
+    daysLeft: number;
+    expiryDate: string;
+    actionLink: string;
+}) {
+    try {
+        const isExpired = daysLeft <= 0
+        const { data, error } = await resend.emails.send({
+            from: 'MyJara <billing@myjara.ng>',
+            to: [email],
+            subject: isExpired
+                ? `Your MyJara subscription for ${storeName} has expired`
+                : `Your MyJara subscription expires in ${daysLeft} day${daysLeft === 1 ? '' : 's'}`,
+            html: `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    <h2 style="color: #1f2937; margin-bottom: 20px;">${isExpired ? 'Subscription Expired' : 'Subscription Expiring Soon'}</h2>
+                    <p style="font-size: 16px; color: #4b5563;">Hi ${fullName},</p>
+                    <p style="font-size: 16px; color: #4b5563; line-height: 1.5;">
+                        ${isExpired
+                    ? `Your MyJara subscription for <strong>${storeName}</strong> expired on ${expiryDate}. Your storefront and dashboard features are now restricted until you renew.`
+                    : `Your MyJara subscription for <strong>${storeName}</strong> will expire on ${expiryDate} (in ${daysLeft} day${daysLeft === 1 ? '' : 's'}). Renew now to avoid any interruption to your store.`}
+                    </p>
+
+                    <a href="${actionLink}" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; margin-top: 16px;">Renew Subscription</a>
+
+                    <div style="margin-top: 30px; font-size: 12px; color: #9ca3af; text-align: center;">
+                        <p>© 2026 MyJara. All rights reserved.</p>
+                    </div>
+                </div>
+            `
+        });
+        return { data, error };
+    } catch (error) {
+        console.error('Subscription reminder email error:', error);
+        return { error };
+    }
+}
+
 export async function sendUnreadMessageEmail({
     email,
     recipientName,

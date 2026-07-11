@@ -16,6 +16,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { NotificationBell } from '@/components/shared/notification-bell'
 import { createClient } from '@/lib/supabase/client'
 
 import { useCart } from '@/context/cart-context'
@@ -161,6 +162,8 @@ export function Header() {
                                         <span className="sr-only">Messages</span>
                                     </Link>
                                 </Button>
+
+                                <NotificationBell />
 
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>

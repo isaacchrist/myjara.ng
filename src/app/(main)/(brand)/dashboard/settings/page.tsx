@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
-import { Save, Upload, X } from "lucide-react"
+import { Save, Upload, X, Share2 } from "lucide-react"
 import Image from "next/image"
 
 export default function BrandSettingsPage() {
@@ -29,6 +29,12 @@ export default function BrandSettingsPage() {
             theme: {
                 primaryColor: "#10b981", // Default emerald-500
                 layout: "grid" // Default grid
+            },
+            social: {
+                facebook: "",
+                instagram: "",
+                twitter: "",
+                whatsapp: ""
             }
         }
     })
@@ -63,10 +69,18 @@ export default function BrandSettingsPage() {
                     bank_name: store.bank_name || "",
                     account_number: store.account_number || "",
                     account_name: store.account_name || "",
-                    settings: (store.settings as any) || {
+                    settings: {
                         theme: {
                             primaryColor: "#10b981",
-                            layout: "grid"
+                            layout: "grid",
+                            ...(store.settings as any)?.theme
+                        },
+                        social: {
+                            facebook: "",
+                            instagram: "",
+                            twitter: "",
+                            whatsapp: "",
+                            ...(store.settings as any)?.social
                         }
                     }
                 })
@@ -274,6 +288,59 @@ export default function BrandSettingsPage() {
                                     value={formData.account_name}
                                     onChange={(e) => setFormData({ ...formData, account_name: e.target.value })}
                                     placeholder="Account holder name"
+                                />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Social Links */}
+                <Card>
+                    <CardHeader>
+                        <div className="flex items-center gap-2">
+                            <Share2 className="h-5 w-5 text-emerald-600" />
+                            <div>
+                                <CardTitle>Social Links</CardTitle>
+                                <CardDescription>Shown on your storefront so customers can find you elsewhere.</CardDescription>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <div className="grid gap-2">
+                                <Label htmlFor="facebook">Facebook</Label>
+                                <Input
+                                    id="facebook"
+                                    value={formData.settings.social.facebook}
+                                    onChange={(e) => setFormData({ ...formData, settings: { ...formData.settings, social: { ...formData.settings.social, facebook: e.target.value } } })}
+                                    placeholder="https://facebook.com/yourbrand"
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="instagram">Instagram</Label>
+                                <Input
+                                    id="instagram"
+                                    value={formData.settings.social.instagram}
+                                    onChange={(e) => setFormData({ ...formData, settings: { ...formData.settings, social: { ...formData.settings.social, instagram: e.target.value } } })}
+                                    placeholder="https://instagram.com/yourbrand"
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="twitter">X / Twitter</Label>
+                                <Input
+                                    id="twitter"
+                                    value={formData.settings.social.twitter}
+                                    onChange={(e) => setFormData({ ...formData, settings: { ...formData.settings, social: { ...formData.settings.social, twitter: e.target.value } } })}
+                                    placeholder="https://x.com/yourbrand"
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="whatsapp">WhatsApp Number</Label>
+                                <Input
+                                    id="whatsapp"
+                                    value={formData.settings.social.whatsapp}
+                                    onChange={(e) => setFormData({ ...formData, settings: { ...formData.settings, social: { ...formData.settings.social, whatsapp: e.target.value } } })}
+                                    placeholder="+234..."
                                 />
                             </div>
                         </div>

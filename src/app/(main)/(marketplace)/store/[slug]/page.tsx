@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/server"
 import { ProductCard } from "@/components/marketplace/product-card"
 import { StoreProductGrid } from "@/components/marketplace/store-product-grid"
 import { Badge } from "@/components/ui/badge"
-import { MapPin, Phone, Store, Building, Calendar, Package, ExternalLink } from "lucide-react"
+import { MapPin, Phone, Store, Building, Calendar, Package, ExternalLink, Facebook, Instagram, Twitter, MessageCircle } from "lucide-react"
 import { CopyPhoneButton } from "@/components/marketplace/copy-phone-button"
 import { ChatButton } from "@/components/marketplace/chat-button"
 import { StoreGalleryBanner } from "@/components/marketplace/store-gallery"
@@ -35,6 +35,13 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
     const theme = settings?.theme || { primaryColor: '#10b981', layout: 'grid' }
     const primaryColor = theme.primaryColor
     const layout = theme.layout === 'list' ? 'list' : 'grid'
+    const social = settings?.social || {}
+    const socialLinks = [
+        social.facebook && { href: social.facebook, icon: Facebook, label: 'Facebook' },
+        social.instagram && { href: social.instagram, icon: Instagram, label: 'Instagram' },
+        social.twitter && { href: social.twitter, icon: Twitter, label: 'X / Twitter' },
+        social.whatsapp && { href: `https://wa.me/${social.whatsapp.replace(/[^0-9]/g, '')}`, icon: MessageCircle, label: 'WhatsApp' },
+    ].filter(Boolean) as { href: string; icon: typeof Facebook; label: string }[]
 
     // Determine store type from user metadata or store settings
     const storeType = store.shop_type || settings?.shop_type || 'physical'
@@ -140,6 +147,24 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
                             {contactPhone && <CopyPhoneButton phone={contactPhone} />}
                         </div>
                     </div>
+
+                    {/* Social Links */}
+                    {socialLinks.length > 0 && (
+                        <div className="mb-4 flex items-center justify-center gap-2 sm:justify-start">
+                            {socialLinks.map((link) => (
+                                <a
+                                    key={link.label}
+                                    href={link.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title={link.label}
+                                    className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-600 transition-colors hover:bg-emerald-100 hover:text-emerald-700"
+                                >
+                                    <link.icon className="h-4 w-4" />
+                                </a>
+                            ))}
+                        </div>
+                    )}
 
                     {/* Description */}
                     {store.description && (

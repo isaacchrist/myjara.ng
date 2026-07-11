@@ -2,6 +2,7 @@
 
 import { createAdminClient } from '@/lib/supabase/server'
 import { getAdminSession } from '@/app/actions/admin-auth'
+import { createNotification } from '@/app/actions/notifications'
 
 // Chat rooms are modeled as (user_id, store_id) pairs -- there's no separate
 // "admin" participant type in the schema. Admin<->store chat reuses the same
@@ -151,6 +152,22 @@ export async function sendAdminMessageAction(roomId: string, content: string) {
         .from('chat_rooms')
         .update({ updated_at: new Date().toISOString(), last_message_content: content })
         .eq('id', roomId)
+
+    const { data: room } = await ctx.supabase
+        .from('chat_rooms')
+        .select('store:stores(owner_id, owner:users!owner_id(role))')
+        .eq('id', roomId)
+        .single() as any
+
+    if (room?.store?.owner_id) {
+        await createNotification({
+            userId: room.store.owner_id,
+            type: 'message',
+            title: 'New message from MyJara Support',
+            body: content.length > 50 ? content.substring(0, 50) + '...' : content,
+            link: room.store.owner.role === 'retailer' ? `/seller/messages/${roomId}` : `/dashboard/messages?chatId=${roomId}`,
+        })
+    }
 
     return { success: true }
 }

@@ -2,6 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase/server"
 import { sendAccountApprovedEmail, sendPolicyAcceptedEmail } from "@/lib/resend"
+import { createNotification } from "@/app/actions/notifications"
 
 // NOTE: the admin panel authenticates via a separate signed cookie
 // (src/app/actions/admin-auth.ts), not a Supabase auth session, so
@@ -50,6 +51,14 @@ export async function approveWholesalerAction(userId: string) {
         })
     }
 
+    await createNotification({
+        userId,
+        type: 'verification',
+        title: 'Your account has been verified',
+        body: 'Your store is now live and full dashboard access has been unlocked.',
+        link: '/dashboard',
+    })
+
     return { success: true }
 }
 
@@ -69,6 +78,14 @@ export async function rejectWholesalerAction(userId: string) {
     await (supabase.from('stores') as any)
         .update({ status: 'suspended' } as any)
         .eq('owner_id', userId)
+
+    await createNotification({
+        userId,
+        type: 'verification',
+        title: 'Your verification was not approved',
+        body: 'Please review your submitted details and contact support if you have questions.',
+        link: '/dashboard/settings',
+    })
 
     return { success: true }
 }
