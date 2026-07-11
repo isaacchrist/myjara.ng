@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { getChatRoomsAction } from '@/app/actions/chat'
 import { MessageSquare, Search } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { NewCustomerChatSearch } from './new-chat-search'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,6 +32,16 @@ export default async function VendorInboxPage() {
                 <h1 className="text-2xl font-bold">Messages</h1>
                 <span className="text-sm text-gray-500">{rooms.length} conversation{rooms.length !== 1 ? 's' : ''}</span>
             </div>
+
+            <Card className="mb-6">
+                <CardContent className="p-4">
+                    <p className="mb-2 text-sm font-medium text-gray-700">Start a new conversation</p>
+                    <NewCustomerChatSearch
+                        storeId={activeStore.id}
+                        excludeIds={rooms.map((r: any) => r.user_id)}
+                    />
+                </CardContent>
+            </Card>
 
             {rooms.length === 0 ? (
                 <Card>

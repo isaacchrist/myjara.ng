@@ -78,6 +78,44 @@ export async function getOrCreateAdminChatRoomAction(storeId: string) {
     return { data: newRoom }
 }
 
+// Search stores to start a NEW admin<->store conversation (matches store
+// name or the owner's user tag, mirroring searchStoresAction in chat.ts but
+// gated by admin session instead of a Supabase user session, since a
+// master-key admin has no Supabase auth session at all).
+export async function searchStoresForAdminAction(query: string) {
+    const isAdmin = await getAdminSession()
+    if (!isAdmin) return []
+    if (!query || query.trim().length < 2) return []
+
+    const supabase = await createAdminClient()
+
+    const { data: ownersByTag } = await supabase
+        .from('users')
+        .select('id')
+        .ilike('tag', `%${query}%`)
+        .limit(10)
+
+    const ownerIds = (ownersByTag || []).map((u: any) => u.id)
+
+    let storesQuery = supabase
+        .from('stores')
+        .select('id, name, logo_url, owner:users!owner_id(full_name, email)')
+        .limit(10)
+
+    storesQuery = ownerIds.length > 0
+        ? storesQuery.or(`name.ilike.%${query}%,owner_id.in.(${ownerIds.join(',')})`)
+        : storesQuery.ilike('name', `%${query}%`)
+
+    const { data, error } = await storesQuery
+
+    if (error) {
+        console.error('Admin store search error:', error)
+        return []
+    }
+
+    return data || []
+}
+
 export async function getAdminMessagesAction(roomId: string) {
     const ctx = await requireAdminIdentity()
     if ('error' in ctx) return []

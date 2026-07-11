@@ -6,6 +6,7 @@ import { StoreProductGrid } from "@/components/marketplace/store-product-grid"
 import { Badge } from "@/components/ui/badge"
 import { MapPin, Phone, Store, Building, Calendar, Package, ExternalLink } from "lucide-react"
 import { CopyPhoneButton } from "@/components/marketplace/copy-phone-button"
+import { ChatButton } from "@/components/marketplace/chat-button"
 import { StoreGalleryBanner } from "@/components/marketplace/store-gallery"
 import { ABUJA_MARKETS } from "@/lib/constants"
 
@@ -133,12 +134,11 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
                             </div>
                         </div>
 
-                        {/* Phone Number Button */}
-                        {contactPhone && (
-                            <div className="mt-4 sm:mt-0">
-                                <CopyPhoneButton phone={contactPhone} />
-                            </div>
-                        )}
+                        {/* Contact Buttons */}
+                        <div className="mt-4 flex items-center gap-2 sm:mt-0">
+                            <ChatButton storeId={store.id} storeName={store.name} />
+                            {contactPhone && <CopyPhoneButton phone={contactPhone} />}
+                        </div>
                     </div>
 
                     {/* Description */}

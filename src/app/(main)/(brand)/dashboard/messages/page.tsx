@@ -5,7 +5,8 @@ import { createClient } from "@/lib/supabase/client"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ChatWindow } from "@/components/chat/chat-window"
-import { getChatRoomsAction } from "@/app/actions/chat"
+import { CustomerSearch } from "@/components/chat/customer-search"
+import { getChatRoomsAction, getOrCreateChatRoomWithCustomerAction } from "@/app/actions/chat"
 import { Loader2, Search, MessageSquare, User, ArrowLeft, Store as StoreIcon } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { useSearchParams, useRouter } from "next/navigation"
@@ -15,6 +16,8 @@ function MessagesContent() {
     const [isLoading, setIsLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState("")
     const [userId, setUserId] = useState<string | null>(null)
+    const [storeId, setStoreId] = useState<string | null>(null)
+    const [isStartingChat, setIsStartingChat] = useState(false)
     const [activeTab, setActiveTab] = useState<'store' | 'user'>('store') // 'store' = My Customers, 'user' = My Chats
 
     const searchParams = useSearchParams()
@@ -43,7 +46,8 @@ function MessagesContent() {
                     .single()
 
                 if (store) {
-                    fetchedRooms = await getChatRoomsAction('store', store.id) || []
+                    setStoreId((store as any).id)
+                    fetchedRooms = await getChatRoomsAction('store', (store as any).id) || []
                 }
             } else {
                 // 'user' tab - interactions as a buyer
@@ -76,6 +80,22 @@ function MessagesContent() {
         router.push('/dashboard/messages')
     }
 
+    const handleStartNewChat = async (targetUserId: string) => {
+        if (!storeId) return
+        setIsStartingChat(true)
+        const result = await getOrCreateChatRoomWithCustomerAction(storeId, targetUserId)
+        if ('data' in result && result.data) {
+            const roomId = (result.data as any).id
+            const exists = rooms.find(r => r.id === roomId)
+            if (!exists) {
+                const data = await getChatRoomsAction('store', storeId)
+                setRooms(data || [])
+            }
+            handleRoomSelect(roomId)
+        }
+        setIsStartingChat(false)
+    }
+
     return (
         <div className="h-[calc(100vh-100px)] flex flex-col md:flex-row gap-6">
             {/* Left: Chat List (Visible on Desktop OR Mobile when no chat selected) */}
@@ -106,6 +126,17 @@ function MessagesContent() {
                             className="pl-10"
                         />
                     </div>
+
+                    {activeTab === 'store' && storeId && (
+                        <div>
+                            <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-500">Start new conversation</p>
+                            <CustomerSearch
+                                onSelect={handleStartNewChat}
+                                excludeIds={rooms.map(r => r.user_id)}
+                                isStarting={isStartingChat}
+                            />
+                        </div>
+                    )}
                 </div>
 
                 {/* List */}

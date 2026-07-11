@@ -11,7 +11,9 @@ import {
     getAdminChatRoomsAction,
     getAdminMessagesAction,
     sendAdminMessageAction,
-    markAdminMessagesReadAction
+    markAdminMessagesReadAction,
+    getOrCreateAdminChatRoomAction,
+    searchStoresForAdminAction
 } from '@/app/actions/admin-chat'
 
 type ChatRoom = {
@@ -45,6 +47,9 @@ export default function AdminMessagesPage() {
     const [sending, setSending] = useState(false)
     const [search, setSearch] = useState('')
     const [error, setError] = useState<string | null>(null)
+    const [newChatResults, setNewChatResults] = useState<any[]>([])
+    const [isSearchingNew, setIsSearchingNew] = useState(false)
+    const [isStartingChat, setIsStartingChat] = useState(false)
     const messagesEndRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
@@ -78,6 +83,37 @@ export default function AdminMessagesPage() {
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }, [messages])
+
+    useEffect(() => {
+        if (search.trim().length < 2) {
+            setNewChatResults([])
+            return
+        }
+        setIsSearchingNew(true)
+        const timeoutId = setTimeout(async () => {
+            const results = await searchStoresForAdminAction(search)
+            const existingStoreIds = new Set(rooms.map(r => r.store?.id))
+            setNewChatResults(results.filter((s: any) => !existingStoreIds.has(s.id)))
+            setIsSearchingNew(false)
+        }, 400)
+        return () => clearTimeout(timeoutId)
+    }, [search, rooms])
+
+    const handleStartNewChat = async (storeId: string) => {
+        setIsStartingChat(true)
+        const result = await getOrCreateAdminChatRoomAction(storeId)
+        if ('data' in result && result.data) {
+            const roomId = (result.data as any).id
+            const refreshed = await getAdminChatRoomsAction()
+            if (!('error' in refreshed)) {
+                setRooms(refreshed.data as any)
+            }
+            setSelectedRoomId(roomId)
+            setSearch('')
+            setNewChatResults([])
+        }
+        setIsStartingChat(false)
+    }
 
     const handleSendMessage = async () => {
         if (!newMessage.trim() || !selectedRoomId) return
@@ -176,6 +212,41 @@ export default function AdminMessagesPage() {
                                 ))
                             )}
                         </div>
+
+                        {search.trim().length >= 2 && (
+                            <div className="border-t bg-white p-2 max-h-64 overflow-y-auto">
+                                <div className="px-2 py-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                    Start new conversation
+                                </div>
+                                {isSearchingNew ? (
+                                    <div className="flex justify-center py-4">
+                                        <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                                    </div>
+                                ) : newChatResults.length > 0 ? (
+                                    <div className="space-y-1">
+                                        {newChatResults.map((store: any) => (
+                                            <button
+                                                key={store.id}
+                                                type="button"
+                                                disabled={isStartingChat}
+                                                onClick={() => handleStartNewChat(store.id)}
+                                                className="flex w-full items-center gap-3 rounded-lg p-2 text-left hover:bg-emerald-50 disabled:opacity-50"
+                                            >
+                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100">
+                                                    <Store className="h-4 w-4 text-gray-500" />
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="truncate text-sm font-medium text-gray-900">{store.name}</p>
+                                                    <p className="truncate text-xs text-gray-500">{store.owner?.full_name || store.owner?.email}</p>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="py-3 text-center text-sm text-gray-400">No new stores found</div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* Chat Area */}

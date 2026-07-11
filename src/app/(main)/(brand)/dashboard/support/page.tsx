@@ -6,7 +6,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ChatWindow } from "@/components/chat/chat-window"
-import { getChatRoomsAction } from "@/app/actions/chat"
+import { CustomerSearch } from "@/components/chat/customer-search"
+import { getChatRoomsAction, getOrCreateChatRoomWithCustomerAction } from "@/app/actions/chat"
 import { Loader2, Search, MessageSquare, User } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 
@@ -17,6 +18,7 @@ export default function BrandSupportPage() {
     const [searchTerm, setSearchTerm] = useState("")
     const [currentStoreId, setCurrentStoreId] = useState<string | null>(null)
     const [userId, setUserId] = useState<string | null>(null)
+    const [isStartingChat, setIsStartingChat] = useState(false)
 
     const supabase = createClient()
 
@@ -51,6 +53,22 @@ export default function BrandSupportPage() {
 
     const selectedRoom = rooms.find(r => r.id === selectedRoomId)
 
+    const handleStartNewChat = async (targetUserId: string) => {
+        if (!currentStoreId) return
+        setIsStartingChat(true)
+        const result = await getOrCreateChatRoomWithCustomerAction(currentStoreId, targetUserId)
+        if ('data' in result && result.data) {
+            const roomId = (result.data as any).id
+            const exists = rooms.find(r => r.id === roomId)
+            if (!exists) {
+                const data = await getChatRoomsAction('store', currentStoreId)
+                setRooms(data || [])
+            }
+            setSelectedRoomId(roomId)
+        }
+        setIsStartingChat(false)
+    }
+
     return (
         <div className="h-[calc(100vh-100px)] flex flex-col"> {/* Adjust height for layout */}
             <div className="mb-6">
@@ -61,7 +79,7 @@ export default function BrandSupportPage() {
             <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 h-full min-h-0">
                 {/* Left: Chat List */}
                 <Card className="md:col-span-1 flex flex-col h-full min-h-0">
-                    <div className="p-4 border-b">
+                    <div className="p-4 border-b space-y-4">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                             <Input
@@ -69,6 +87,14 @@ export default function BrandSupportPage() {
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="pl-10"
+                            />
+                        </div>
+                        <div>
+                            <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-500">Start new conversation</p>
+                            <CustomerSearch
+                                onSelect={handleStartNewChat}
+                                excludeIds={rooms.map(r => r.user_id)}
+                                isStarting={isStartingChat}
                             />
                         </div>
                     </div>

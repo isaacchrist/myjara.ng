@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Gift, MapPin, Truck, ChevronRight, Package, Calendar, User, Mail, Phone } from "lucide-react"
 import { formatPrice } from "@/lib/utils"
+import { getOrCreateChatRoomWithCustomerAction } from "@/app/actions/chat"
 import { OrderActions } from "../order-actions"
 
 export default async function BrandOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -27,7 +28,7 @@ export default async function BrandOrderDetailPage({ params }: { params: Promise
             user:users(full_name, email),
             order_items(*, product:products(name, price, product_images(url, is_primary))),
             logistics:store_logistics(*),
-            store:stores!inner(owner_id)
+            store:stores!inner(id, owner_id)
         `)
         .eq('id', id)
         .eq('store.owner_id', user.id)
@@ -36,6 +37,9 @@ export default async function BrandOrderDetailPage({ params }: { params: Promise
     if (error || !order) {
         notFound()
     }
+
+    const chatRoomResult = await getOrCreateChatRoomWithCustomerAction(order.store.id, order.user_id)
+    const chatRoomId = 'data' in chatRoomResult ? chatRoomResult.data?.id : undefined
 
     const statusColors = {
         pending: 'bg-amber-100 text-amber-700',
@@ -154,11 +158,18 @@ export default async function BrandOrderDetailPage({ params }: { params: Promise
                                     <p className="text-xs text-gray-500">{order.user.email}</p>
                                 </div>
                             </div>
-                            <Button variant="outline" className="w-full" asChild>
-                                <Link href={`/dashboard/support?user=${order.user_id}`}>
-                                    <Mail className="mr-2 h-4 w-4" />
-                                    Chat with Customer
-                                </Link>
+                            <Button variant="outline" className="w-full" disabled={!chatRoomId} asChild={!!chatRoomId}>
+                                {chatRoomId ? (
+                                    <Link href={`/dashboard/messages?chatId=${chatRoomId}`}>
+                                        <Mail className="mr-2 h-4 w-4" />
+                                        Chat with Customer
+                                    </Link>
+                                ) : (
+                                    <>
+                                        <Mail className="mr-2 h-4 w-4" />
+                                        Chat with Customer
+                                    </>
+                                )}
                             </Button>
                         </CardContent>
                     </Card>
