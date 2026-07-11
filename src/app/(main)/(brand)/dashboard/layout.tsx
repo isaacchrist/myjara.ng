@@ -17,7 +17,8 @@ import {
     LogOut,
     ChevronRight,
     CreditCard,
-    HelpCircle
+    HelpCircle,
+    Wallet
 } from 'lucide-react'
 
 const sidebarItems = [
@@ -26,6 +27,7 @@ const sidebarItems = [
     { icon: Gift, label: 'Jara Offers', href: '/dashboard/products' },
     { icon: Truck, label: 'Logistics', href: '/dashboard/logistics' },
     { icon: ShoppingCart, label: 'Orders', href: '/dashboard/orders' },
+    { icon: Wallet, label: 'Wallet', href: '/dashboard/wallet' },
     { icon: MessageCircle, label: 'Messages', href: '/dashboard/messages', badge: 3 },
     { icon: MessageCircle, label: 'Support', href: '/dashboard/support' },
     { icon: Truck, label: 'Operations', href: '/dashboard/operations' },
@@ -44,7 +46,7 @@ export default function DashboardLayout({
 }: {
     children: React.ReactNode
 }) {
-    const [store, setStore] = useState<{ name: string; logo_url: string | null } | null>(null)
+    const [store, setStore] = useState<{ name: string; logo_url: string | null; slug: string } | null>(null)
     const [verificationStatus, setVerificationStatus] = useState<'pending' | 'approved' | 'unverified' | 'rejected'>('approved') // Default approved to avoid flicker
     const [loading, setLoading] = useState(true)
     const router = useRouter()
@@ -75,9 +77,9 @@ export default function DashboardLayout({
             // NOTE: stores has no is_verified column -- verification lives on
             // users.verification_status, set by approveWholesalerAction.
             const { data: storeData } = await (supabase.from('stores') as any)
-                .select('name, logo_url')
+                .select('name, logo_url, slug')
                 .eq('owner_id', user.id)
-                .single() as { data: { name: string; logo_url: string | null } | null }
+                .single() as { data: { name: string; logo_url: string | null; slug: string } | null }
 
             if (storeData) setStore(storeData)
 
@@ -215,7 +217,8 @@ export default function DashboardLayout({
 
                     <div className="flex items-center gap-4">
                         <Link
-                            href="/"
+                            href={store?.slug ? `/store/${store.slug}` : '/'}
+                            target="_blank"
                             className="text-sm text-gray-500 hover:text-emerald-600 dark:text-gray-400 dark:hover:text-emerald-500"
                         >
                             View Store →

@@ -22,6 +22,9 @@ export default function BrandSettingsPage() {
         slug: "",
         description: "",
         logo_url: "",
+        bank_name: "",
+        account_number: "",
+        account_name: "",
         settings: {
             theme: {
                 primaryColor: "#10b981", // Default emerald-500
@@ -57,6 +60,9 @@ export default function BrandSettingsPage() {
                     slug: store.slug,
                     description: store.description || "",
                     logo_url: store.logo_url || "",
+                    bank_name: store.bank_name || "",
+                    account_number: store.account_number || "",
+                    account_name: store.account_name || "",
                     settings: (store.settings as any) || {
                         theme: {
                             primaryColor: "#10b981",
@@ -91,6 +97,9 @@ export default function BrandSettingsPage() {
                     name: formData.name,
                     description: formData.description,
                     logo_url: formData.logo_url,
+                    bank_name: formData.bank_name,
+                    account_number: formData.account_number,
+                    account_name: formData.account_name,
                     settings: formData.settings
                 })
                 .eq("id", storeId)
@@ -227,6 +236,45 @@ export default function BrandSettingsPage() {
                                     )}
                                 </div>
                                 <p className="text-xs text-gray-500">Recommended: Square image, at least 200x200px</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Settlement Account */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Settlement Account</CardTitle>
+                        <CardDescription>Where order payouts are sent. See your payout history under Wallet.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="bank_name">Bank Name</Label>
+                            <Input
+                                id="bank_name"
+                                value={formData.bank_name}
+                                onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
+                                placeholder="e.g. GTBank"
+                            />
+                        </div>
+                        <div className="grid gap-2 md:grid-cols-2">
+                            <div className="grid gap-2">
+                                <Label htmlFor="account_number">Account Number</Label>
+                                <Input
+                                    id="account_number"
+                                    value={formData.account_number}
+                                    onChange={(e) => setFormData({ ...formData, account_number: e.target.value })}
+                                    placeholder="0123456789"
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="account_name">Account Name</Label>
+                                <Input
+                                    id="account_name"
+                                    value={formData.account_name}
+                                    onChange={(e) => setFormData({ ...formData, account_name: e.target.value })}
+                                    placeholder="Account holder name"
+                                />
                             </div>
                         </div>
                     </CardContent>
