@@ -15,6 +15,7 @@ import { toast } from 'sonner'
 import { ABUJA_MARKETS } from '@/lib/constants'
 import { ProfilePictureUpload } from '@/components/shared/profile-picture-upload'
 import { ImageUpload } from '@/components/ui/image-upload'
+import { LocationsManager } from '@/components/seller/locations-manager'
 import { useSellerStore } from '@/context/seller-store-context'
 
 // Plan limits for categories
@@ -329,6 +330,9 @@ export default function EditProfilePage() {
                         )}
                     </CardContent>
                 </Card>
+
+                {/* Shop Locations (physical retailers running multiple shops) */}
+                {store?.shop_type === 'physical' && <LocationsManager />}
 
                 {/* Categories */}
                 <Card>

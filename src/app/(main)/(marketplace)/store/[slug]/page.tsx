@@ -76,6 +76,15 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
 
     const cities = logistics ? [...new Set(logistics.map((l: any) => l.city))] : []
 
+    // Physical shop locations (Phase 2.5) -- only shown when there's more
+    // than the one auto-backfilled primary location, so single-location
+    // stores don't get a redundant section.
+    const { data: shopLocations } = await (supabase.from('store_locations') as any)
+        .select('id, name, address, city, latitude, longitude, phone, is_primary')
+        .eq('store_id', store.id)
+        .eq('is_active', true)
+        .order('is_primary', { ascending: false })
+
     // Use Owner Data (fallback to store data if specific overrides exist, usually user data is master)
     const profilePic = store.owner?.avatar_url || store.profile_picture_url || store.logo_url
     const contactPhone = store.owner?.phone || store.phone
@@ -206,6 +215,43 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
                                         <MapPin className="h-3.5 w-3.5" />
                                         Open Map
                                     </a>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Shop Locations — Only for physical stores with more than one location */}
+            {storeType === 'physical' && shopLocations && shopLocations.length > 1 && (
+                <div className="container mx-auto mt-6 px-4">
+                    <div className="bg-white rounded-xl border shadow-sm p-6">
+                        <h2 className="text-lg font-bold flex items-center gap-2 mb-4">
+                            <MapPin className="h-5 w-5 text-emerald-600" />
+                            Shop Locations
+                        </h2>
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {shopLocations.map((loc: any) => (
+                                <div key={loc.id} className="flex items-center justify-between p-4 rounded-lg border bg-gray-50">
+                                    <div>
+                                        <p className="font-semibold text-gray-900">
+                                            {loc.name} {loc.is_primary && <span className="text-xs text-emerald-600 font-normal">(Main)</span>}
+                                        </p>
+                                        {(loc.address || loc.city) && (
+                                            <p className="text-sm text-gray-500">{[loc.address, loc.city].filter(Boolean).join(', ')}</p>
+                                        )}
+                                    </div>
+                                    {loc.latitude && loc.longitude && (
+                                        <a
+                                            href={`https://www.google.com/maps/search/?api=1&query=${loc.latitude},${loc.longitude}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white text-xs font-semibold rounded-lg hover:bg-emerald-700 transition-colors shrink-0"
+                                        >
+                                            <MapPin className="h-3.5 w-3.5" />
+                                            Open Map
+                                        </a>
+                                    )}
                                 </div>
                             ))}
                         </div>
