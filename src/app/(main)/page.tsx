@@ -6,7 +6,6 @@ import { ProductCard } from '@/components/marketplace/product-card'
 import { Badge } from '@/components/ui/badge'
 import { MarketDayBanner } from '@/components/marketplace/market-day-banner'
 import { createClient } from '@/lib/supabase/server'
-import { PRODUCT_CATEGORIES } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,27 +24,6 @@ export default async function HomePage() {
     .gt('jara_get_quantity', 0)
     .order('created_at', { ascending: false })
     .limit(8)
-
-  // 2. Fetch Category Counts
-  // We'll fetch all active product category_ids to count them
-  const { data: productCategories } = await supabase
-    .from('products')
-    .select('category_id')
-    .eq('status', 'active')
-
-  const categoryCounts = ((productCategories as any[]) || []).reduce((acc: Record<string, number>, curr) => {
-    const id = curr.category_id
-    acc[id] = (acc[id] || 0) + 1
-    return acc
-  }, {})
-
-  // Map constants to display format
-  const categories = PRODUCT_CATEGORIES.map(cat => ({
-    name: cat.name,
-    slug: cat.id,
-    icon: cat.icon,
-    count: categoryCounts[cat.id] || 0
-  })).sort((a, b) => b.count - a.count).slice(0, 6) // Top 6 categories by count or just first 6
 
   return (
     <div>
@@ -197,33 +175,6 @@ export default async function HomePage() {
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Categories */}
-      <section className="bg-gray-50 py-16 dark:bg-gray-900">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white md:text-3xl">
-            Shop by Category
-          </h2>
-
-          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
-            {categories.map((category) => (
-              <Link
-                key={category.slug}
-                href={`/search?category=${category.slug}`}
-                className="group flex flex-col items-center rounded-xl bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md dark:bg-gray-950 dark:border dark:border-gray-800"
-              >
-                <span className="text-4xl">{category.icon}</span>
-                <h3 className="mt-3 font-medium text-gray-900 group-hover:text-emerald-600 dark:text-gray-200 dark:group-hover:text-emerald-500 text-center">
-                  {category.name}
-                </h3>
-                <p className="mt-1 text-xs text-gray-400">
-                  {category.count} products
-                </p>
-              </Link>
-            ))}
           </div>
         </div>
       </section>
