@@ -8,7 +8,7 @@ Given the size of this (five distinct workstreams, dozens of individual items), 
 
 This plan reflects two rounds of live code investigation (not just the docs), so some things flagged during scoping turned out to be worse than described (chat has three incompatible schemas, not just "not working"; admin/messages references a table that doesn't exist at all) and a couple turned out to be partially built already (the category multi-select on seller profile-edit *does* save — it just saves to a taxonomy nothing else reads, which is likely why it feels broken).
 
-**Status:** Phase 0 (0.1–0.5) and Phase 1 (1.1–1.5) have been implemented in code — see `supabase/migrations/021`–`028` and `supabase/migrations/README.md`. Migrations 021–024 (Phase 0) have been applied to the live database via the Supabase SQL Editor. Migrations 025–028 (Phase 1) are written but **not yet applied** — same process, run them in order via the SQL Editor before Phase 1 is actually in effect. Phases 2–4 are unstarted.
+**Status:** Phase 0 (0.1–0.5), Phase 1 (1.1–1.5), and Phase 2.1 + 2.6 have been implemented in code — see `supabase/migrations/021`–`030` and `supabase/migrations/README.md`. Migrations 021–024 (Phase 0) have been applied to the live database via the Supabase SQL Editor. Migrations 025–030 (Phase 1, 2.1, 2.6) are written but **not yet applied** — same process, run them in order via the SQL Editor. Phase 2.6 also needs a `CRON_SECRET` env var set in the Vercel project (Vercel Cron sends it automatically as a Bearer header once configured) for `/api/cron/subscription-reminders` to run. Remaining Phase 2 items (2.2, 2.3, 2.4, 2.5) and Phases 3–4 are unstarted.
 
 ---
 
@@ -70,10 +70,10 @@ Three incompatible schemas exist today: `chat_rooms`/`messages` (`012_chat_syste
 
 ## Phase 2 — Wholesaler / Multi-Tenant Infra & Monetization
 
-**2.1 Wholesaler dashboard fixes**
-- The dashboard layout's persistent header "View Store" link is hardcoded to `/` instead of `/store/${store.slug}` (the correct link already exists elsewhere, on `dashboard/page.tsx`) — likely why multi-tenant "feels" broken even though the storefront route and subdomain routing both work when traced.
-- There's an existing but seemingly-orphaned `/store/[slug]/admin` route gated by a separate access-key form, not obviously connected to anything past key entry — needs a decision when this phase starts: repurpose as the wholesaler's real admin entry point, or remove it.
-- Build a wholesaler payments/billing page (payout history, settlement details), mirroring the settlement-account UI that already exists for retailers in `seller/profile`.
+**2.1 Wholesaler dashboard fixes — done**
+- Fixed the hardcoded "View Store" link, added settlement-account fields and a `/dashboard/wallet` page mirroring the retailer one.
+- Closed the `/store/[slug]/admin` per-store access-key backdoor entirely (route deleted, `admin_access_key` column dropped in migration 029) and secured the global `/admin` panel with real per-admin Supabase accounts alongside the existing master `ADMIN_SECRET_KEY` (kept as an intentional fallback).
+- Also fixed while in this area: three broken chat-initiation entry points — the storefront had no "Chat with Vendor" button at all, store-side inboxes (seller/brand support & messages, admin messages) had no way to search someone new and start a conversation, and the wholesaler order-detail "Chat with Customer" button linked to a dead query param. All now use the same `getOrCreateChatRoomWithCustomerAction` / `searchUsersAction` primitives that already existed but were unwired.
 
 **2.2 Custom domain connection** — build UI against the existing, currently-unused `store_domains` table (add-domain form, verification instructions, status). Subdomain routing already works; custom domains are new.
 
@@ -86,7 +86,7 @@ Three incompatible schemas exist today: `chat_rooms`/`messages` (`012_chat_syste
 
 **2.5 Physical retailer multi-shop** — "one store per owner" is assumed throughout the codebase (dashboard, profile, chat welcome message all do `.eq('owner_id', user.id).single()`). Recommend a `store_locations` child table under one store rather than allowing multiple `stores` rows per owner, to avoid breaking that assumption everywhere at once — full design deferred to this phase.
 
-**2.6 Social links & notifications** — add social link columns to `stores`; build a minimal notifications table + bell UI; add a scheduled job (Vercel Cron) for subscription-expiry reminder emails reusing the existing `resend.ts` templates.
+**2.6 Social links & notifications — done** — social links (facebook/instagram/twitter/whatsapp) live in `stores.settings.social`, a JSONB merge alongside the existing `theme` key rather than new columns, editable from both retailer profile-edit and wholesaler dashboard settings, shown as icon links on the storefront. Built a `notifications` table (migration 030) + bell UI in the main header and admin shell, wired into new chat messages and verification decisions. Added a daily Vercel Cron job (`/api/cron/subscription-reminders`) emailing + notifying store owners at 3/1/0 days before `subscription_expiry`.
 
 ---
 
