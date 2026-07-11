@@ -1,11 +1,15 @@
 'use client'
 
+import { Suspense } from 'react'
 import Link from 'next/link'
-import { Mail, ArrowRight } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
+import { Mail, ArrowRight, Tag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 
-export default function VerificationPendingPage() {
+function VerificationPendingContent() {
+    const tag = useSearchParams().get('tag')
+
     return (
         <div className="flex min-h-[calc(100vh-200px)] items-center justify-center px-4 py-12">
             <Card className="w-full max-w-lg border-emerald-100 shadow-xl">
@@ -19,6 +23,13 @@ export default function VerificationPendingPage() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 text-center text-gray-600">
+                    {tag && (
+                        <div className="mx-auto flex w-fit items-center gap-2 rounded-full bg-emerald-50 border border-emerald-200 px-4 py-2">
+                            <Tag className="h-4 w-4 text-emerald-600" />
+                            <span className="text-sm text-gray-600">Your account tag:</span>
+                            <span className="font-mono font-semibold text-emerald-800">{tag}</span>
+                        </div>
+                    )}
                     <p>
                         Thank you for signing up with MyJara. We need to verify your details to ensure the quality and security of our marketplace.
                     </p>
@@ -30,6 +41,11 @@ export default function VerificationPendingPage() {
                             <li>You will receive a confirmation email once approved.</li>
                         </ul>
                     </div>
+                    {tag && (
+                        <p className="text-sm">
+                            Save your tag — it's how others can find you in chat and how support can look up your account.
+                        </p>
+                    )}
                     <p className="text-sm">
                         While you wait, you can explore the marketplace as a customer.
                     </p>
@@ -43,5 +59,13 @@ export default function VerificationPendingPage() {
                 </CardFooter>
             </Card>
         </div>
+    )
+}
+
+export default function VerificationPendingPage() {
+    return (
+        <Suspense>
+            <VerificationPendingContent />
+        </Suspense>
     )
 }

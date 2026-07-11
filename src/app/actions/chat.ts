@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from "@/lib/supabase/server"
+import { createClient, createAdminClient } from "@/lib/supabase/server"
 
 // 1. Get or Create Chat Room (Customer side mainly)
 export async function getOrCreateChatRoomAction(storeId: string) {
@@ -228,7 +228,7 @@ export async function markMessagesReadAction(roomId: string) {
         .eq('is_read', false)
 }
 
-// 6. Search users by name or email (for starting new conversations)
+// 6. Search users by name, email, or tag (for starting new conversations)
 export async function searchUsersAction(query: string) {
     if (!query || query.trim().length < 2) return []
 
@@ -236,10 +236,13 @@ export async function searchUsersAction(query: string) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return []
 
-    const { data, error } = await supabase
+    // Post-021 RLS only allows reading users you already share a chat room
+    // or order with -- searching for someone new needs the admin client.
+    const admin = await createAdminClient()
+    const { data, error } = await admin
         .from('users')
-        .select('id, full_name, email, avatar_url, role')
-        .or(`full_name.ilike.%${query}%,email.ilike.%${query}%`)
+        .select('id, full_name, email, avatar_url, role, tag')
+        .or(`full_name.ilike.%${query}%,email.ilike.%${query}%,tag.ilike.%${query}%`)
         .neq('id', user.id)
         .limit(10)
 
@@ -299,6 +302,9 @@ export async function getStoreProductsForChatAction(storeId: string) {
 }
 
 // 8. Search Stores (for Customer Inbox to start new chats)
+// Matches on store name OR the owner's user tag (e.g. "jara-mart-4a1c"), so a
+// vendor can be found by the short tag from their profile instead of only
+// the store's display name.
 export async function searchStoresAction(query: string) {
     if (!query || query.trim().length < 2) return []
 
@@ -306,12 +312,30 @@ export async function searchStoresAction(query: string) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return []
 
-    const { data, error } = await supabase
+    // Tag lookup needs to see across users (that's the point -- finding a
+    // vendor you've never talked to yet), which the post-021 RLS policies on
+    // `users` no longer allow via the session client. Admin client only for
+    // this narrow id lookup, never returning anything beyond ownerIds.
+    const admin = await createAdminClient()
+    const { data: ownersByTag } = await admin
+        .from('users')
+        .select('id')
+        .ilike('tag', `%${query}%`)
+        .limit(10)
+
+    const ownerIds = (ownersByTag || []).map((u: any) => u.id)
+
+    let storesQuery = supabase
         .from('stores')
         .select('id, name, logo_url, shop_type')
-        .ilike('name', `%${query}%`)
         .eq('status', 'active')
         .limit(10)
+
+    storesQuery = ownerIds.length > 0
+        ? storesQuery.or(`name.ilike.%${query}%,owner_id.in.(${ownerIds.join(',')})`)
+        : storesQuery.ilike('name', `%${query}%`)
+
+    const { data, error } = await storesQuery
 
     if (error) {
         console.error('Store search error:', error)

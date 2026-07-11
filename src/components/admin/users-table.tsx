@@ -18,6 +18,7 @@ type User = {
     email: string
     full_name: string
     role: string
+    tag: string | null
     is_verified: boolean
     created_at: string
     store?: {
@@ -44,6 +45,8 @@ export function UsersTable({ initialUsers }: UsersTableProps) {
         const matchesSearch =
             user.full_name?.toLowerCase().includes(searchLower) ||
             user.email?.toLowerCase().includes(searchLower) ||
+            user.tag?.toLowerCase().includes(searchLower) ||
+            user.id?.toLowerCase().includes(searchLower) ||
             user.store?.name?.toLowerCase().includes(searchLower)
 
         // Role Filter
@@ -71,7 +74,7 @@ export function UsersTable({ initialUsers }: UsersTableProps) {
                 <div className="relative max-w-sm flex-1">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                     <Input
-                        placeholder="Search users..."
+                        placeholder="Search by name, email, tag, or UUID..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="pl-10 bg-gray-800 border-gray-700 text-white"
@@ -113,6 +116,7 @@ export function UsersTable({ initialUsers }: UsersTableProps) {
                         <thead className="bg-gray-700/50 text-gray-400">
                             <tr>
                                 <th className="p-4 font-medium">User</th>
+                                <th className="p-4 font-medium">Tag / UUID</th>
                                 <th className="p-4 font-medium">Role</th>
                                 <th className="p-4 font-medium">Store/Info</th>
                                 <th className="p-4 font-medium">Status</th>
@@ -128,6 +132,10 @@ export function UsersTable({ initialUsers }: UsersTableProps) {
                                                 <p className="font-medium text-white">{user.full_name}</p>
                                                 <p className="text-gray-400 text-xs">{user.email}</p>
                                             </div>
+                                        </td>
+                                        <td className="p-4">
+                                            <p className="text-emerald-400 font-mono text-xs">{user.tag || '—'}</p>
+                                            <p className="text-gray-600 font-mono text-[10px] mt-0.5">{user.id}</p>
                                         </td>
                                         <td className="p-4">
                                             <Badge variant="outline" className="capitalize text-gray-300 border-gray-600">
@@ -161,7 +169,7 @@ export function UsersTable({ initialUsers }: UsersTableProps) {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={5} className="p-8 text-center text-gray-500">
+                                    <td colSpan={6} className="p-8 text-center text-gray-500">
                                         No users found matching filters.
                                     </td>
                                 </tr>

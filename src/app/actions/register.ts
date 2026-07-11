@@ -236,7 +236,8 @@ export async function registerRetailer(formData: RegistrationData) {
         console.error('Failed to send welcome message:', e)
     }
 
-    return { success: true }
+    const { data: tagRow } = await admin.from('users').select('tag').eq('id', userId).maybeSingle() as any
+    return { success: true, tag: tagRow?.tag }
 }
 
 // Helper to send welcome message
@@ -472,5 +473,6 @@ export async function registerBrand(formData: RegistrationData) {
         console.error('Failed to send welcome message to brand:', e)
     }
 
-    return { success: true }
+    const { data: tagRow } = await admin.from('users').select('tag').eq('id', userId).maybeSingle() as any
+    return { success: true, tag: tagRow?.tag }
 }

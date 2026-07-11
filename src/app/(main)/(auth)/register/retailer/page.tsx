@@ -223,7 +223,7 @@ function RetailerRegisterForm() {
             // Success Redirect
             toast({ title: 'Welcome!', description: 'Account created successfully.' })
             sessionStorage.removeItem(STORAGE_KEY)
-            router.push('/verification-pending')
+            router.push(result.tag ? `/verification-pending?tag=${encodeURIComponent(result.tag)}` : '/verification-pending')
 
         } catch (err: any) {
             console.error('Registration error:', err)

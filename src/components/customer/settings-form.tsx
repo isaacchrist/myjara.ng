@@ -19,6 +19,7 @@ interface SettingsFormProps {
         phone: string | null
         billing_address: string | null
         home_address: string | null
+        tag: string | null
     }
 }
 
@@ -77,7 +78,12 @@ export function SettingsForm({ user }: SettingsFormProps) {
             <Card>
                 <CardHeader>
                     <CardTitle>Personal Information</CardTitle>
-                    <CardDescription>Update your basic contact details.</CardDescription>
+                    <CardDescription>
+                        Update your basic contact details.
+                        {user.tag && (
+                            <span className="ml-2 font-mono text-emerald-600">Your tag: @{user.tag}</span>
+                        )}
+                    </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-4 md:grid-cols-2">

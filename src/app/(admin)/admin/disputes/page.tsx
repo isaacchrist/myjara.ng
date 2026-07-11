@@ -16,7 +16,8 @@ export default async function AdminDisputesPage() {
                 id,
                 full_name,
                 email,
-                role
+                role,
+                tag
             )
         `)
         .order('created_at', { ascending: false })

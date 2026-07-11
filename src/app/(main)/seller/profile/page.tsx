@@ -90,6 +90,9 @@ export default function SellerProfilePage() {
                             </div>
                             <div>
                                 <p className="font-semibold text-xl">{userData?.full_name || 'Not Set'}</p>
+                                {userData?.tag && (
+                                    <p className="font-mono text-xs text-emerald-600 mt-0.5">@{userData.tag}</p>
+                                )}
                                 <div className="flex items-center gap-2 mt-1 flex-wrap">
                                     <Badge>{userData?.role || 'retailer'}</Badge>
                                     {store?.registered_at && (

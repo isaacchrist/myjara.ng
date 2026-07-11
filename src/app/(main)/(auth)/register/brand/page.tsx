@@ -136,7 +136,7 @@ function BrandRegisterForm() {
 
             // Success Redirect
             toast({ title: 'Application Submitted!', description: 'Your Wholesaler account is pending verification.' })
-            router.push('/verification-pending')
+            router.push(result.tag ? `/verification-pending?tag=${encodeURIComponent(result.tag)}` : '/verification-pending')
 
         } catch (err: any) {
             console.error('Registration error:', err)

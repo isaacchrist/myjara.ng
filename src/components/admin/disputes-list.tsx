@@ -21,6 +21,7 @@ type Dispute = {
         full_name: string
         email: string
         role: string
+        tag: string | null
     } | null
 }
 
@@ -60,7 +61,8 @@ export function DisputesList({ initialDisputes }: { initialDisputes: Dispute[] }
         const matchesSearch =
             d.reason.toLowerCase().includes(search.toLowerCase()) ||
             d.description.toLowerCase().includes(search.toLowerCase()) ||
-            (d.user?.full_name || '').toLowerCase().includes(search.toLowerCase())
+            (d.user?.full_name || '').toLowerCase().includes(search.toLowerCase()) ||
+            (d.user?.tag || '').toLowerCase().includes(search.toLowerCase())
 
         return matchesRole && matchesCause && matchesSearch
     })
@@ -83,7 +85,7 @@ export function DisputesList({ initialDisputes }: { initialDisputes: Dispute[] }
                         <div className="relative flex-1 w-full">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <Input
-                                placeholder="Search reasons, descriptions, or users..."
+                                placeholder="Search reasons, descriptions, users, or tags..."
                                 className="pl-10"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
@@ -159,6 +161,9 @@ export function DisputesList({ initialDisputes }: { initialDisputes: Dispute[] }
                                         </CardTitle>
                                         <div className="text-sm text-gray-500 flex items-center gap-2">
                                             <span>{dispute.user?.full_name || 'Unknown User'}</span>
+                                            {dispute.user?.tag && (
+                                                <span className="font-mono text-xs text-emerald-600">@{dispute.user.tag}</span>
+                                            )}
                                             <span>•</span>
                                             <Badge variant="secondary" className="text-xs font-normal">
                                                 {dispute.user?.role || 'Consumer'}

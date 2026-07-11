@@ -57,7 +57,10 @@ Three incompatible schemas exist today: `chat_rooms`/`messages` (`012_chat_syste
 - Decide, field by field, which registration-collected values (full name, email, sex, DOB) should become editable vs. intentionally locked (e.g. legal-name changes routed through support), then wire the rest into `seller/profile/edit` and the customer settings page.
 - Extend wholesaler/brand registration (`register/brand/page.tsx`) to collect what retailer registration already does — it currently hardcodes `categories: []` and skips several fields the retailer flow captures.
 
-**1.4 "User tag names not working"** — no tagging/handle concept was found anywhere in the codebase (chat, profile, or otherwise) during research. Needs a concrete example (which screen, what's expected) before this can be scoped.
+**1.4 User tags** — clarified: every user/vendor/admin should get a short, unique, human-readable tag (distinct from their `id` UUID) so people and disputes can be found without quoting a raw UUID.
+- `users.tag`: unique, generated at registration from `slug(name) + '-' + first 4 chars of the real UUID` — keeps the tag deterministically tied back to the UUID (the thing every FK and RLS policy actually uses) without encoding meaning *into* the UUID itself, which would fight its purpose as an opaque key. Admins get an `admin-` prefixed tag.
+- Searchable in chat (`searchUsersAction`, `searchStoresAction`) and in the admin disputes list; admin/users shows both `tag` and the full `id` for reference.
+- **Deferred, not built yet:** "wholesalers can name up to 5 tagged staff accounts (support/disputes/etc.)" and "multi-shop retailers get one tag per shop, varying by location/category" both need a real sub-account/staff model and the multi-shop data model neither of which exist yet — `stores` is strictly one-row-per-owner today (see 2.1's `store_locations` note and the assumption audit in 2.5). Building tags for accounts that can't exist yet would be premature; revisit as part of 2.1 (wholesaler staff accounts) and 2.5 (multi-shop) once those land, then extend tag generation to encode shop location/category at that point.
 
 **1.5 Chat: product references + dispute flagging** (builds on the 0.3 consolidation)
 - Add a nullable `product_id` (or a `metadata jsonb`) to `messages` and a compact product-attach UI in the chat composer, reusing `ProductCard`.
