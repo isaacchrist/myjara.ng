@@ -14,7 +14,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         '/categories',
         '/markets',
         '/how-it-works',
-        '/how-jara-works',
         '/contact',
         '/help',
         '/support',

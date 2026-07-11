@@ -8,6 +8,15 @@ const nextConfig = {
             },
         ],
     },
+    async redirects() {
+        return [
+            {
+                source: "/how-jara-works",
+                destination: "/how-it-works",
+                permanent: true,
+            },
+        ];
+    },
 };
 
 export default nextConfig;

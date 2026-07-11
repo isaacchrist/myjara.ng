@@ -109,7 +109,7 @@ export default async function HomePage() {
             </div>
           </div>
           <div className="mt-10 text-center">
-            <Link href="/how-jara-works" className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 hover:underline">
+            <Link href="/how-it-works" className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 hover:underline">
               Learn exactly how it works →
             </Link>
           </div>
