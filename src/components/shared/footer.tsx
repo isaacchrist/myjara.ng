@@ -1,7 +1,20 @@
+'use client'
+
 import Link from 'next/link'
 import Image from 'next/image'
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 export function Footer() {
+    const [role, setRole] = useState<string | null>(null)
+
+    useEffect(() => {
+        const supabase = createClient()
+        supabase.auth.getUser().then(({ data: { user } }) => {
+            setRole(user?.user_metadata?.role ?? null)
+        })
+    }, [])
+
     return (
         <footer className="border-t border-gray-100 bg-gray-50">
             <div className="container mx-auto px-4 py-12">
@@ -39,30 +52,45 @@ export function Footer() {
                         </ul>
                     </div>
 
-                    {/* For Brands */}
+                    {/* For Brands — links change based on whether the visitor is already a retailer/wholesaler */}
                     <div>
-                        <h3 className="text-sm font-semibold text-gray-900">For Sellers</h3>
+                        <h3 className="text-sm font-semibold text-gray-900">
+                            {role === 'retailer' ? 'For Retailers' : role === 'brand_admin' ? 'For Brands' : 'For Sellers'}
+                        </h3>
                         <ul className="mt-4 space-y-3">
-                            <li>
-                                <Link href="/register/seller" className="text-gray-600 hover:text-emerald-600">
-                                    Sell on MyJara
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/seller/support" className="text-sm text-gray-500 hover:text-emerald-600">
-                                    Retailer Support
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/dashboard" className="text-sm text-gray-500 hover:text-emerald-600">
-                                    Brand Dashboard
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/help/brands" className="text-sm text-gray-500 hover:text-emerald-600">
-                                    Brand Resources
-                                </Link>
-                            </li>
+                            {role === 'retailer' ? (
+                                <>
+                                    <li>
+                                        <Link href="/seller/dashboard" className="text-sm text-gray-500 hover:text-emerald-600">
+                                            My Dashboard
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link href="/seller/support" className="text-sm text-gray-500 hover:text-emerald-600">
+                                            Retailer Support
+                                        </Link>
+                                    </li>
+                                </>
+                            ) : role === 'brand_admin' ? (
+                                <>
+                                    <li>
+                                        <Link href="/dashboard" className="text-sm text-gray-500 hover:text-emerald-600">
+                                            Brand Dashboard
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link href="/dashboard/support" className="text-sm text-gray-500 hover:text-emerald-600">
+                                            Wholesaler Support
+                                        </Link>
+                                    </li>
+                                </>
+                            ) : (
+                                <li>
+                                    <Link href="/register/seller" className="text-sm text-gray-500 hover:text-emerald-600">
+                                        Sell on MyJara
+                                    </Link>
+                                </li>
+                            )}
                         </ul>
                     </div>
 
