@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { sellerHasMarketDays } from '@/lib/constants'
 import {
     LayoutDashboard,
     ShoppingBag,
@@ -61,7 +62,7 @@ export function MobileBottomNav({ shopType, unreadCount = 0, storeSlug }: Mobile
 
     // Secondary items (shown in "More" sheet)
     const secondaryItems = [
-        ...(shopType !== 'brand' ? [{
+        ...(sellerHasMarketDays(shopType) ? [{
             href: '/seller/market-days',
             label: 'Market Days',
             icon: Calendar,

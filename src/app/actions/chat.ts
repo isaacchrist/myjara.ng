@@ -39,6 +39,46 @@ export async function getOrCreateChatRoomAction(storeId: string) {
     return { data: newRoom }
 }
 
+// 1b. Get or Create Chat Room (Store side -- messaging a specific customer,
+// e.g. from an order detail page)
+export async function getOrCreateChatRoomWithCustomerAction(storeId: string, customerId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return { error: "Unauthorized" }
+
+    const { data: store } = await supabase
+        .from('stores')
+        .select('id')
+        .eq('id', storeId)
+        .eq('owner_id', user.id)
+        .maybeSingle()
+
+    if (!store) return { error: "Not authorized for this store" }
+
+    const { data: existingRoom } = await supabase
+        .from('chat_rooms')
+        .select('id')
+        .eq('user_id', customerId)
+        .eq('store_id', storeId)
+        .maybeSingle()
+
+    if (existingRoom) return { data: existingRoom }
+
+    const { data: newRoom, error } = await (supabase as any)
+        .from('chat_rooms')
+        .insert({ user_id: customerId, store_id: storeId })
+        .select('id')
+        .single()
+
+    if (error) {
+        console.error("Error creating chat room with customer:", error)
+        return { error: "Failed to start chat" }
+    }
+
+    return { data: newRoom }
+}
+
 // 2. Send Message
 export async function sendMessageAction(roomId: string, content: string) {
     const supabase = await createClient()

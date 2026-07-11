@@ -32,13 +32,12 @@ export default async function SellerDisputesPage() {
     }
 
     // Fetch disputes for this store
+    // Note: order_id is a free-text column (no FK to orders), so it's
+    // displayed as-is rather than embedded via a relationship.
     const { data: disputes } = await supabase
         .from('disputes')
         .select(`
             *,
-            orders!order_id (
-                order_number
-            ),
             customer:users!customer_id (
                 full_name,
                 email
@@ -78,7 +77,7 @@ export default async function SellerDisputesPage() {
                                         </Badge>
                                     </div>
                                     <p className="text-sm text-gray-500">
-                                        Order #{dispute.orders?.order_number || 'Unknown'} • From: {dispute.customer?.full_name || dispute.customer?.email || 'Customer'}
+                                        Order #{dispute.order_id} • From: {dispute.customer?.full_name || dispute.customer?.email || 'Customer'}
                                     </p>
                                     <p className="text-sm text-gray-700 line-clamp-2 mt-2 bg-gray-50 p-2 rounded">
                                         "{dispute.description}"

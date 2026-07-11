@@ -18,7 +18,8 @@ import {
     X,
     MessageSquare,
     CheckCircle,
-    Bug
+    Bug,
+    Lightbulb
 } from 'lucide-react'
 import { logoutAdmin } from '@/app/actions/admin-auth'
 import { usePathname } from 'next/navigation'
@@ -34,6 +35,7 @@ const sidebarItems = [
     { icon: MessageSquare, label: 'Messages', href: '/admin/messages' }, // Added Messages explicitly if missing
     { icon: Users, label: 'Users', href: '/admin/users' },
     { icon: BarChart3, label: 'Analytics', href: '/admin/analytics' },
+    { icon: Lightbulb, label: 'Recommendations', href: '/admin/recommendations' },
     { icon: Settings, label: 'Settings', href: '/admin/settings' },
     { icon: Bug, label: 'Debug', href: '/admin/debug' }, // Added Debug
 ]

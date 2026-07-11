@@ -233,7 +233,7 @@ export default async function DashboardPage() {
                                     <span className="font-medium text-gray-900">Add Product</span>
                                 </Link>
                                 <Link
-                                    href="/dashboard/jara"
+                                    href="/dashboard/products"
                                     className="flex items-center gap-3 rounded-lg border border-gray-200 p-4 transition-colors hover:border-amber-500 hover:bg-amber-50"
                                 >
                                     <Gift className="h-6 w-6 text-amber-600" />

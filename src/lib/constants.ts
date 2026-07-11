@@ -17,6 +17,12 @@ export const ABUJA_MARKETS = [
     { name: 'Gosa Market', days: ['Friday'], lat: 8.9667, lng: 7.2833 }
 ]
 
+// Market Days is a retailer-only concept; wholesalers (stores.shop_type === 'brand') don't use it.
+// Shared by SellerSidebar and MobileBottomNav so the two navs can't drift out of sync.
+export function sellerHasMarketDays(shopType?: string) {
+    return shopType !== 'brand'
+}
+
 export const SUBSCRIPTION_PLANS = [
     {
         id: 'basic',

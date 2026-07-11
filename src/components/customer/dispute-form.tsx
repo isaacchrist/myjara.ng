@@ -8,11 +8,11 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { createClient } from '@/lib/supabase/client'
+import { createDisputeAction } from '@/app/actions/disputes'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2, Send } from 'lucide-react'
 
-export function DisputeForm({ userId }: { userId: string }) {
+export function DisputeForm() {
     const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
         order_id: '',
@@ -21,7 +21,6 @@ export function DisputeForm({ userId }: { userId: string }) {
     })
     const { toast } = useToast()
     const router = useRouter()
-    const supabase = createClient()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -37,35 +36,27 @@ export function DisputeForm({ userId }: { userId: string }) {
             return
         }
 
-        try {
-            const { error } = await (supabase
-                .from('disputes') as any)
-                .insert({
-                    customer_id: userId,
-                    order_id: formData.order_id,
-                    reason: formData.reason,
-                    description: formData.description,
-                    status: 'pending'
-                })
+        const result = await createDisputeAction({
+            orderId: formData.order_id,
+            reason: formData.reason,
+            description: formData.description
+        })
 
-            if (error) throw error
-
+        if (result.success) {
             toast({
                 title: 'Dispute Submitted',
                 description: 'We have received your dispute and will review it shortly.',
             })
             router.push('/customer/disputes')
             router.refresh()
-        } catch (error) {
-            console.error('Error submitting dispute:', error)
+        } else {
             toast({
                 title: 'Error',
-                description: 'Failed to submit dispute. Please try again.',
+                description: result.error || 'Failed to submit dispute. Please try again.',
                 variant: 'destructive',
             })
-        } finally {
-            setLoading(false)
         }
+        setLoading(false)
     }
 
     return (

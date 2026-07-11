@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { createClient } from "@/lib/supabase/client"
+import { createSupportTicketAction } from "@/app/actions/disputes"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -28,22 +28,8 @@ export default function HelpCenterPage() {
         setStatus('idle')
 
         try {
-            const supabase = createClient()
-            const { data: { user } } = await supabase.auth.getUser()
-
-            if (!user) throw new Error("Unauthorized")
-
-            const { error } = await (supabase as any)
-                .from('disputes')
-                .insert({
-                    user_id: user.id,
-                    subject,
-                    description,
-                    cause,
-                    status: 'open'
-                })
-
-            if (error) throw error
+            const result = await createSupportTicketAction({ subject, description, cause })
+            if (!result.success) throw new Error(result.error)
 
             setStatus('success')
             setCause("")

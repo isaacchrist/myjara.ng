@@ -12,9 +12,12 @@ export default async function AdminAnalyticsPage() {
     const { count: totalUsers } = await supabase.from('users').select('id', { count: 'exact', head: true }) as any
     const { count: totalStores } = await supabase.from('stores').select('id', { count: 'exact', head: true }) as any
     const { count: totalOrders } = await supabase.from('orders').select('id', { count: 'exact', head: true }) as any
-    const { data: revenueData } = await supabase.from('orders').select('total_amount').eq('status', 'completed') as any
+    // NOTE: orders has no 'completed' status (enum is pending|paid|processing|
+    // shipped|delivered|cancelled) and no total_amount column (it's `total`)
+    // -- this previously always summed to 0.
+    const { data: revenueData } = await supabase.from('orders').select('total').eq('status', 'delivered') as any
 
-    const totalRevenue = (revenueData || []).reduce((sum: number, order: any) => sum + (order.total_amount || 0), 0)
+    const totalRevenue = (revenueData || []).reduce((sum: number, order: any) => sum + (order.total || 0), 0)
 
     // 2. Fetch Chart Data (Last 30 Days)
     const thirtyDaysAgo = new Date()
@@ -22,7 +25,7 @@ export default async function AdminAnalyticsPage() {
 
     const { data: recentOrders } = await supabase
         .from('orders')
-        .select('created_at, total_amount')
+        .select('created_at, total')
         .gte('created_at', thirtyDaysAgo.toISOString())
         .order('created_at', { ascending: true }) as any
 
@@ -40,7 +43,7 @@ export default async function AdminAnalyticsPage() {
     (recentOrders || []).forEach((order: any) => {
         const dateStr = new Date(order.created_at).toISOString().split('T')[0]
         if (dailyStats[dateStr]) {
-            dailyStats[dateStr].revenue += (order.total_amount || 0)
+            dailyStats[dateStr].revenue += (order.total || 0)
             dailyStats[dateStr].orders += 1
         }
     })

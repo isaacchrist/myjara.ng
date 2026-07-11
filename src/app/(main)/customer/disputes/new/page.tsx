@@ -23,7 +23,7 @@ export default async function NewDisputePage() {
                 <h1 className="text-3xl font-bold text-gray-900">Open a Dispute</h1>
             </div>
 
-            <DisputeForm userId={user.id} />
+            <DisputeForm />
         </div>
     )
 }

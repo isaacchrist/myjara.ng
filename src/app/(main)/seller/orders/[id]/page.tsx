@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, MapPin, Truck, Mail } from "lucide-react"
 import { formatPrice } from "@/lib/utils"
+import { getOrCreateChatRoomWithCustomerAction } from "@/app/actions/chat"
 // Import from the brand dashboard for now - reuse component
 import { OrderActions } from "@/app/(main)/(brand)/dashboard/orders/order-actions"
 
@@ -42,6 +43,9 @@ export default async function RetailerOrderDetailPage({ params }: { params: Prom
     if (error || !order) {
         return notFound()
     }
+
+    const chatRoomResult = await getOrCreateChatRoomWithCustomerAction(activeStore.id, order.user_id)
+    const chatRoomId = 'data' in chatRoomResult ? chatRoomResult.data?.id : undefined
 
     const statusColors = {
         pending: 'bg-amber-100 text-amber-700',
@@ -160,12 +164,18 @@ export default async function RetailerOrderDetailPage({ params }: { params: Prom
                                     <p className="text-xs text-gray-500">{order.user.email}</p>
                                 </div>
                             </div>
-                            <Button variant="outline" className="w-full" asChild>
-                                {/* We should probably point to /chat/new or similar if we want to initiate */}
-                                <Link href={`/chat/${order.user_id}`}>
-                                    <Mail className="mr-2 h-4 w-4" />
-                                    Chat with Customer
-                                </Link>
+                            <Button variant="outline" className="w-full" disabled={!chatRoomId} asChild={!!chatRoomId}>
+                                {chatRoomId ? (
+                                    <Link href={`/seller/messages/${chatRoomId}`}>
+                                        <Mail className="mr-2 h-4 w-4" />
+                                        Chat with Customer
+                                    </Link>
+                                ) : (
+                                    <span>
+                                        <Mail className="mr-2 h-4 w-4" />
+                                        Chat with Customer
+                                    </span>
+                                )}
                             </Button>
                         </CardContent>
                     </Card>

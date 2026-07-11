@@ -17,6 +17,7 @@ import {
     Headphones
 } from 'lucide-react'
 import StoreSwitcher from '@/components/store-switcher'
+import { sellerHasMarketDays } from '@/lib/constants'
 
 interface SidebarProps {
     stores: any[]
@@ -74,45 +75,34 @@ export function SellerSidebar({ stores, activeStoreId, shopType, unreadCount = 0
         },
     ]
 
-    // Add Market Days for non-wholesaler shop types
-    const routes = shopType !== 'brand'
-        ? [
-            ...baseRoutes.slice(0, 4),
-            {
-                href: '/seller/market-days',
-                label: 'Market Days',
-                icon: Calendar,
-                active: pathname.includes('/seller/market-days'),
-            },
-            ...baseRoutes.slice(4),
-            {
-                href: '/seller/disputes',
-                label: 'Disputes',
-                icon: AlertTriangle,
-                active: pathname.includes('/seller/disputes'),
-            },
-            {
-                href: '/seller/support',
-                label: 'Support',
-                icon: Headphones,
-                active: pathname.includes('/seller/support'),
-            },
-        ]
-        : [
-            ...baseRoutes,
-            {
-                href: '/seller/disputes',
-                label: 'Disputes',
-                icon: AlertTriangle,
-                active: pathname.includes('/seller/disputes'),
-            },
-            {
-                href: '/seller/support',
-                label: 'Support',
-                icon: Headphones,
-                active: pathname.includes('/seller/support'),
-            },
-        ]
+    // Market Days is inserted right after Messages, anchored by href rather than
+    // array index, so reordering baseRoutes can't silently shift the insertion point.
+    const marketDaysRoute = {
+        href: '/seller/market-days',
+        label: 'Market Days',
+        icon: Calendar,
+        active: pathname.includes('/seller/market-days'),
+    }
+
+    const routes = [
+        ...baseRoutes.flatMap((route) =>
+            route.href === '/seller/messages' && sellerHasMarketDays(shopType)
+                ? [route, marketDaysRoute]
+                : [route]
+        ),
+        {
+            href: '/seller/disputes',
+            label: 'Disputes',
+            icon: AlertTriangle,
+            active: pathname.includes('/seller/disputes'),
+        },
+        {
+            href: '/seller/support',
+            label: 'Support',
+            icon: Headphones,
+            active: pathname.includes('/seller/support'),
+        },
+    ]
 
     return (
         <div className="flex h-full w-64 flex-col border-r bg-gray-50/50 dark:bg-gray-900/50">

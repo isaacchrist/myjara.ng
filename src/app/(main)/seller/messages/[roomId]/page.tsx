@@ -49,7 +49,7 @@ export default async function VendorChatRoomPage({ params }: ChatRoomPageProps) 
     const recipientName = room.user?.full_name || room.user?.email || 'Customer'
 
     return (
-        <div className="flex flex-col h-[calc(100vh-4rem)] bg-gray-50">
+        <div className="flex flex-col h-[calc(100vh-9rem)] md:h-[calc(100vh-4rem)] bg-gray-50">
             {/* Header / Breadcrumb */}
             <div className="bg-white border-b px-4 py-2 flex items-center gap-2">
                 <Link href="/seller/messages" className="text-gray-500 hover:text-emerald-600">

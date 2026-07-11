@@ -84,7 +84,12 @@ export function MobileNav({ user, count, onLogout }: MobileNavProps) {
                     </Link>
                     {user && (
                         <Link
-                            href="/dashboard"
+                            href={
+                                user.user_metadata?.role === 'brand_admin' ? '/dashboard' :
+                                    user.user_metadata?.role === 'retailer' ? '/seller/dashboard' :
+                                        user.user_metadata?.role === 'platform_admin' ? '/admin' :
+                                            '/customer/dashboard'
+                            }
                             className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-900"
                             onClick={() => setIsOpen(false)}
                         >

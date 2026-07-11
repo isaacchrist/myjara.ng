@@ -244,10 +244,13 @@ async function sendWelcomeMessage(supabaseAdmin: any, storeId: string, userName:
     if (!storeId) return
 
     // 1. Find an Admin User
+    // NOTE: the user_role enum has no 'admin' value (customer | brand_admin |
+    // platform_admin | retailer) -- this previously never matched, so the
+    // welcome message silently never sent.
     const { data: adminUser } = await supabaseAdmin
         .from('users')
         .select('id')
-        .eq('role', 'admin')
+        .eq('role', 'platform_admin')
         .limit(1)
         .maybeSingle()
 

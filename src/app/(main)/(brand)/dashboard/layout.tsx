@@ -15,25 +15,29 @@ import {
     BarChart3,
     Settings,
     LogOut,
-    ChevronRight
+    ChevronRight,
+    CreditCard,
+    HelpCircle
 } from 'lucide-react'
 
 const sidebarItems = [
     { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
     { icon: Package, label: 'Products', href: '/dashboard/products' },
-    { icon: Gift, label: 'Jara Offers', href: '/dashboard/jara' },
+    { icon: Gift, label: 'Jara Offers', href: '/dashboard/products' },
     { icon: Truck, label: 'Logistics', href: '/dashboard/logistics' },
     { icon: ShoppingCart, label: 'Orders', href: '/dashboard/orders' },
     { icon: MessageCircle, label: 'Messages', href: '/dashboard/messages', badge: 3 },
     { icon: MessageCircle, label: 'Support', href: '/dashboard/support' },
     { icon: Truck, label: 'Operations', href: '/dashboard/operations' },
     { icon: BarChart3, label: 'Analytics', href: '/dashboard/analytics' },
+    { icon: CreditCard, label: 'Subscription', href: '/dashboard/subscription' },
+    { icon: HelpCircle, label: 'Help Center', href: '/dashboard/help' },
     { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
 ]
 
 
 // Protected Items only accessible to APPROVED users
-const protectedItems = ['/dashboard/products', '/dashboard/orders', '/dashboard/wallet', '/dashboard/jara', '/dashboard/logistics', '/dashboard/messages', '/dashboard/operations', '/dashboard/analytics']
+const protectedItems = ['/dashboard/products', '/dashboard/orders', '/dashboard/wallet', '/dashboard/logistics', '/dashboard/messages', '/dashboard/operations', '/dashboard/analytics']
 
 import { getStoreSession, logoutAdmin, getAdminSession } from '@/app/actions/admin-auth'
 

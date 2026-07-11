@@ -1,10 +1,16 @@
 'use server'
 
-import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/server"
 import { sendAccountApprovedEmail, sendPolicyAcceptedEmail } from "@/lib/resend"
 
+// NOTE: the admin panel authenticates via a separate signed cookie
+// (src/app/actions/admin-auth.ts), not a Supabase auth session, so
+// auth.uid() is always null here. These mutations must use the
+// service-role client -- the session-scoped client silently updates
+// zero rows against RLS-protected tables instead of erroring.
+
 export async function approveWholesalerAction(userId: string) {
-    const supabase = await createClient()
+    const supabase = await createAdminClient()
 
     // 1. Check if user exists and fetch email/name for notification
     const { data: user, error: fetchError } = await (supabase.from('users') as any)
@@ -48,7 +54,7 @@ export async function approveWholesalerAction(userId: string) {
 }
 
 export async function rejectWholesalerAction(userId: string) {
-    const supabase = await createClient()
+    const supabase = await createAdminClient()
 
     // Update User Status
     const { error: userError } = await (supabase.from('users') as any)

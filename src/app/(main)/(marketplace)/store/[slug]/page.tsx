@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation"
 import Image from "next/image"
-import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/server"
 import { ProductCard } from "@/components/marketplace/product-card"
 import { StoreProductGrid } from "@/components/marketplace/store-product-grid"
 import { Badge } from "@/components/ui/badge"
@@ -11,7 +11,9 @@ import { ABUJA_MARKETS } from "@/lib/constants"
 
 export default async function StorePage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params
-    const supabase = await createClient()
+    // Service-role client: this is a fully public page, and the owner join below
+    // needs to resolve for anonymous visitors without any public RLS policy on `users`.
+    const supabase = await createAdminClient()
 
     // Fetch store details with settings AND owner info
     const { data: store } = await (supabase
