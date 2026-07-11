@@ -13,17 +13,28 @@
 --
 -- Rewrite the two policies to drop the header-bypass clause before dropping
 -- the column (Postgres won't allow DROP COLUMN while a policy depends on it).
+-- Guarded: per supabase/migrations/README.md, 013_client_phone_collection.sql
+-- (the migration that created client_contacts) is one of the pre-021
+-- numbered migrations whose actual live-application status is unknown --
+-- on databases where it never ran, client_contacts doesn't exist at all, and
+-- DROP POLICY ... ON <missing relation> fails even with IF EXISTS (that only
+-- suppresses "policy does not exist," not "relation does not exist").
 
-DROP POLICY IF EXISTS "Stores can insert contacts" ON public.client_contacts;
-CREATE POLICY "Stores can insert contacts" ON public.client_contacts
-    FOR INSERT WITH CHECK (
-        store_id IN (SELECT id FROM public.stores WHERE owner_id = auth.uid())
-    );
+DO $$
+BEGIN
+    IF to_regclass('public.client_contacts') IS NOT NULL THEN
+        DROP POLICY IF EXISTS "Stores can insert contacts" ON public.client_contacts;
+        EXECUTE 'CREATE POLICY "Stores can insert contacts" ON public.client_contacts
+            FOR INSERT WITH CHECK (
+                store_id IN (SELECT id FROM public.stores WHERE owner_id = auth.uid())
+            )';
 
-DROP POLICY IF EXISTS "Stores can view their own contacts" ON public.client_contacts;
-CREATE POLICY "Stores can view their own contacts" ON public.client_contacts
-    FOR SELECT USING (
-        store_id IN (SELECT id FROM public.stores WHERE owner_id = auth.uid())
-    );
+        DROP POLICY IF EXISTS "Stores can view their own contacts" ON public.client_contacts;
+        EXECUTE 'CREATE POLICY "Stores can view their own contacts" ON public.client_contacts
+            FOR SELECT USING (
+                store_id IN (SELECT id FROM public.stores WHERE owner_id = auth.uid())
+            )';
+    END IF;
+END $$;
 
 ALTER TABLE public.stores DROP COLUMN IF EXISTS admin_access_key;

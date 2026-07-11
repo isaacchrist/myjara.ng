@@ -7,6 +7,18 @@
 -- rows-per-owner scaffold (src/lib/store-context.ts) that never shipped a
 -- working "create a second store" flow.
 
+-- Guard against the numbered-migration/ad-hoc-migration history gap
+-- documented in supabase/migrations/README.md: these columns are assumed
+-- by the backfill below, but which of the pre-021 migrations actually ran
+-- against this specific database is unknown. All idempotent no-ops if the
+-- column is already there.
+ALTER TABLE stores ADD COLUMN IF NOT EXISTS shop_type TEXT DEFAULT 'physical';
+ALTER TABLE stores ADD COLUMN IF NOT EXISTS phone TEXT;
+ALTER TABLE stores ADD COLUMN IF NOT EXISTS latitude DOUBLE PRECISION;
+ALTER TABLE stores ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION;
+ALTER TABLE stores ADD COLUMN IF NOT EXISTS market_name TEXT;
+ALTER TABLE stores ADD COLUMN IF NOT EXISTS gallery_urls JSONB DEFAULT '[]'::jsonb;
+
 CREATE TABLE store_locations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     store_id UUID NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
