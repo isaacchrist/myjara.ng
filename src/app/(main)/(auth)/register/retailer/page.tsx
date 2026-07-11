@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
 import { ABUJA_MARKETS, SUBSCRIPTION_PLANS } from '@/lib/constants'
-import { validatePromoCodeAction, createSubscriptionAction } from '@/app/actions/subscription'
+import { validatePromoCodeAction } from '@/app/actions/subscription'
 import { useToast } from '@/hooks/use-toast'
 
 function RetailerRegisterForm() {

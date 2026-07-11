@@ -15,13 +15,6 @@ import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { BrandOnboardingDialog } from './onboarding-dialog'
 
-// Brands might have different plans, but reusing for simplicity as per requirement "wholesaler accounts"
-// Usually wholesalers don't pay subscription? Or do they? Assuming YES for now or just generic registration.
-const SUBSCRIPTION_PLANS = [
-    { id: 'standard', name: 'Brand Standard', price: 0, features: ['Unlimited Products', 'Vendor Dashboard', 'Direct Messaging'] },
-    { id: 'premium', name: 'Brand Premium', price: 5000, features: ['Featured Listings', 'Priority Support', 'Analytics'] },
-]
-
 function BrandRegisterForm() {
     const router = useRouter()
     const { toast } = useToast()

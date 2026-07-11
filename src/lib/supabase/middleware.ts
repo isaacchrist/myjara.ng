@@ -70,12 +70,29 @@ export async function updateSession(request: NextRequest) {
         }
     }
 
-    // Protect dashboard routes
+    // Protect dashboard routes (wholesaler) & check subscription -- mirrors
+    // the /seller gate below; previously only retailers faced this paywall.
     if (url.pathname.startsWith('/dashboard')) {
         if (!user) {
             url.pathname = '/login'
             url.searchParams.set('redirect', request.nextUrl.pathname)
             return NextResponse.redirect(url)
+        }
+
+        if (!url.pathname.startsWith('/dashboard/subscription')) {
+            const { data: store } = await supabase
+                .from('stores')
+                .select('subscription_expiry')
+                .eq('owner_id', user.id)
+                .single()
+
+            if (store?.subscription_expiry) {
+                const expiry = new Date(store.subscription_expiry)
+                if (expiry < new Date()) {
+                    url.pathname = '/dashboard/subscription'
+                    return NextResponse.redirect(url)
+                }
+            }
         }
     }
 
