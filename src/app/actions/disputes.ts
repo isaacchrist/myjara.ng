@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { getAdminSession } from '@/app/actions/admin-auth'
 import { revalidatePath } from 'next/cache'
 
 export async function createDisputeAction(data: {
@@ -124,6 +125,10 @@ export async function flagChatAsDisputeAction(roomId: string, reason: string, de
 }
 
 export async function resolveDisputeAction(disputeId: string, status: 'resolved' | 'closed') {
+    if (!(await getAdminSession())) {
+        return { success: false, error: 'Unauthorized' }
+    }
+
     const admin = await createAdminClient()
 
     const { error } = await (admin.from('disputes') as any)

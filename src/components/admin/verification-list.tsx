@@ -45,17 +45,13 @@ export function VerificationList({ initialStores }: VerificationListProps) {
     const { toast } = useToast()
     const supabase = createClient()
 
-    const handleVerification = async (storeId: string, status: 'active' | 'suspended') => {
+    const handleVerification = async (storeId: string, ownerId: string, status: 'active' | 'suspended') => {
         setActionLoading(storeId)
         try {
-            let result;
-            if (status === 'active') {
-                const { approveStore } = await import('@/app/actions/admin')
-                result = await approveStore(storeId)
-            } else {
-                const { rejectStore } = await import('@/app/actions/admin')
-                result = await rejectStore(storeId)
-            }
+            const { approveWholesalerAction, rejectWholesalerAction } = await import('@/app/actions/verification')
+            const result = status === 'active'
+                ? await approveWholesalerAction(ownerId)
+                : await rejectWholesalerAction(ownerId)
 
             if (!result.success) throw new Error(result.error)
 
@@ -227,7 +223,7 @@ export function VerificationList({ initialStores }: VerificationListProps) {
                         <div className="flex gap-3 pt-2">
                             <Button
                                 className="flex-1 bg-emerald-600 hover:bg-emerald-700"
-                                onClick={() => handleVerification(store.id, 'active')}
+                                onClick={() => handleVerification(store.id, store.owner.id, 'active')}
                                 disabled={!!actionLoading}
                             >
                                 {actionLoading === store.id ? (
@@ -240,7 +236,7 @@ export function VerificationList({ initialStores }: VerificationListProps) {
                             <Button
                                 variant="outline"
                                 className="flex-1 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
-                                onClick={() => handleVerification(store.id, 'suspended')}
+                                onClick={() => handleVerification(store.id, store.owner.id, 'suspended')}
                                 disabled={!!actionLoading}
                             >
                                 <XCircle className="h-4 w-4 mr-2" />

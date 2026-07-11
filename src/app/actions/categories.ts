@@ -1,6 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/server'
+import { getAdminSession } from '@/app/actions/admin-auth'
 import { revalidatePath } from 'next/cache'
 
 function slugify(input: string) {
@@ -12,6 +13,10 @@ function slugify(input: string) {
 }
 
 export async function createCategoryAction(data: { name: string; icon?: string; parentId?: string | null }) {
+    if (!(await getAdminSession())) {
+        return { success: false, error: 'Unauthorized' }
+    }
+
     const admin = await createAdminClient()
 
     const slug = slugify(data.name)
@@ -36,6 +41,10 @@ export async function createCategoryAction(data: { name: string; icon?: string; 
 }
 
 export async function updateCategoryAction(id: string, data: { name: string; icon?: string }) {
+    if (!(await getAdminSession())) {
+        return { success: false, error: 'Unauthorized' }
+    }
+
     const admin = await createAdminClient()
 
     const { error } = await (admin.from('categories') as any)
@@ -52,6 +61,10 @@ export async function updateCategoryAction(id: string, data: { name: string; ico
 }
 
 export async function deleteCategoryAction(id: string) {
+    if (!(await getAdminSession())) {
+        return { success: false, error: 'Unauthorized' }
+    }
+
     const admin = await createAdminClient()
 
     const { count: childCount } = await admin

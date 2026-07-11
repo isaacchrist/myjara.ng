@@ -33,6 +33,19 @@ export async function getOrCreateChatRoomAction(storeId: string) {
         .single()
 
     if (error) {
+        // 23505 = unique_violation on (user_id, store_id) -- a concurrent call
+        // (double-click, or two entry points at once) already created the
+        // room between our lookup and insert. Return that room instead of
+        // surfacing a generic error for what is actually a success.
+        if (error.code === '23505') {
+            const { data: raceRoom } = await supabase
+                .from('chat_rooms')
+                .select('*')
+                .eq('user_id', user.id)
+                .eq('store_id', storeId)
+                .single()
+            if (raceRoom) return { data: raceRoom }
+        }
         console.error("Error creating chat room:", error)
         return { error: "Failed to start chat" }
     }
@@ -73,6 +86,15 @@ export async function getOrCreateChatRoomWithCustomerAction(storeId: string, cus
         .single()
 
     if (error) {
+        if (error.code === '23505') {
+            const { data: raceRoom } = await supabase
+                .from('chat_rooms')
+                .select('id')
+                .eq('user_id', customerId)
+                .eq('store_id', storeId)
+                .single()
+            if (raceRoom) return { data: raceRoom }
+        }
         console.error("Error creating chat room with customer:", error)
         return { error: "Failed to start chat" }
     }

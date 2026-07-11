@@ -1,6 +1,7 @@
 'use server'
 
 import { createAdminClient } from "@/lib/supabase/server"
+import { getAdminSession } from "@/app/actions/admin-auth"
 import { sendAccountApprovedEmail, sendPolicyAcceptedEmail } from "@/lib/resend"
 import { createNotification } from "@/app/actions/notifications"
 
@@ -8,9 +9,15 @@ import { createNotification } from "@/app/actions/notifications"
 // (src/app/actions/admin-auth.ts), not a Supabase auth session, so
 // auth.uid() is always null here. These mutations must use the
 // service-role client -- the session-scoped client silently updates
-// zero rows against RLS-protected tables instead of erroring.
+// zero rows against RLS-protected tables instead of erroring. Since the
+// service-role client bypasses RLS entirely, each mutation below must check
+// getAdminSession() itself -- there's no database-level backstop.
 
 export async function approveWholesalerAction(userId: string) {
+    if (!(await getAdminSession())) {
+        return { success: false, error: 'Unauthorized' }
+    }
+
     const supabase = await createAdminClient()
 
     // 1. Check if user exists and fetch email/name for notification
@@ -63,6 +70,10 @@ export async function approveWholesalerAction(userId: string) {
 }
 
 export async function rejectWholesalerAction(userId: string) {
+    if (!(await getAdminSession())) {
+        return { success: false, error: 'Unauthorized' }
+    }
+
     const supabase = await createAdminClient()
 
     // Update User Status

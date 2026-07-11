@@ -157,7 +157,12 @@ export function Header() {
                                 )}
 
                                 <Button variant="ghost" size="icon" asChild className="h-10 w-10 rounded-full" title="Messages">
-                                    <Link href="/inbox">
+                                    <Link href={
+                                        user.user_metadata?.role === 'retailer' ? '/seller/messages'
+                                            : user.user_metadata?.role === 'brand_admin' ? '/dashboard/messages'
+                                                : user.user_metadata?.role === 'platform_admin' ? '/admin/messages'
+                                                    : '/inbox'
+                                    }>
                                         <MessageSquare className="h-5 w-5" />
                                         <span className="sr-only">Messages</span>
                                     </Link>
@@ -199,31 +204,57 @@ export function Header() {
                                         </div>
                                         <DropdownMenuGroup>
                                             {(user.user_metadata?.role === 'customer' || !user.user_metadata?.role) && (
+                                                <>
+                                                    <DropdownMenuItem asChild className="cursor-pointer">
+                                                        <Link href="/customer/dashboard" className="w-full flex items-center">
+                                                            <User className="mr-2 h-4 w-4 text-emerald-500" />
+                                                            <span>My Account</span>
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem asChild className="cursor-pointer">
+                                                        <Link href="/customer/settings" className="w-full flex items-center">
+                                                            <LayoutDashboard className="mr-2 h-4 w-4 text-emerald-500" />
+                                                            <span>Profile Settings</span>
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem asChild className="cursor-pointer">
+                                                        <Link href="/customer/favorites" className="w-full flex items-center">
+                                                            <Heart className="mr-2 h-4 w-4 text-emerald-500" />
+                                                            <span>Liked Vendors</span>
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem asChild className="cursor-pointer">
+                                                        <Link href="/customer/disputes" className="w-full flex items-center">
+                                                            <MessageSquare className="mr-2 h-4 w-4 text-emerald-500" />
+                                                            <span>My Disputes</span>
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                </>
+                                            )}
+                                            {user.user_metadata?.role === 'retailer' && (
+                                                <>
+                                                    <DropdownMenuItem asChild className="cursor-pointer">
+                                                        <Link href="/seller/profile/edit" className="w-full flex items-center">
+                                                            <LayoutDashboard className="mr-2 h-4 w-4 text-emerald-500" />
+                                                            <span>Profile Settings</span>
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem asChild className="cursor-pointer">
+                                                        <Link href="/seller/disputes" className="w-full flex items-center">
+                                                            <MessageSquare className="mr-2 h-4 w-4 text-emerald-500" />
+                                                            <span>My Disputes</span>
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                </>
+                                            )}
+                                            {user.user_metadata?.role === 'brand_admin' && (
                                                 <DropdownMenuItem asChild className="cursor-pointer">
-                                                    <Link href="/customer/dashboard" className="w-full flex items-center">
-                                                        <User className="mr-2 h-4 w-4 text-emerald-500" />
-                                                        <span>My Account</span>
+                                                    <Link href="/dashboard/settings" className="w-full flex items-center">
+                                                        <LayoutDashboard className="mr-2 h-4 w-4 text-emerald-500" />
+                                                        <span>Profile Settings</span>
                                                     </Link>
                                                 </DropdownMenuItem>
                                             )}
-                                            <DropdownMenuItem asChild className="cursor-pointer">
-                                                <Link href="/customer/settings" className="w-full flex items-center">
-                                                    <LayoutDashboard className="mr-2 h-4 w-4 text-emerald-500" />
-                                                    <span>Profile Settings</span>
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem asChild className="cursor-pointer">
-                                                <Link href="/customer/favorites" className="w-full flex items-center">
-                                                    <Heart className="mr-2 h-4 w-4 text-emerald-500" />
-                                                    <span>Liked Vendors</span>
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem asChild className="cursor-pointer">
-                                                <Link href="/customer/disputes" className="w-full flex items-center">
-                                                    <MessageSquare className="mr-2 h-4 w-4 text-emerald-500" />
-                                                    <span>My Disputes</span>
-                                                </Link>
-                                            </DropdownMenuItem>
                                         </DropdownMenuGroup>
                                         <DropdownMenuSeparator className="my-2" />
                                         <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:text-red-700 focus:bg-red-50 dark:focus:bg-red-950/20">

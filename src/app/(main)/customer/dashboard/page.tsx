@@ -15,9 +15,14 @@ export default async function CustomerDashboardPage() {
     if (!user) redirect('/login')
 
     const { data: userData } = await supabase.from('users').select('role').eq('id', user.id).single() as any
-    // Optional: Strictly enforce customer role or allow all authorized users (except verified admins?)
-    // For now, let's allow any authenticated user to see their "customer view" if they navigate here,
-    // but the main redirect will send customers here.
+
+    // Retailers/wholesalers/admins have their own dashboards -- without this,
+    // a retailer landing here (e.g. via the header dropdown) sees a second,
+    // unrelated "dashboard" showing their buyer-side order history instead
+    // of their store.
+    if (userData?.role === 'retailer') redirect('/seller/dashboard')
+    if (userData?.role === 'brand_admin') redirect('/dashboard')
+    if (userData?.role === 'platform_admin') redirect('/admin')
 
     // 2. Fetch User Stats
     let totalOrders = 0
