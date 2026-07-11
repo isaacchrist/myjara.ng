@@ -21,10 +21,11 @@ export default async function FavoritesPage() {
             store_id,
             stores (
                 id,
-                store_name,
+                slug,
+                name,
                 description,
                 logo_url,
-                city,
+                market_name,
                 shop_type
             )
         `)
@@ -53,7 +54,7 @@ export default async function FavoritesPage() {
                         if (!store) return null
 
                         return (
-                            <Link href={`/store/${store.id}`} key={fav.id} className="block group">
+                            <Link href={`/store/${store.slug}`} key={fav.id} className="block group">
                                 <Card className="h-full transition-all duration-300 hover:shadow-md group-hover:border-emerald-200">
                                     <CardContent className="p-6 relative">
                                         <div className="absolute top-4 right-4 z-10">
@@ -64,22 +65,22 @@ export default async function FavoritesPage() {
                                             <Avatar className="h-20 w-20 border-4 border-emerald-50">
                                                 <AvatarImage src={store.logo_url} />
                                                 <AvatarFallback className="text-lg bg-emerald-100 text-emerald-700">
-                                                    {store.store_name?.substring(0, 2).toUpperCase()}
+                                                    {store.name?.substring(0, 2).toUpperCase()}
                                                 </AvatarFallback>
                                             </Avatar>
 
                                             <div className="space-y-1">
                                                 <h3 className="font-semibold text-lg text-gray-900 group-hover:text-emerald-700 transition-colors">
-                                                    {store.store_name}
+                                                    {store.name}
                                                 </h3>
                                                 <div className="flex items-center justify-center gap-2">
                                                     <Badge variant="secondary" className="bg-gray-100 text-gray-600">
                                                         {store.shop_type}
                                                     </Badge>
-                                                    {store.city && (
+                                                    {store.market_name && (
                                                         <span className="text-sm text-gray-500 flex items-center">
                                                             <Store className="h-3 w-3 mr-1" />
-                                                            {store.city}
+                                                            {store.market_name}
                                                         </span>
                                                     )}
                                                 </div>

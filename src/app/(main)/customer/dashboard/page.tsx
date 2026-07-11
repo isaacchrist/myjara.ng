@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { Package, ShoppingBag, CreditCard, User, Heart } from 'lucide-react'
+import { Package, ShoppingBag, CreditCard, User, Heart, AlertCircle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -72,9 +72,17 @@ export default async function CustomerDashboardPage() {
                                     My Orders
                                 </Link>
                             </Button>
-                            <Button variant="ghost" className="w-full justify-start" disabled>
-                                <Heart className="mr-2 h-4 w-4" />
-                                Wishlist (Coming Soon)
+                            <Button variant="ghost" className="w-full justify-start" asChild>
+                                <Link href="/customer/favorites">
+                                    <Heart className="mr-2 h-4 w-4" />
+                                    Liked Vendors
+                                </Link>
+                            </Button>
+                            <Button variant="ghost" className="w-full justify-start" asChild>
+                                <Link href="/customer/disputes">
+                                    <AlertCircle className="mr-2 h-4 w-4" />
+                                    My Disputes
+                                </Link>
                             </Button>
                             <Button variant="ghost" className="w-full justify-start" asChild>
                                 <Link href="/customer/settings">
