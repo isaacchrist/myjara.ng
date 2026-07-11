@@ -141,11 +141,13 @@ export default function AddProductPage() {
                 stock_quantity: parseInt(formData.stock_quantity) || 0,
                 category_id: formData.category_id || null,
                 images: formData.images,
-                pickup_location: formData.pickup_location ? {
-                    address: formData.pickup_location,
-                    latitude: formData.pickup_latitude,
-                    longitude: formData.pickup_longitude
-                } : null,
+                attributes: {
+                    pickup_location: formData.pickup_location ? {
+                        address: formData.pickup_location,
+                        latitude: formData.pickup_latitude,
+                        longitude: formData.pickup_longitude
+                    } : null
+                },
                 status: 'active',
 
                 // Jara Data

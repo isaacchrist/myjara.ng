@@ -26,6 +26,7 @@ export default function EditProductPage() {
     const { store } = useSellerStore()
     // const [store, setStore] = useState<any>(null)
     const [categories, setCategories] = useState<any[]>([])
+    const [existingAttributes, setExistingAttributes] = useState<Record<string, any>>({})
 
     const [formData, setFormData] = useState({
         name: '',
@@ -98,42 +99,22 @@ export default function EditProductPage() {
                     price: product.price.toString(),
                     stock_quantity: product.stock_quantity.toString(),
                     category_id: product.category_id || '',
-                    images: product.product_images?.map((img: any) => img.url) || [], // Note: need to handle image fetching if normalized differently, but likely 'images' column doesn't exist? 
-                    // Wait, schema check: products table doesn't have 'images' column! It has 'product_images' table.
-                    // The 'create' page INSERT logic was: "images: formData.images" -> likely failed or I missed a schema detail?
-                    // Re-checking Create Page: It inserts into 'products'. 
-                    // Schema check 001_initial_schema.sql: 
-                    // product_images table exists. It linked to products.
-                    // The 'create' page code I read earlier did: "images: formData.images" in the insert object.
-                    // If Supabase client handles this mapped insert, great. If not, the create page might be broken too?
-                    // Let's assume for now we need separate inserts. 
-                    // Actually, let's fetch images from the separate table properly.
+                    images: product.product_images?.map((img: any) => img.url) || [],
 
                     pickup_location: product.attributes?.pickup_location?.address || '',
                     pickup_latitude: product.attributes?.pickup_location?.latitude || null,
                     pickup_longitude: product.attributes?.pickup_location?.longitude || null,
                     status: product.status,
 
-                    jara_is_same: product.jara_is_same ?? true, // Schema might not have this boolean column? 
-                    // Schema check: jara_buy_quantity, jara_get_quantity.
-                    // It does NOT have jara_is_same, jara_name, jara_description in schema.sql I viewed earlier.
-                    // Wait. `001_initial_schema.sql` lines 74-88:
-                    // jara_buy_quantity, jara_get_quantity. 
-                    // NO jara_name, jara_description, jara_is_same columns.
-                    // They must be in `attributes` JSONB or I missed a migration.
-                    // In `create` page, it was sending them as top-level fields.
-                    // If they aren't in schema, that insert would fail.
-                    // However, I successfully "fixed" the create page to use jara_buy/get.
-                    // I should check if I should dump these extras into `attributes` or if columns exist.
-                    // I will assume they are columns for now to match the "Create" page logic I just saw.
-                    // If "Create" page is wrong, then I'm propagating the error, but consistency is key first.
-
+                    jara_is_same: product.jara_is_same ?? true,
                     jara_buy_quantity: product.jara_buy_quantity?.toString() || '1',
                     jara_get_quantity: product.jara_get_quantity?.toString() || '0',
-                    jara_name: product.jara_name || '', // Potential schema mismatch risk
+                    jara_name: product.jara_name || '',
                     jara_description: product.jara_description || '',
                     jara_image: product.jara_image_url ? [product.jara_image_url] : []
                 } as any)
+
+                setExistingAttributes(product.attributes || {})
 
                 // Fetch real images
                 const { data: images } = await supabase
@@ -196,7 +177,7 @@ export default function EditProductPage() {
                 stock_quantity: parseInt(formData.stock_quantity) || 0,
                 category_id: formData.category_id || null,
                 attributes: {
-                    ...store?.settings, // Preserve existing or merge?
+                    ...existingAttributes,
                     pickup_location: formData.pickup_location ? {
                         address: formData.pickup_location,
                         latitude: formData.pickup_latitude,

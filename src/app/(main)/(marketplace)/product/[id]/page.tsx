@@ -56,8 +56,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     const images = product.product_images?.map((img: any) => img.url) || []
     const mainImage = images[0] || '/placeholder.png'
     const isPhysical = product.store?.shop_type === 'physical' || product.store?.shop_type === 'market_day'
-    const pickupLocation = product.pickup_location // JSONB {address, lat, lng} or string? Checking usage.
-    // In add_product, it was saved as JSON object if GPS used.
+    const pickupLocation = product.attributes?.pickup_location
 
     let pickupAddress = 'Contact Seller'
     if (typeof pickupLocation === 'string') {
