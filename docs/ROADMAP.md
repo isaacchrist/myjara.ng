@@ -8,7 +8,7 @@ Given the size of this (five distinct workstreams, dozens of individual items), 
 
 This plan reflects two rounds of live code investigation (not just the docs), so some things flagged during scoping turned out to be worse than described (chat has three incompatible schemas, not just "not working"; admin/messages references a table that doesn't exist at all) and a couple turned out to be partially built already (the category multi-select on seller profile-edit *does* save — it just saves to a taxonomy nothing else reads, which is likely why it feels broken).
 
-**Status:** Phase 0 (0.1–0.5) has been implemented in code — see the migrations in `supabase/migrations/021`–`024` and `supabase/migrations/README.md`. Those migrations have **not** been applied to the live database yet (no DB credentials were available in that session); they need to be run via the Supabase SQL Editor before Phase 0 is actually in effect. Phases 1–4 are unstarted.
+**Status:** Phase 0 (0.1–0.5) and Phase 1 (1.1–1.5) have been implemented in code — see `supabase/migrations/021`–`028` and `supabase/migrations/README.md`. Migrations 021–024 (Phase 0) have been applied to the live database via the Supabase SQL Editor. Migrations 025–028 (Phase 1) are written but **not yet applied** — same process, run them in order via the SQL Editor before Phase 1 is actually in effect. Phases 2–4 are unstarted.
 
 ---
 
