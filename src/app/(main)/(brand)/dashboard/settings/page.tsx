@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { Save, Upload, X, Share2 } from "lucide-react"
 import Image from "next/image"
+import { CustomDomainCard } from "./custom-domain-card"
 
 export default function BrandSettingsPage() {
     const [isLoading, setIsLoading] = useState(true)
@@ -172,11 +173,11 @@ export default function BrandSettingsPage() {
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="slug">Store URL</Label>
-                            <div className="flex items-center gap-2 rounded-md border bg-gray-50 px-3 py-2 text-sm text-gray-500">
-                                myjara.com/store/
-                                <span className="font-medium text-gray-900">{formData.slug}</span>
+                            <div className="rounded-md border bg-gray-50 px-3 py-2 text-sm text-gray-500 space-y-1">
+                                <p><span className="font-medium text-gray-900">{formData.slug}</span>.myjara.ng</p>
+                                <p className="text-xs text-gray-400">or myjara.ng/store/{formData.slug}</p>
                             </div>
-                            <p className="text-xs text-gray-500">Contact support to change your store URL.</p>
+                            <p className="text-xs text-gray-500">Contact support to change your store URL. Want your own domain instead? See Custom Domain below.</p>
                         </div>
 
                         <div className="grid gap-2">
@@ -346,6 +347,8 @@ export default function BrandSettingsPage() {
                         </div>
                     </CardContent>
                 </Card>
+
+                <CustomDomainCard />
 
                 {/* Appearance */}
                 <Card>

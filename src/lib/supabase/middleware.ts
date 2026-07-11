@@ -30,26 +30,43 @@ export async function updateSession(request: NextRequest) {
     // Refreshing the auth token
     const { data: { user } } = await supabase.auth.getUser()
 
-    // Handle subdomain routing for brand stores
-    const hostname = request.headers.get('host') || ''
+    // Handle subdomain + connected custom-domain routing for stores
+    const hostname = (request.headers.get('host') || '').split(':')[0]
     const url = request.nextUrl.clone()
 
-    // Skip subdomain logic entirely for Vercel preview/production URLs and localhost
+    // Skip routing entirely for Vercel preview/production URLs and localhost
     const isVercelUrl = hostname.includes('.vercel.app') || hostname.includes('.vercel.sh')
     const isLocalhost = hostname.includes('localhost')
+    // The canonical platform domain -- kept in one place since email/subscription
+    // links elsewhere already standardize on myjara.ng.
+    const rootDomain = 'myjara.ng'
 
-    // Only attempt subdomain routing for actual custom domains (e.g., brandname.myjara.com)
-    // This requires the hostname to be a subdomain of myjara.com (not Vercel URLs)
-    if (!isVercelUrl && !isLocalhost && hostname.includes('myjara.com')) {
-        const parts = hostname.split('.')
-        // e.g., brandname.myjara.com has 3 parts, www.myjara.com should be skipped
-        if (parts.length > 2 && parts[0] !== 'www' && parts[0] !== 'admin') {
-            const subdomain = parts[0]
-            // Rewrite to brand store page
-            url.pathname = `/store/${subdomain}${url.pathname}`
-            return NextResponse.rewrite(url, {
-                headers: supabaseResponse.headers,
-            })
+    if (!isVercelUrl && !isLocalhost) {
+        if (hostname.endsWith(`.${rootDomain}`)) {
+            const subdomain = hostname.slice(0, -(rootDomain.length + 1))
+            if (subdomain && subdomain !== 'www' && subdomain !== 'admin') {
+                url.pathname = `/store/${subdomain}${url.pathname}`
+                return NextResponse.rewrite(url, {
+                    headers: supabaseResponse.headers,
+                })
+            }
+        } else if (hostname !== rootDomain) {
+            // Not our root domain or a subdomain of it -- check whether it's a
+            // verified custom domain connected via store_domains (Phase 2.2).
+            const { data: domainRow } = await supabase
+                .from('store_domains')
+                .select('store:stores(slug)')
+                .eq('domain', hostname)
+                .eq('is_verified', true)
+                .single()
+
+            const slug = (domainRow as any)?.store?.slug
+            if (slug) {
+                url.pathname = `/store/${slug}${url.pathname}`
+                return NextResponse.rewrite(url, {
+                    headers: supabaseResponse.headers,
+                })
+            }
         }
     }
 

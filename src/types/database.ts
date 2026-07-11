@@ -103,6 +103,7 @@ export interface Database {
                     domain: string
                     type: 'subdomain' | 'custom'
                     is_verified: boolean
+                    verification_token: string | null
                     created_at: string
                 }
                 Insert: {
@@ -111,6 +112,7 @@ export interface Database {
                     domain: string
                     type?: 'subdomain' | 'custom'
                     is_verified?: boolean
+                    verification_token?: string | null
                     created_at?: string
                 }
                 Update: {
@@ -119,6 +121,7 @@ export interface Database {
                     domain?: string
                     type?: 'subdomain' | 'custom'
                     is_verified?: boolean
+                    verification_token?: string | null
                     created_at?: string
                 }
             }
