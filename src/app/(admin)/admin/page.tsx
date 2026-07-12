@@ -1,7 +1,6 @@
 import Link from 'next/link'
-import { Store, ShoppingCart, Users, CreditCard, TrendingUp, AlertCircle, Check, X } from 'lucide-react'
+import { Store, ShoppingCart, Users, CreditCard, TrendingUp, AlertCircle, ShieldAlert, ReceiptText } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatPrice } from '@/lib/utils'
 import { getAdminSession } from '@/app/actions/admin-auth'
@@ -61,6 +60,34 @@ export default async function AdminPage() {
 
     const revenueMTD = (revenueData || []).reduce((sum: number, order: any) => sum + (order.total || 0), 0)
 
+    // Platform Health -- real, computed metrics (this card previously showed
+    // hardcoded placeholder numbers like "45ms" / "99.9%" that never changed
+    // and weren't backed by any actual monitoring).
+    const { count: totalOrdersCount } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+    const { count: cancelledOrdersCount } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'cancelled')
+    const { count: deliveredOrdersCount } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'delivered')
+    const { data: allRevenueData } = await supabase
+        .from('orders')
+        .select('total')
+        .eq('status', 'delivered') as any
+    const { count: openDisputesCount } = await supabase
+        .from('disputes')
+        .select('*', { count: 'exact', head: true })
+        .in('status', ['pending', 'under_review'])
+
+    const orderSuccessRate = (totalOrdersCount || 0) > 0
+        ? (((totalOrdersCount || 0) - (cancelledOrdersCount || 0)) / (totalOrdersCount || 1)) * 100
+        : 0
+    const totalDeliveredRevenue = (allRevenueData || []).reduce((sum: number, o: any) => sum + (o.total || 0), 0)
+    const avgOrderValue = (deliveredOrdersCount || 0) > 0 ? totalDeliveredRevenue / (deliveredOrdersCount || 1) : 0
 
     const stats = [
         { label: 'Active Stores', value: activeStoresCount || 0, change: '', icon: Store, color: 'emerald' },
@@ -160,8 +187,8 @@ export default async function AdminPage() {
                                         className="flex items-center justify-between rounded-lg border border-gray-700 bg-gray-800 p-4"
                                     >
                                         <div className="flex items-center gap-4">
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-700 text-lg">
-                                                🏪
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-700">
+                                                <Store className="h-5 w-5 text-gray-300" />
                                             </div>
                                             <div>
                                                 <p className="font-medium text-white">{store.name}</p>
@@ -197,8 +224,8 @@ export default async function AdminPage() {
                                         className="flex items-center justify-between rounded-lg border border-gray-700 bg-gray-800 p-4"
                                     >
                                         <div className="flex items-center gap-4">
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-700 font-mono text-xs text-gray-300">
-                                                💳
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-700">
+                                                <ReceiptText className="h-5 w-5 text-gray-300" />
                                             </div>
                                             <div>
                                                 <p className="font-medium text-white">#{tx.id}</p>
@@ -225,7 +252,9 @@ export default async function AdminPage() {
                 </Card>
             </div>
 
-            {/* Platform Health */}
+            {/* Platform Health -- real metrics computed from orders/disputes,
+                not placeholders. No uptime/latency monitoring is wired up
+                yet, so those aren't shown rather than faked. */}
             <Card className="border-gray-800 bg-gray-800/50">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-white">
@@ -234,27 +263,28 @@ export default async function AdminPage() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid gap-4 md:grid-cols-4">
+                    <div className="grid gap-4 md:grid-cols-3">
                         <div className="rounded-lg bg-gray-800 p-4">
-                            <p className="text-sm text-gray-400">API Response Time</p>
-                            <p className="mt-1 text-xl font-bold text-green-400">45ms</p>
+                            <p className="text-sm text-gray-400">Order Success Rate</p>
+                            <p className="mt-1 text-xl font-bold text-green-400">{orderSuccessRate.toFixed(1)}%</p>
+                            <p className="mt-0.5 text-xs text-gray-500">Non-cancelled orders, all-time</p>
                         </div>
                         <div className="rounded-lg bg-gray-800 p-4">
-                            <p className="text-sm text-gray-400">Uptime (30d)</p>
-                            <p className="mt-1 text-xl font-bold text-green-400">99.9%</p>
+                            <p className="text-sm text-gray-400">Avg Order Value</p>
+                            <p className="mt-1 text-xl font-bold text-white">{formatPrice(avgOrderValue)}</p>
+                            <p className="mt-0.5 text-xs text-gray-500">Delivered orders, all-time</p>
                         </div>
                         <div className="rounded-lg bg-gray-800 p-4">
-                            <p className="text-sm text-gray-400">Active Issues</p>
+                            <p className="text-sm text-gray-400">Open Disputes</p>
                             <div className="flex justify-between items-end">
-                                <p className="mt-1 text-xl font-bold text-yellow-400">3</p>
+                                <p className={`mt-1 text-xl font-bold ${(openDisputesCount || 0) > 0 ? 'text-yellow-400' : 'text-green-400'}`}>
+                                    <ShieldAlert className="inline h-4 w-4 mb-1 mr-1" />
+                                    {openDisputesCount || 0}
+                                </p>
                                 <Link href="/admin/disputes" className="text-xs text-emerald-400 hover:text-emerald-300 underline">
                                     Manage Disputes
                                 </Link>
                             </div>
-                        </div>
-                        <div className="rounded-lg bg-gray-800 p-4">
-                            <p className="text-sm text-gray-400">Payment Success Rate</p>
-                            <p className="mt-1 text-xl font-bold text-green-400">98.5%</p>
                         </div>
                     </div>
                 </CardContent>

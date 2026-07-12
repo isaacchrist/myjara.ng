@@ -21,6 +21,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         '/register',
         '/register/retailer',
         '/register/seller',
+        '/terms',
+        '/privacy',
     ]
 
     const staticRoutes = staticPages.map((route) => ({
@@ -32,11 +34,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
 
     // 2. Dynamic Routes: Stores
-    // Fetch all verified stores
+    // Fetch all active stores. NOTE: stores has no `is_verified` column --
+    // `status = 'active'` (enum: pending|active|suspended) is the real
+    // signal, same fix as admin/page.tsx and admin/analytics/page.tsx. This
+    // previously queried a nonexistent column, which made the query error
+    // and silently produce zero store URLs in the sitemap.
     const { data: storesData } = await supabase
         .from('stores')
         .select('slug, updated_at')
-        .eq('is_verified', true)
+        .eq('status', 'active')
         .order('updated_at', { ascending: false })
         .limit(1000)
 

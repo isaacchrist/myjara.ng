@@ -66,6 +66,14 @@
 
   --color-teal-500: #14b8a6;
   --color-teal-600: #0d9488;
+
+  /* In-between grays used throughout the admin panel (bg-gray-750/850) for
+     subtle row/card shading between the standard gray-700/800/900 steps --
+     Tailwind v4 has no config file to extend, and these were referenced
+     without ever being defined, so they silently rendered as no background
+     at all. */
+  --color-gray-750: #2b3544;
+  --color-gray-850: #182030;
 }
 
 body {

@@ -26,23 +26,6 @@ interface AnalyticsChartsProps {
 const ROLE_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6']
 const LOCATION_COLORS = ['#06b6d4', '#14b8a6', '#22c55e', '#84cc16', '#eab308', '#f97316']
 
-// Mock data (will be replaced with real data from backend)
-const MOCK_USERS_BY_ROLE: DemographicData[] = [
-    { name: 'Retailers', value: 245 },
-    { name: 'Wholesalers', value: 89 },
-    { name: 'Customers', value: 1230 },
-    { name: 'Admins', value: 5 },
-]
-
-const MOCK_USERS_BY_LOCATION: DemographicData[] = [
-    { name: 'AMAC', value: 580 },
-    { name: 'Bwari', value: 320 },
-    { name: 'Gwagwalada', value: 180 },
-    { name: 'Kuje', value: 150 },
-    { name: 'Abaji', value: 120 },
-    { name: 'Kwali', value: 80 },
-]
-
 export function OverviewCharts({ data, usersByRole, usersByLocation }: AnalyticsChartsProps) {
     const roleData = (usersByRole && usersByRole.length > 0) ? usersByRole : []
     const locationData = (usersByLocation && usersByLocation.length > 0) ? usersByLocation : []
@@ -147,8 +130,8 @@ export function OverviewCharts({ data, usersByRole, usersByLocation }: Analytics
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>User Base by Location</CardTitle>
-                        <CardDescription>Distribution of users across Abuja LGAs</CardDescription>
+                        <CardTitle>Sales by Location</CardTitle>
+                        <CardDescription>Delivered-order revenue by store location</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="h-[300px]">
@@ -168,7 +151,7 @@ export function OverviewCharts({ data, usersByRole, usersByLocation }: Analytics
                                             <Cell key={`cell-${index}`} fill={LOCATION_COLORS[index % LOCATION_COLORS.length]} />
                                         ))}
                                     </Pie>
-                                    <Tooltip formatter={(value: any) => value.toLocaleString()} />
+                                    <Tooltip formatter={(value: any) => formatPrice(value)} />
                                     <Legend />
                                 </PieChart>
                             </ResponsiveContainer>

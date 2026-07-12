@@ -1,4 +1,4 @@
-import { getAdminSession } from '@/app/actions/admin-auth'
+import { getAdminSession, getAdminIdentity } from '@/app/actions/admin-auth'
 import { AdminShell } from '@/components/admin/admin-shell'
 
 export default async function AdminLayout({
@@ -30,9 +30,10 @@ export default async function AdminLayout({
         .eq('status', 'pending')
 
     const pendingCount = count || 0
+    const identity = await getAdminIdentity()
 
     return (
-        <AdminShell pendingVerifications={pendingCount}>
+        <AdminShell pendingVerifications={pendingCount} identity={identity}>
             {children}
         </AdminShell>
     )
