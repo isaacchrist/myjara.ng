@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { X, Upload, Loader2, Image as ImageIcon } from 'lucide-react'
+import { X, Upload, Loader2, Image as ImageIcon, FileText } from 'lucide-react'
 import Image from 'next/image'
 
 interface ImageUploadProps {
@@ -12,9 +12,12 @@ interface ImageUploadProps {
     disabled?: boolean;
     maxFiles?: number;
     bucket?: string;
+    accept?: string;
 }
 
-export function ImageUpload({ value, onChange, disabled, maxFiles = 5, bucket = 'product-images' }: ImageUploadProps) {
+const isPdf = (url: string) => url.split('?')[0].toLowerCase().endsWith('.pdf')
+
+export function ImageUpload({ value, onChange, disabled, maxFiles = 5, bucket = 'product-images', accept = 'image/*' }: ImageUploadProps) {
     const [uploading, setUploading] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -76,7 +79,19 @@ export function ImageUpload({ value, onChange, disabled, maxFiles = 5, bucket = 
                                 <X className="h-4 w-4" />
                             </Button>
                         </div>
-                        <Image fill className="object-cover" alt="Image" src={url} />
+                        {isPdf(url) ? (
+                            <a
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gray-50 text-gray-500 hover:bg-gray-100"
+                            >
+                                <FileText className="h-10 w-10" />
+                                <span className="text-xs font-medium">View PDF</span>
+                            </a>
+                        ) : (
+                            <Image fill className="object-cover" alt="Image" src={url} />
+                        )}
                     </div>
                 ))}
             </div>
@@ -89,7 +104,7 @@ export function ImageUpload({ value, onChange, disabled, maxFiles = 5, bucket = 
                     <input
                         ref={fileInputRef}
                         type="file"
-                        accept="image/*"
+                        accept={accept}
                         className="hidden"
                         onChange={onUpload}
                         disabled={disabled || uploading}

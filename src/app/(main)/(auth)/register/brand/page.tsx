@@ -2,8 +2,7 @@
 
 import { useState, Suspense, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { Store, ArrowRight, Loader2, CheckCircle2, MapPin, CreditCard, Ticket, ShoppingBag } from 'lucide-react'
+import { ArrowRight, Loader2, MapPin } from 'lucide-react'
 import { ProfilePictureUpload } from '@/components/shared/profile-picture-upload'
 import { ImageUpload } from '@/components/ui/image-upload'
 import { PhoneDialpad } from '@/components/shared/phone-dialpad'
@@ -15,12 +14,14 @@ import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { BrandOnboardingDialog } from './onboarding-dialog'
 
+const ORDER_VOLUME_BRACKETS = ['Under 50/mo', '50-200/mo', '200-500/mo', '500+/mo']
+
 function BrandRegisterForm() {
     const router = useRouter()
     const { toast } = useToast()
 
-    // Steps: 1=Personal, 2=Business(Location), 3=Done
-    const [step, setStep] = useState<1 | 2 | 3 | 'phone_entry'>('phone_entry')
+    // Steps: 1=Personal, 2=Legal & Business Identity, 3=Trading Profile & Banking, 4=Business Details & Location, 5=Done
+    const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 'phone_entry'>('phone_entry')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [onboarding, setOnboarding] = useState<{ slug: string; tag?: string } | null>(null)
@@ -31,13 +32,37 @@ function BrandRegisterForm() {
         fullName: '',
         email: '',
         password: '',
-        phone: '',
+        phone: '', // personal contact phone
         sex: '' as 'male' | 'female' | '',
         dateOfBirth: '',
         residentialAddress: '',
 
-        // Business
-        businessName: '',
+        // Business identity
+        businessName: '', // storefront/trading name
+        legalName: '', // CAC-registered legal name, if different
+        registrationType: '' as 'business_name' | 'limited_company' | '',
+        rcNumber: '',
+        cacUrl: [] as string[],
+        taxIdNumber: '',
+        nafdacNumber: '',
+        signatoryName: '',
+        signatoryRole: '',
+
+        // Trading profile
+        businessPhone: '',
+        salesModel: '' as 'b2b' | 'b2c' | 'both' | '',
+        expectedOrderVolume: '',
+        minimumOrderQuantity: '',
+        offersDelivery: '' as 'delivery' | 'pickup_only' | 'both' | '',
+        deliveryCoverageArea: '',
+        paymentTerms: '',
+        yearsInBusiness: '',
+        catalogUrl: [] as string[],
+        bankName: '',
+        accountNumber: '',
+        accountName: '',
+
+        // Business details & location
         businessDescription: '',
         businessLocation: {
             lat: null as number | null,
@@ -45,12 +70,9 @@ function BrandRegisterForm() {
             accuracy: 0
         },
         categories: [] as string[],
-
         agreedToPolicy: false,
         profilePictureUrl: '',
-
-        cacUrl: [] as string[], // New
-        storeImages: [] as string[] // Gallery
+        storeImages: [] as string[]
     })
 
     const [categoryTree, setCategoryTree] = useState<{ id: string; name: string; icon: string | null; subcategories: { id: string; name: string }[] }[]>([])
@@ -115,7 +137,29 @@ function BrandRegisterForm() {
                 subcategoryId: '',
                 agreedToPolicy: formData.agreedToPolicy,
                 profilePictureUrl: formData.profilePictureUrl,
-                cacUrl: formData.cacUrl?.[0] || '' // Pick first or empty
+                cacUrl: formData.cacUrl?.[0] || '', // Pick first or empty
+                storeImages: formData.storeImages,
+
+                // Business-legitimacy & trading profile
+                businessPhone: formData.businessPhone,
+                rcNumber: formData.rcNumber,
+                taxIdNumber: formData.taxIdNumber,
+                signatoryName: formData.signatoryName,
+                signatoryRole: formData.signatoryRole,
+                legalName: formData.legalName,
+                registrationType: formData.registrationType || undefined,
+                nafdacNumber: formData.nafdacNumber,
+                salesModel: formData.salesModel || undefined,
+                expectedOrderVolume: formData.expectedOrderVolume,
+                minimumOrderQuantity: formData.minimumOrderQuantity,
+                offersDelivery: formData.offersDelivery || undefined,
+                deliveryCoverageArea: formData.deliveryCoverageArea,
+                paymentTerms: formData.paymentTerms,
+                yearsInBusiness: formData.yearsInBusiness ? parseInt(formData.yearsInBusiness) : null,
+                catalogUrl: formData.catalogUrl?.[0] || '',
+                bankName: formData.bankName,
+                accountNumber: formData.accountNumber,
+                accountName: formData.accountName,
             }
 
             // Call Server Action
@@ -151,7 +195,13 @@ function BrandRegisterForm() {
         setStep(1)
     }
 
-    if (step === 'phone_entry') return <PhoneDialpad title="Wholesaler Registration" subtitle="Enter your business phone number" onSubmit={handlePhoneSubmit} />
+    if (step === 'phone_entry') return <PhoneDialpad title="Wholesaler Registration" subtitle="Enter your personal phone number" onSubmit={handlePhoneSubmit} />
+
+    const registrationNumberLabel = formData.registrationType === 'business_name'
+        ? 'Business Name (BN) Number'
+        : formData.registrationType === 'limited_company'
+            ? 'RC Number'
+            : 'CAC Registration Number (BN or RC)'
 
     const renderStep1 = () => (
         <div className="space-y-4 max-w-md mx-auto animate-in fade-in slide-in-from-right-4">
@@ -168,7 +218,7 @@ function BrandRegisterForm() {
                 <Input name="fullName" value={formData.fullName} onChange={e => setFormData(prev => ({ ...prev, fullName: e.target.value }))} placeholder="Manager Name" />
             </div>
             <div className="space-y-2">
-                <label className="text-sm font-medium">Phone Number</label>
+                <label className="text-sm font-medium">Your Personal Phone Number</label>
                 <Input name="phone" type="tel" value={formData.phone} onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))} placeholder="08012345678" />
             </div>
             <div className="space-y-2">
@@ -180,7 +230,7 @@ function BrandRegisterForm() {
                 <Input name="password" type="password" value={formData.password} onChange={e => setFormData(prev => ({ ...prev, password: e.target.value }))} placeholder="••••••••" />
             </div>
             <div className="space-y-2">
-                <label className="text-sm font-medium">Contact Person's Sex</label>
+                <label className="text-sm font-medium">Contact Person&apos;s Sex</label>
                 <div className="flex gap-4">
                     <label className="flex items-center gap-2 cursor-pointer">
                         <input type="radio" name="sex" value="male" checked={formData.sex === 'male'} onChange={() => setFormData(prev => ({ ...prev, sex: 'male' }))} className="w-4 h-4 text-emerald-600" />
@@ -193,7 +243,7 @@ function BrandRegisterForm() {
                 </div>
             </div>
             <div className="space-y-2">
-                <label className="text-sm font-medium">Contact Person's Date of Birth</label>
+                <label className="text-sm font-medium">Contact Person&apos;s Date of Birth</label>
                 <Input name="dateOfBirth" type="date" value={formData.dateOfBirth} onChange={e => setFormData(prev => ({ ...prev, dateOfBirth: e.target.value }))} />
             </div>
             <div className="space-y-2">
@@ -209,18 +259,163 @@ function BrandRegisterForm() {
     )
 
     const renderStep2 = () => (
-        <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+        <div className="space-y-6 max-w-md mx-auto animate-in fade-in slide-in-from-right-4">
             <div className="space-y-2">
-                <label className="text-sm font-medium">CAC Certification</label>
-                <p className="text-xs text-gray-500 mb-2">Upload your CAC certificate for business verification.</p>
+                <label className="text-sm font-medium">Legal Registered Business Name</label>
+                <p className="text-xs text-gray-500 mb-1">As it appears on your CAC certificate, if different from your brand name.</p>
+                <Input value={formData.legalName} onChange={e => setFormData(prev => ({ ...prev, legalName: e.target.value }))} placeholder="e.g. My Brand Global Nigeria Limited" />
+            </div>
+
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Registration Type</label>
+                <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="registrationType" checked={formData.registrationType === 'business_name'} onChange={() => setFormData(prev => ({ ...prev, registrationType: 'business_name' }))} className="w-4 h-4 text-emerald-600" />
+                        <span className="text-sm">Business Name (BN)</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="registrationType" checked={formData.registrationType === 'limited_company'} onChange={() => setFormData(prev => ({ ...prev, registrationType: 'limited_company' }))} className="w-4 h-4 text-emerald-600" />
+                        <span className="text-sm">Limited Company (RC)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div className="space-y-2">
+                <label className="text-sm font-medium">{registrationNumberLabel}</label>
+                <Input value={formData.rcNumber} onChange={e => setFormData(prev => ({ ...prev, rcNumber: e.target.value }))} placeholder="e.g. BN1234567 or RC1234567" />
+            </div>
+
+            <div className="space-y-2">
+                <label className="text-sm font-medium">CAC Certificate</label>
+                <p className="text-xs text-gray-500 mb-2">Upload your CAC certificate for business verification (photo or PDF).</p>
                 <ImageUpload
                     value={formData.cacUrl}
                     onChange={(urls) => setFormData(prev => ({ ...prev, cacUrl: urls }))}
                     maxFiles={1}
                     bucket="product-images"
+                    accept="image/*,application/pdf"
                 />
             </div>
 
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Tax Identification Number (TIN)</label>
+                <Input value={formData.taxIdNumber} onChange={e => setFormData(prev => ({ ...prev, taxIdNumber: e.target.value }))} placeholder="e.g. 12345678-0001" />
+            </div>
+
+            <div className="space-y-2">
+                <label className="text-sm font-medium">NAFDAC Number <span className="text-gray-400 font-normal">(optional)</span></label>
+                <p className="text-xs text-gray-500 mb-1">If you sell food, drugs, or cosmetics.</p>
+                <Input value={formData.nafdacNumber} onChange={e => setFormData(prev => ({ ...prev, nafdacNumber: e.target.value }))} placeholder="e.g. 01-1234" />
+            </div>
+
+            <div className="pt-4 border-t border-gray-100">
+                <h4 className="font-semibold text-gray-900 mb-3">Authorized Signatory</h4>
+                <p className="text-xs text-gray-500 mb-3">Who is authorized to sign for this business?</p>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Name</label>
+                        <Input value={formData.signatoryName} onChange={e => setFormData(prev => ({ ...prev, signatoryName: e.target.value }))} placeholder="Full name" />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Role / Position</label>
+                        <Input value={formData.signatoryRole} onChange={e => setFormData(prev => ({ ...prev, signatoryRole: e.target.value }))} placeholder="e.g. Director, CEO" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+
+    const renderStep3 = () => (
+        <div className="space-y-6 max-w-md mx-auto animate-in fade-in slide-in-from-right-4">
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Business Phone Number</label>
+                <p className="text-xs text-gray-500 mb-1">Shown to customers — can be different from your personal number.</p>
+                <Input type="tel" value={formData.businessPhone} onChange={e => setFormData(prev => ({ ...prev, businessPhone: e.target.value }))} placeholder="08012345678" />
+            </div>
+
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Who Do You Sell To?</label>
+                <div className="flex gap-4 flex-wrap">
+                    {(['b2b', 'b2c', 'both'] as const).map(v => (
+                        <label key={v} className="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="salesModel" checked={formData.salesModel === v} onChange={() => setFormData(prev => ({ ...prev, salesModel: v }))} className="w-4 h-4 text-emerald-600" />
+                            <span className="text-sm">{v === 'b2b' ? 'Other Businesses (B2B)' : v === 'b2c' ? 'Direct to Consumers (B2C)' : 'Both'}</span>
+                        </label>
+                    ))}
+                </div>
+            </div>
+
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Expected Monthly Order Volume <span className="text-gray-400 font-normal">(optional)</span></label>
+                <select
+                    value={formData.expectedOrderVolume}
+                    onChange={e => setFormData(prev => ({ ...prev, expectedOrderVolume: e.target.value }))}
+                    className="w-full rounded-md border border-input px-3 py-2 text-sm bg-white"
+                >
+                    <option value="">Select a range</option>
+                    {ORDER_VOLUME_BRACKETS.map(b => <option key={b} value={b}>{b}</option>)}
+                </select>
+            </div>
+
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Minimum Order Quantity <span className="text-gray-400 font-normal">(optional)</span></label>
+                <Input value={formData.minimumOrderQuantity} onChange={e => setFormData(prev => ({ ...prev, minimumOrderQuantity: e.target.value }))} placeholder="e.g. 50 units, 1 carton" />
+            </div>
+
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Delivery Capability <span className="text-gray-400 font-normal">(optional)</span></label>
+                <div className="flex gap-4 flex-wrap">
+                    {(['delivery', 'pickup_only', 'both'] as const).map(v => (
+                        <label key={v} className="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="offersDelivery" checked={formData.offersDelivery === v} onChange={() => setFormData(prev => ({ ...prev, offersDelivery: v }))} className="w-4 h-4 text-emerald-600" />
+                            <span className="text-sm">{v === 'delivery' ? 'We Deliver' : v === 'pickup_only' ? 'Pickup Only' : 'Both'}</span>
+                        </label>
+                    ))}
+                </div>
+            </div>
+
+            {formData.offersDelivery && formData.offersDelivery !== 'pickup_only' && (
+                <div className="space-y-2">
+                    <label className="text-sm font-medium">Delivery Coverage Area <span className="text-gray-400 font-normal">(optional)</span></label>
+                    <Input value={formData.deliveryCoverageArea} onChange={e => setFormData(prev => ({ ...prev, deliveryCoverageArea: e.target.value }))} placeholder="e.g. Abuja and surrounding LGAs" />
+                </div>
+            )}
+
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Payment Terms You Offer <span className="text-gray-400 font-normal">(optional)</span></label>
+                <Input value={formData.paymentTerms} onChange={e => setFormData(prev => ({ ...prev, paymentTerms: e.target.value }))} placeholder="e.g. COD, Net-30, Prepayment" />
+            </div>
+
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Years in Business <span className="text-gray-400 font-normal">(optional)</span></label>
+                <Input type="number" min="0" value={formData.yearsInBusiness} onChange={e => setFormData(prev => ({ ...prev, yearsInBusiness: e.target.value }))} placeholder="e.g. 5" />
+            </div>
+
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Product Catalog / Price List <span className="text-gray-400 font-normal">(optional)</span></label>
+                <ImageUpload
+                    value={formData.catalogUrl}
+                    onChange={(urls) => setFormData(prev => ({ ...prev, catalogUrl: urls }))}
+                    maxFiles={1}
+                    bucket="product-images"
+                    accept="image/*,application/pdf"
+                />
+            </div>
+
+            <div className="pt-4 border-t border-gray-100">
+                <h4 className="font-semibold text-gray-900 mb-1">Settlement Account <span className="text-gray-400 font-normal text-sm">(optional)</span></h4>
+                <p className="text-xs text-gray-500 mb-3">For receiving payouts once approved. Can also be added later from your dashboard.</p>
+                <div className="space-y-3">
+                    <Input value={formData.bankName} onChange={e => setFormData(prev => ({ ...prev, bankName: e.target.value }))} placeholder="Bank Name" />
+                    <Input value={formData.accountNumber} onChange={e => setFormData(prev => ({ ...prev, accountNumber: e.target.value }))} placeholder="Account Number" />
+                    <Input value={formData.accountName} onChange={e => setFormData(prev => ({ ...prev, accountName: e.target.value }))} placeholder="Account Name" />
+                </div>
+            </div>
+        </div>
+    )
+
+    const renderStep4 = () => (
+        <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
             <div className="space-y-2">
                 <label className="text-sm font-medium">Warehouse / Office Photos (Optional)</label>
                 <div className="bg-gray-50 p-4 rounded-lg border border-dashed border-gray-200">
@@ -308,28 +503,61 @@ function BrandRegisterForm() {
         </div>
     )
 
+    const progress = step === 1 ? 25 : step === 2 ? 50 : step === 3 ? 75 : 100
+
     return (
         <div className="min-h-[calc(100vh-200px)] flex flex-col pt-8">
             <div className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
+                <div className="mb-8 max-w-xl mx-auto">
+                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="h-full bg-emerald-600 transition-all duration-500 ease-out" style={{ width: `${progress}%` }} />
+                    </div>
+                    <div className="flex justify-between mt-2 text-xs font-medium text-gray-500">
+                        <span className={typeof step === 'number' && step >= 1 ? 'text-emerald-600' : ''}>Personal</span>
+                        <span className={typeof step === 'number' && step >= 2 ? 'text-emerald-600' : ''}>Legal Identity</span>
+                        <span className={typeof step === 'number' && step >= 3 ? 'text-emerald-600' : ''}>Trading Profile</span>
+                        <span className={typeof step === 'number' && step >= 4 ? 'text-emerald-600' : ''}>Location</span>
+                    </div>
+                </div>
+
                 <Card className="border-0 shadow-lg">
                     <CardHeader>
-                        <CardTitle className="text-2xl">Wholesaler Registration</CardTitle>
-                        <CardDescription>Step {step} of 2</CardDescription>
+                        <CardTitle className="text-2xl">
+                            {step === 1 && 'Personal Details'}
+                            {step === 2 && 'Legal & Business Identity'}
+                            {step === 3 && 'Trading Profile & Banking'}
+                            {step === 4 && 'Business Details & Location'}
+                        </CardTitle>
+                        <CardDescription>
+                            {step === 1 && 'Tell us a bit about yourself'}
+                            {step === 2 && 'Help us verify your business is legally registered'}
+                            {step === 3 && 'How your business trades, and where to pay you'}
+                            {step === 4 && 'Verify your business location'}
+                        </CardDescription>
                     </CardHeader>
                     <CardContent>
                         {step === 1 && renderStep1()}
                         {step === 2 && renderStep2()}
+                        {step === 3 && renderStep3()}
+                        {step === 4 && renderStep4()}
                         {error && <div className="mt-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm flex items-center gap-2"><span className="font-bold">Error:</span> {error}</div>}
                     </CardContent>
                     <CardFooter className="flex justify-between border-t p-6 bg-gray-50">
                         {step > 1 ? (
-                            <Button variant="outline" onClick={() => setStep(1)}>Back</Button>
+                            <Button variant="outline" onClick={() => setStep(prev => typeof prev === 'number' ? (prev - 1) as any : prev)}>Back</Button>
                         ) : (
                             <Button variant="outline" onClick={() => setStep('phone_entry')}>Back</Button>
                         )}
 
-                        {step === 1 ? (
-                            <Button onClick={() => setStep(2)} disabled={!formData.fullName || !formData.email || !formData.password || !formData.sex || !formData.dateOfBirth || !formData.residentialAddress}>
+                        {step < 4 ? (
+                            <Button
+                                onClick={() => setStep(prev => typeof prev === 'number' ? (prev + 1) as any : prev)}
+                                disabled={
+                                    (step === 1 && (!formData.fullName || !formData.businessName || !formData.email || !formData.password || !formData.sex || !formData.dateOfBirth || !formData.residentialAddress)) ||
+                                    (step === 2 && (!formData.registrationType || !formData.rcNumber || formData.cacUrl.length === 0 || !formData.taxIdNumber || !formData.signatoryName || !formData.signatoryRole)) ||
+                                    (step === 3 && (!formData.businessPhone || !formData.salesModel))
+                                }
+                            >
                                 Continue <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
                         ) : (

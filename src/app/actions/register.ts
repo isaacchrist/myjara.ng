@@ -38,6 +38,27 @@ export interface RegistrationData {
     selectedPlan?: 'basic' | 'pro' | 'exclusive';
     promoCode?: string;
     choosenMarkets?: string[]; // Array of strings
+
+    // Wholesaler business-legitimacy & trading profile (Brand only)
+    businessPhone?: string;
+    rcNumber?: string; // BN or RC number, depending on registrationType
+    taxIdNumber?: string;
+    signatoryName?: string;
+    signatoryRole?: string;
+    legalName?: string; // CAC-registered legal name, may differ from businessName
+    registrationType?: 'business_name' | 'limited_company';
+    nafdacNumber?: string; // optional, food/drug/cosmetic sellers only
+    salesModel?: 'b2b' | 'b2c' | 'both';
+    expectedOrderVolume?: string;
+    minimumOrderQuantity?: string;
+    offersDelivery?: 'delivery' | 'pickup_only' | 'both';
+    deliveryCoverageArea?: string;
+    paymentTerms?: string;
+    yearsInBusiness?: number | null;
+    catalogUrl?: string;
+    bankName?: string;
+    accountNumber?: string;
+    accountName?: string;
 }
 
 export async function registerRetailer(formData: RegistrationData) {
@@ -378,7 +399,15 @@ export async function registerBrand(formData: RegistrationData) {
         sex: formData.sex,
         date_of_birth: formData.dateOfBirth,
         residential_address: formData.residentialAddress,
-        emergency_contacts: [] // Initialize empty array
+        emergency_contacts: [], // Initialize empty array
+        // Business-legitimacy fields (users.rc_number/tax_id_number/
+        // directors_info existed unused since migration 008 -- this is the
+        // first thing that ever writes them)
+        rc_number: formData.rcNumber,
+        tax_id_number: formData.taxIdNumber,
+        directors_info: formData.signatoryName
+            ? [{ name: formData.signatoryName, role: formData.signatoryRole, is_primary_signatory: true }]
+            : []
     } as any, { onConflict: 'id' })
 
     if (publicUserError && !publicUserError.message.includes('duplicate key')) {
@@ -415,10 +444,33 @@ export async function registerBrand(formData: RegistrationData) {
         frequent_markets: [],
 
         // Public Contact Info (Synced for visibility on storefront)
-        phone: formData.phone,
+        phone: formData.businessPhone || formData.phone,
         profile_picture_url: formData.profilePictureUrl,
         cac_url: formData.cacUrl,
         gallery_urls: formData.storeImages || [],
+
+        // Legal identity (distinct from the storefront name/CAC doc already above)
+        legal_name: formData.legalName || null,
+        registration_type: formData.registrationType || null,
+        nafdac_number: formData.nafdacNumber || null,
+
+        // Trading profile
+        sales_model: formData.salesModel || null,
+        expected_order_volume: formData.expectedOrderVolume || null,
+        minimum_order_quantity: formData.minimumOrderQuantity || null,
+        offers_delivery: formData.offersDelivery || null,
+        delivery_coverage_area: formData.deliveryCoverageArea || null,
+        payment_terms: formData.paymentTerms || null,
+        years_in_business: formData.yearsInBusiness ?? null,
+        catalog_url: formData.catalogUrl || null,
+
+        // Settlement (same stores.bank_name/account_number/account_name
+        // columns profile.ts already writes post-registration -- collecting
+        // upfront here so a wholesaler can actually be paid out without a
+        // second onboarding step)
+        bank_name: formData.bankName || null,
+        account_number: formData.accountNumber || null,
+        account_name: formData.accountName || null,
     }
 
     // Check if store was already created by trigger

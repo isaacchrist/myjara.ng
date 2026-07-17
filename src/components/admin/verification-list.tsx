@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Loader2, Store, Phone, Mail, CheckCircle, XCircle, User, Calendar, MapPinned, Tag } from 'lucide-react'
+import { Loader2, Store, Phone, Mail, CheckCircle, XCircle, User, Calendar, MapPinned, Tag, ShieldCheck, FileText } from 'lucide-react'
 import Image from 'next/image'
 import { useToast } from '@/hooks/use-toast'
 import { createClient } from '@/lib/supabase/client'
@@ -23,6 +23,19 @@ type PendingStore = {
     subscription_plan: string | null
     categories: string[] | null
     frequent_markets: string[] | null
+    cac_url: string | null
+    id_card_url: string | null
+    legal_name: string | null
+    registration_type: string | null
+    nafdac_number: string | null
+    sales_model: string | null
+    expected_order_volume: string | null
+    minimum_order_quantity: string | null
+    offers_delivery: string | null
+    delivery_coverage_area: string | null
+    payment_terms: string | null
+    years_in_business: number | null
+    catalog_url: string | null
     owner: {
         id: string
         full_name: string
@@ -32,6 +45,9 @@ type PendingStore = {
         date_of_birth: string | null
         sex: string | null
         residential_address: string | null
+        rc_number: string | null
+        tax_id_number: string | null
+        directors_info: { name: string; role: string; is_primary_signatory?: boolean }[] | null
     }
 }
 
@@ -214,6 +230,74 @@ export function VerificationList({ initialStores }: VerificationListProps) {
                                     )}
                                     {store.owner?.residential_address && (
                                         <div className="col-span-2"><span className="text-gray-500">Address:</span> {store.owner.residential_address}</div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Business Verification (wholesaler business-legitimacy fields) */}
+                        {(store.cac_url || store.id_card_url || store.legal_name || store.registration_type || store.owner?.rc_number || store.owner?.tax_id_number || store.nafdac_number || (store.owner?.directors_info && store.owner.directors_info.length > 0)) && (
+                            <div className="space-y-3 rounded-lg border p-4 bg-emerald-50/30">
+                                <div className="flex items-center gap-2">
+                                    <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                                    <span className="text-sm font-medium text-gray-900">Business Verification</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 text-sm">
+                                    {store.legal_name && (
+                                        <div className="col-span-2"><span className="text-gray-500">Legal Name:</span> {store.legal_name}</div>
+                                    )}
+                                    {store.registration_type && (
+                                        <div><span className="text-gray-500">Type:</span> <span className="capitalize">{store.registration_type.replace('_', ' ')}</span></div>
+                                    )}
+                                    {store.owner?.rc_number && (
+                                        <div><span className="text-gray-500">RC/BN Number:</span> {store.owner.rc_number}</div>
+                                    )}
+                                    {store.owner?.tax_id_number && (
+                                        <div><span className="text-gray-500">TIN:</span> {store.owner.tax_id_number}</div>
+                                    )}
+                                    {store.nafdac_number && (
+                                        <div><span className="text-gray-500">NAFDAC:</span> {store.nafdac_number}</div>
+                                    )}
+                                    {store.owner?.directors_info && store.owner.directors_info.length > 0 && (
+                                        <div className="col-span-2">
+                                            <span className="text-gray-500">Signatory:</span> {store.owner.directors_info[0].name} ({store.owner.directors_info[0].role})
+                                        </div>
+                                    )}
+                                    {(store.sales_model || store.expected_order_volume) && (
+                                        <div className="col-span-2">
+                                            <span className="text-gray-500">Trading:</span> {store.sales_model && <span className="uppercase">{store.sales_model}</span>}
+                                            {store.sales_model && store.expected_order_volume && ' · '}
+                                            {store.expected_order_volume}
+                                        </div>
+                                    )}
+                                    {store.minimum_order_quantity && (
+                                        <div><span className="text-gray-500">MOQ:</span> {store.minimum_order_quantity}</div>
+                                    )}
+                                    {store.payment_terms && (
+                                        <div><span className="text-gray-500">Payment Terms:</span> {store.payment_terms}</div>
+                                    )}
+                                    {store.offers_delivery && (
+                                        <div><span className="text-gray-500">Delivery:</span> <span className="capitalize">{store.offers_delivery.replace('_', ' ')}</span></div>
+                                    )}
+                                    {store.years_in_business !== null && store.years_in_business !== undefined && (
+                                        <div><span className="text-gray-500">Years in Business:</span> {store.years_in_business}</div>
+                                    )}
+                                </div>
+                                <div className="flex flex-wrap gap-3 pt-1">
+                                    {store.cac_url && (
+                                        <a href={store.cac_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 hover:underline">
+                                            <FileText className="h-3.5 w-3.5" /> View CAC Certificate
+                                        </a>
+                                    )}
+                                    {store.id_card_url && (
+                                        <a href={store.id_card_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 hover:underline">
+                                            <FileText className="h-3.5 w-3.5" /> View ID Card
+                                        </a>
+                                    )}
+                                    {store.catalog_url && (
+                                        <a href={store.catalog_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 hover:underline">
+                                            <FileText className="h-3.5 w-3.5" /> View Catalog
+                                        </a>
                                     )}
                                 </div>
                             </div>
