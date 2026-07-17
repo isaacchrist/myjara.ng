@@ -19,6 +19,20 @@ export function formatJara(buyQty: number, getQty: number): string {
     return `Buy ${buyQty}, Get ${getQty} Jara`
 }
 
+export function deliveryLocationLabel(address: unknown): string | null {
+    if (!address) return null
+    let loc: string | null = null
+    if (typeof address === 'string') {
+        loc = address
+    } else if (typeof address === 'object') {
+        const addr = address as { address?: string; street?: string }
+        loc = addr.address || addr.street || null
+    }
+    if (!loc) return null
+    if (loc.length > 30) loc = loc.slice(0, 30) + '...'
+    return loc
+}
+
 export function generateOrderNumber(): string {
     const timestamp = Date.now().toString(36).toUpperCase()
     const random = Math.random().toString(36).substring(2, 6).toUpperCase()
