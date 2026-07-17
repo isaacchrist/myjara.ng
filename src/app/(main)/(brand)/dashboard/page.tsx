@@ -49,17 +49,17 @@ export default async function DashboardPage() {
             // Products Count
             supabase.from('products').select('*', { count: 'exact', head: true }).eq('store_id', store.id),
             // Revenue (Sum of delivered orders)
-            supabase.from('orders').select('total_amount').eq('store_id', store.id).eq('status', 'delivered')
+            supabase.from('orders').select('total').eq('store_id', store.id).eq('status', 'delivered')
         ])
 
         totalOrders = ordersRes.count || 0
         totalProducts = productsRes.count || 0
-        totalRevenue = (revenueRes.data as any[])?.reduce((acc: number, curr: any) => acc + (curr.total_amount || 0), 0) || 0
+        totalRevenue = (revenueRes.data as any[])?.reduce((acc: number, curr: any) => acc + (curr.total || 0), 0) || 0
 
         // Recent Orders
         const { data: recent } = await supabase
             .from('orders')
-            .select('id, total_amount, status, created_at, items:order_items(count)')
+            .select('id, total, status, created_at, items:order_items(count)')
             .eq('store_id', store.id)
             .order('created_at', { ascending: false })
             .limit(5)
@@ -157,7 +157,7 @@ export default async function DashboardPage() {
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <p className="font-medium text-gray-900">{formatPrice(order.total_amount)}</p>
+                                            <p className="font-medium text-gray-900">{formatPrice(order.total)}</p>
                                             <Badge
                                                 variant={
                                                     order.status === 'delivered' ? 'success' :

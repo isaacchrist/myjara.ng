@@ -40,24 +40,20 @@ export default async function RetailerDashboardPage() {
         productCount = count || 0
     }
 
-    // 4. Fetch Order Stats (Sales)
+    // 4. Fetch Order Stats (Sales) -- non-cancelled, non-pending orders count
+    // as revenue (matches the brand dashboard's broader "Sales" framing).
     const [ordersRes, revenueRes] = await Promise.all([
         supabase.from('orders').select('*', { count: 'exact', head: true }).eq('store_id', store.id),
-        supabase.from('orders').select('total_amount').eq('store_id', store.id).neq('status', 'cancelled').neq('status', 'pending')
-        // Revenue typically counts paid/completed orders, but for now we exclude cancelled/pending? 
-        // Or maybe just 'paid', 'shipped', 'delivered'? Let's keep it simple: non-cancelled, non-pending.
-        // Actually, simple "Total Volume" might be better, but "Revenue" implies income. 
-        // Let's stick to non-cancelled for now to match broad "Sales" definition, or maybe status 'paid' and above.
-        // For simplicity in this fix, we'll exclude cancelled.
+        supabase.from('orders').select('total').eq('store_id', store.id).neq('status', 'cancelled').neq('status', 'pending')
     ])
 
     const totalOrders = ordersRes.count || 0
-    const totalRevenue = (revenueRes.data as any[])?.reduce((acc: number, curr: any) => acc + (curr.total_amount || 0), 0) || 0
+    const totalRevenue = (revenueRes.data as any[])?.reduce((acc: number, curr: any) => acc + (curr.total || 0), 0) || 0
 
     // 5. Recent Orders (Sales)
     const { data: recentOrders } = await supabase
         .from('orders')
-        .select('id, total_amount, status, created_at')
+        .select('id, total, status, created_at')
         .eq('store_id', store.id)
         .order('created_at', { ascending: false })
         .limit(5)
@@ -364,7 +360,7 @@ export default async function RetailerDashboardPage() {
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <p className="font-medium text-gray-900">{formatPrice(order.total_amount)}</p>
+                                            <p className="font-medium text-gray-900">{formatPrice(order.total)}</p>
                                             <Badge
                                                 className={
                                                     order.status === 'delivered' ? 'bg-green-100 text-green-700' :

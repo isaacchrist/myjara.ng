@@ -82,11 +82,6 @@ export function PaymentButton({ order, userEmail, userName }: PaymentButtonProps
                     // 2. Record transaction
                     const { error: txError } = await (supabase
                         .from('transactions') as any)
-
-                    if (txError) console.error("TX Record Error:", txError)
-
-                    await (supabase
-                        .from('transactions') as any)
                         .insert({
                             order_id: order.id,
                             store_id: order.store_id,
@@ -95,6 +90,8 @@ export function PaymentButton({ order, userEmail, userName }: PaymentButtonProps
                             status: 'success',
                             gateway_response: response
                         })
+
+                    if (txError) console.error("TX Record Error:", txError)
 
                     toast({
                         title: "Payment Successful!",

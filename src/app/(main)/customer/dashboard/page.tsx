@@ -30,18 +30,18 @@ export default async function CustomerDashboardPage() {
     let recentOrders: any[] = []
 
     const [ordersRes, spendRes] = await Promise.all([
-        supabase.from('orders').select('*', { count: 'exact', head: true }).eq('customer_id', user.id),
-        supabase.from('orders').select('total_amount').eq('customer_id', user.id).neq('status', 'cancelled')
+        supabase.from('orders').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
+        supabase.from('orders').select('total').eq('user_id', user.id).neq('status', 'cancelled')
     ])
 
     totalOrders = ordersRes.count || 0
-    totalSpend = (spendRes.data as any[])?.reduce((acc: number, curr: any) => acc + (curr.total_amount || 0), 0) || 0
+    totalSpend = (spendRes.data as any[])?.reduce((acc: number, curr: any) => acc + (curr.total || 0), 0) || 0
 
     // Recent Orders
     const { data: recent } = await supabase
         .from('orders')
-        .select('id, total_amount, status, created_at, items:order_items(count)')
-        .eq('customer_id', user.id)
+        .select('id, total, status, created_at, items:order_items(count)')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(3)
 
@@ -161,7 +161,7 @@ export default async function CustomerDashboardPage() {
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <p className="font-medium text-gray-900">{formatPrice(order.total_amount)}</p>
+                                                <p className="font-medium text-gray-900">{formatPrice(order.total)}</p>
                                                 <Badge
                                                     variant={
                                                         order.status === 'delivered' ? 'success' :
