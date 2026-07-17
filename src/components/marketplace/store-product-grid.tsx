@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ProductCard } from '@/components/marketplace/product-card'
 import { Button } from '@/components/ui/button'
 import { Search, X } from 'lucide-react'
 import { Input } from '@/components/ui/input' // Assuming Input component exists
+import { createClient } from '@/lib/supabase/client'
 
 interface StoreProductGridProps {
     products: any[]
@@ -17,12 +18,9 @@ interface StoreProductGridProps {
     brandColor?: string
 }
 
-// Helper to map category IDs to names (simplified, ideally passed from server or constants)
-import { PRODUCT_CATEGORIES } from '@/lib/constants'
-
 export function StoreProductGrid({
     products,
-    categories: storeCategoryIds, // IDs of categories that these products belong to
+    categories: storeCategoryIds, // real categories.id UUIDs that these products belong to
     storeName,
     storeSlug,
     retailerAvatar,
@@ -32,12 +30,21 @@ export function StoreProductGrid({
 }: StoreProductGridProps) {
     const [activeCategory, setActiveCategory] = useState<string | null>(null)
     const [searchQuery, setSearchQuery] = useState('')
+    const [categories, setCategories] = useState<{ id: string; name: string; icon: string }[]>([])
+    const categoryIdsKey = storeCategoryIds.join(',')
 
-    // Enrich category IDs with names/icons
-    const categories = storeCategoryIds.map(id => {
-        const cat = PRODUCT_CATEGORIES.find(c => c.id === id)
-        return cat ? { id: cat.id, name: cat.name, icon: cat.icon } : { id, name: id, icon: '📦' }
-    })
+    // Resolve real category names/icons for the IDs present in this store's
+    // products (products.category_id is a UUID FK, not the old
+    // PRODUCT_CATEGORIES slug list).
+    useEffect(() => {
+        if (!categoryIdsKey) return
+        const fetchCategoryNames = async () => {
+            const supabase = createClient()
+            const { data } = await supabase.from('categories').select('id, name, icon').in('id', categoryIdsKey.split(','))
+            setCategories((data || []).map((c: { id: string; name: string; icon: string | null }) => ({ id: c.id, name: c.name, icon: c.icon || '📦' })))
+        }
+        fetchCategoryNames()
+    }, [categoryIdsKey])
 
     // Filter products
     const filteredProducts = products.filter(product => {

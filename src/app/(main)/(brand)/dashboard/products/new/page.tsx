@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Loader2, Upload, X, Info, Image as ImageIcon } from 'lucide-react'
@@ -8,8 +8,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
-import { PRODUCT_CATEGORIES } from '@/lib/constants'
 import { useToast } from '@/hooks/use-toast'
+
+type CategoryRecord = { id: string; name: string; icon: string | null; parent_id: string | null }
+type CategoryWithChildren = CategoryRecord & { subcategories: CategoryRecord[] }
 
 export default function NewProductPage() {
     const router = useRouter()
@@ -19,6 +21,26 @@ export default function NewProductPage() {
     const [loading, setLoading] = useState(false)
     const [uploading, setUploading] = useState(false)
     const [error, setError] = useState('')
+
+    // Real categories (id/name/icon are UUID-backed rows, not the old
+    // PRODUCT_CATEGORIES slug list -- products.category_id is a UUID FK).
+    const [categories, setCategories] = useState<CategoryWithChildren[]>([])
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            const supabase = createClient()
+            const { data } = await supabase.from('categories').select('id, name, icon, parent_id').order('sort_order')
+            if (!data) return
+            const all = data as CategoryRecord[]
+            const parents = all.filter(c => !c.parent_id)
+            const children = all.filter(c => c.parent_id)
+            setCategories(parents.map(parent => ({
+                ...parent,
+                subcategories: children.filter(c => c.parent_id === parent.id)
+            })))
+        }
+        fetchCategories()
+    }, [])
 
     // Form State
     const [formData, setFormData] = useState({
@@ -94,7 +116,7 @@ export default function NewProductPage() {
                 .from('products')
                 .insert({
                     store_id: store.id,
-                    category_id: formData.category,
+                    category_id: formData.category || null,
                     name: formData.name,
                     description: formData.description,
                     price: parseFloat(formData.price),
@@ -103,7 +125,7 @@ export default function NewProductPage() {
                     jara_get_quantity: parseInt(formData.jaraGetQty) || 0,
                     status: formData.status,
                     attributes: {
-                        subcategory_id: formData.subcategory
+                        subcategory_id: formData.subcategory || null
                     }
                 } as any)
                 .select('id')
@@ -160,7 +182,7 @@ export default function NewProductPage() {
     }
 
     // Derived Logic
-    const selectedCategory = PRODUCT_CATEGORIES.find(c => c.id === formData.category)
+    const selectedCategory = categories.find(c => c.id === formData.category)
 
     return (
         <div className="mx-auto max-w-4xl space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -225,7 +247,7 @@ export default function NewProductPage() {
                                         required
                                     >
                                         <option value="">Select Category</option>
-                                        {PRODUCT_CATEGORIES.map(c => (
+                                        {categories.map(c => (
                                             <option key={c.id} value={c.id}>{c.name}</option>
                                         ))}
                                     </select>
@@ -238,8 +260,8 @@ export default function NewProductPage() {
                                         className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                         value={formData.subcategory}
                                         onChange={handleChange}
-                                        disabled={!selectedCategory}
-                                        required
+                                        disabled={!selectedCategory || selectedCategory.subcategories.length === 0}
+                                        required={!!selectedCategory && selectedCategory.subcategories.length > 0}
                                     >
                                         <option value="">Select Subcategory</option>
                                         {selectedCategory?.subcategories.map(s => (
