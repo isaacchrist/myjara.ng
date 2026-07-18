@@ -1,0 +1,779 @@
+<title>MyJara — Pitch Deck</title>
+<style>
+  :root {
+    --paper: #eceffa;
+    --paper-raised: #ffffff;
+    --ink: #14172b;
+    --ink-soft: #4b5079;
+    --ink-faint: #7176a0;
+    --indigo: #2e3b7a;
+    --indigo-strong: #1e2557;
+    --marigold: #c97f1e;
+    --marigold-strong: #a8680f;
+    --clay: #a24f2f;
+    --line: rgba(20, 23, 43, 0.14);
+    --line-strong: rgba(20, 23, 43, 0.26);
+    --cover-bg: #14172b;
+    --cover-ink: #eef0f8;
+    --cover-line: rgba(238, 240, 248, 0.22);
+
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #12142a;
+      --paper-raised: #1a1d3a;
+      --ink: #edeffa;
+      --ink-soft: #b7bbe0;
+      --ink-faint: #8489b8;
+      --indigo: #8f9aec;
+      --indigo-strong: #c3caf7;
+      --marigold: #f0b34e;
+      --marigold-strong: #f6c877;
+      --clay: #e0895f;
+      --line: rgba(237, 239, 250, 0.16);
+      --line-strong: rgba(237, 239, 250, 0.3);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #12142a;
+    --paper-raised: #1a1d3a;
+    --ink: #edeffa;
+    --ink-soft: #b7bbe0;
+    --ink-faint: #8489b8;
+    --indigo: #8f9aec;
+    --indigo-strong: #c3caf7;
+    --marigold: #f0b34e;
+    --marigold-strong: #f6c877;
+    --clay: #e0895f;
+    --line: rgba(237, 239, 250, 0.16);
+    --line-strong: rgba(237, 239, 250, 0.3);
+  }
+  :root[data-theme="light"] {
+    --paper: #eceffa;
+    --paper-raised: #ffffff;
+    --ink: #14172b;
+    --ink-soft: #4b5079;
+    --ink-faint: #7176a0;
+    --indigo: #2e3b7a;
+    --indigo-strong: #1e2557;
+    --marigold: #c97f1e;
+    --marigold-strong: #a8680f;
+    --clay: #a24f2f;
+    --line: rgba(20, 23, 43, 0.14);
+    --line-strong: rgba(20, 23, 43, 0.26);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--marigold); color: var(--cover-bg); }
+
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 700; margin: 0; text-wrap: balance; }
+  p { margin: 0; }
+
+  .progress {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    width: 0%;
+    background: var(--marigold);
+    z-index: 50;
+    transition: width 0.12s linear;
+  }
+  @media (prefers-reduced-motion: reduce) { .progress { transition: none; } }
+
+  .deck {
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+
+  .slide {
+    position: relative;
+    min-height: 100svh;
+    padding: clamp(2.25rem, 6vw, 5rem) clamp(1.5rem, 6vw, 4rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-top: 1px solid var(--line);
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .slide.is-visible { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    .slide { opacity: 1; transform: none; transition: none; }
+  }
+  .slide:first-child { border-top: none; }
+
+  .slide-index {
+    position: absolute;
+    right: clamp(1.25rem, 5vw, 3rem);
+    bottom: 1.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55em;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--marigold-strong);
+    margin-bottom: 1.1em;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 0.55em;
+    height: 0.55em;
+    background: var(--marigold);
+    display: inline-block;
+    transform: rotate(45deg);
+  }
+
+  .slide h2 {
+    font-size: clamp(1.9rem, 4vw, 2.9rem);
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+    max-width: 18ch;
+  }
+
+  .lede {
+    font-size: clamp(1.05rem, 1.6vw, 1.22rem);
+    color: var(--ink-soft);
+    max-width: 62ch;
+    margin-top: 1.15em;
+  }
+
+  .lede + .lede { margin-top: 0.8em; }
+
+  .content-block { margin-top: 2.4rem; }
+
+  /* Statement (dark, fixed-ink) slides -- cover + close bookend the deck */
+  .slide--statement {
+    background: var(--cover-bg);
+    color: var(--cover-ink);
+    border-top: none;
+    background-image:
+      repeating-linear-gradient(135deg, rgba(238,240,248,0.05) 0 1px, transparent 1px 26px),
+      repeating-linear-gradient(45deg, rgba(238,240,248,0.05) 0 1px, transparent 1px 26px);
+  }
+  .slide--statement .eyebrow { color: var(--marigold); }
+  .slide--statement .slide-index { color: rgba(238, 240, 248, 0.45); }
+
+  .cover-wordmark {
+    font-family: var(--font-display);
+    font-size: clamp(3.4rem, 11vw, 7.2rem);
+    line-height: 0.98;
+    letter-spacing: -0.02em;
+    color: var(--cover-ink);
+  }
+  .cover-wordmark em {
+    font-style: normal;
+    color: var(--marigold);
+  }
+  .cover-tagline {
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    color: rgba(238, 240, 248, 0.78);
+    margin-top: 1.1em;
+    max-width: 34ch;
+  }
+  .cover-meta {
+    margin-top: auto;
+    padding-top: 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: rgba(238, 240, 248, 0.55);
+    border-top: 1px solid var(--cover-line);
+    padding-top: 1.4rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .cover-meta strong { color: var(--marigold); font-weight: 600; }
+
+  /* Receipt / chalkboard tag motif */
+  .receipt {
+    font-family: var(--font-mono);
+    font-size: 0.92rem;
+    background: var(--paper-raised);
+    border: 1px solid var(--line-strong);
+    max-width: 360px;
+    padding: 1.3rem 1.4rem;
+    color: var(--ink);
+    background-image:
+      linear-gradient(to bottom, var(--paper-raised) 0.55rem, transparent 0),
+      repeating-linear-gradient(90deg, var(--paper) 0 6px, transparent 6px 12px);
+    background-position: top left, top left;
+    background-repeat: no-repeat, repeat-x;
+    background-size: 100% 100%, 100% 2px;
+    box-shadow: 0 18px 40px -22px rgba(20,23,43,0.35);
+  }
+  .receipt .row { display: flex; justify-content: space-between; gap: 1rem; padding: 0.28rem 0; }
+  .receipt .row.jara { color: var(--marigold-strong); font-weight: 600; }
+  .receipt .rule { border-top: 1px dashed var(--line-strong); margin: 0.5rem 0; }
+  .receipt .total { font-weight: 700; font-size: 1rem; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    align-items: start;
+  }
+  @media (max-width: 760px) { .two-col { grid-template-columns: 1fr; } }
+
+  .flow-col h3 {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--indigo);
+    margin-bottom: 1rem;
+  }
+  .flow-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.9rem; }
+  .flow-steps li {
+    display: flex;
+    gap: 0.85rem;
+    align-items: baseline;
+    font-size: 1.02rem;
+    color: var(--ink);
+  }
+  .flow-steps .n {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--marigold-strong);
+    width: 1.4em;
+    flex-shrink: 0;
+  }
+
+  .problem-grid, .format-grid, .under-hood-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line-strong);
+    border: 1px solid var(--line-strong);
+    margin-top: 2.4rem;
+  }
+  .format-grid { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 900px) { .problem-grid, .under-hood-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 760px) { .format-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 480px) { .format-grid { grid-template-columns: 1fr; } }
+
+  .cell {
+    background: var(--paper-raised);
+    padding: 1.6rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  .cell .tag {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--marigold-strong);
+  }
+  .cell .badge {
+    width: 2.1rem;
+    height: 2.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--indigo);
+    border: 1px solid var(--line-strong);
+  }
+  .cell h4 { font-family: var(--font-body); font-size: 1.02rem; font-weight: 700; margin: 0; }
+  .cell p { color: var(--ink-soft); font-size: 0.94rem; }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1px;
+    background: var(--line-strong);
+    border: 1px solid var(--line-strong);
+    margin-top: 2.2rem;
+  }
+  .stat-card { background: var(--paper-raised); padding: 1.4rem 1.5rem; }
+  .stat-card .label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .stat-card .value {
+    font-family: var(--font-mono);
+    font-size: 1.9rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--indigo);
+    margin-top: 0.35rem;
+  }
+  .stat-card .sub { font-size: 0.82rem; color: var(--ink-soft); margin-top: 0.3rem; }
+
+  .loop-flow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 2rem;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+  }
+  .loop-flow .step {
+    border: 1px solid var(--line-strong);
+    background: var(--paper-raised);
+    padding: 0.55rem 0.95rem;
+    color: var(--ink);
+  }
+  .loop-flow .arrow { color: var(--marigold-strong); }
+
+  .list-plain { list-style: none; margin: 1.6rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 1rem; max-width: 62ch; }
+  .list-plain li { display: flex; gap: 0.9rem; font-size: 1.02rem; }
+  .list-plain li::before { content: "◆"; color: var(--marigold); font-size: 0.55rem; transform: translateY(0.45em); flex-shrink: 0; }
+  .list-plain strong { color: var(--ink); }
+  .list-plain span { color: var(--ink-soft); }
+
+  .model-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 1px;
+    background: var(--line-strong);
+    border: 1px solid var(--line-strong);
+    margin-top: 2.4rem;
+  }
+  .model-row { display: contents; }
+  .model-row > div { background: var(--paper-raised); padding: 1.1rem 1.4rem; }
+  .model-row .status { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; }
+  .status.live { color: #2f8f5b; }
+  .status.next { color: var(--marigold-strong); }
+  @media (max-width: 640px) { .model-grid { grid-template-columns: 1fr; } .model-row { display: block; border-bottom: 1px solid var(--line-strong); } .model-row > div { border: none; } }
+
+  .roadmap { margin-top: 2.4rem; display: flex; flex-direction: column; }
+  .rm-item { display: grid; grid-template-columns: 9rem 1fr; gap: 1.5rem; padding: 1.1rem 0; border-top: 1px solid var(--line); align-items: baseline; }
+  .rm-item:first-child { border-top: 1px solid var(--line-strong); }
+  .rm-phase { font-family: var(--font-mono); font-size: 0.78rem; color: var(--ink-faint); }
+  .rm-body strong { display: block; font-size: 1.02rem; color: var(--ink); margin-bottom: 0.2rem; }
+  .rm-body span { color: var(--ink-soft); font-size: 0.92rem; }
+  .rm-state { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.15rem 0.5rem; border: 1px solid var(--line-strong); white-space: nowrap; height: fit-content; }
+  .rm-state.done { color: #2f8f5b; border-color: #2f8f5b55; }
+  .rm-state.progress { color: var(--marigold-strong); border-color: var(--marigold); }
+  .rm-state.next { color: var(--ink-faint); }
+
+  .placeholder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6rem; margin-top: 2.4rem; }
+  @media (max-width: 700px) { .placeholder-grid { grid-template-columns: 1fr; } }
+  .placeholder-card {
+    border: 1px dashed var(--line-strong);
+    padding: 1.6rem;
+    min-height: 11rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .placeholder-card h4 { font-family: var(--font-body); font-weight: 700; font-size: 1.05rem; }
+  .placeholder-card p { color: var(--ink-faint); font-size: 0.9rem; margin-top: 0.6rem; }
+  .placeholder-card .fill { font-family: var(--font-mono); font-size: 0.75rem; color: var(--marigold-strong); letter-spacing: 0.04em; text-transform: uppercase; }
+
+  .footnote { font-size: 0.8rem; color: var(--ink-faint); margin-top: 1.6rem; max-width: 60ch; }
+
+  .close-line {
+    font-family: var(--font-display);
+    font-size: clamp(1.7rem, 4.2vw, 2.6rem);
+    line-height: 1.22;
+    max-width: 20ch;
+    color: var(--cover-ink);
+  }
+  .close-line em { font-style: normal; color: var(--marigold); }
+</style>
+
+<div class="progress" id="progress"></div>
+
+<div class="deck">
+
+  <!-- 1. COVER -->
+  <section class="slide slide--statement">
+    <span class="eyebrow">MyJara — Pitch Deck</span>
+    <h1 class="cover-wordmark">My<em>Jara</em></h1>
+    <p class="cover-tagline">The marketplace where every purchase comes with a little extra.</p>
+    <div class="cover-meta">
+      <span>Abuja, Nigeria</span>
+      <span><strong>myjara.com.ng</strong></span>
+    </div>
+    <span class="slide-index">01 / 16</span>
+  </section>
+
+  <!-- 2. WHAT JARA MEANS -->
+  <section class="slide">
+    <span class="eyebrow">01 — The Name</span>
+    <h2>Jara isn't a feature. It's a habit we're digitizing.</h2>
+    <div class="two-col content-block">
+      <div>
+        <p class="lede">In Nigerian markets, jara is the little extra a trader throws in after you've paid — a few more tomatoes, an extra wrap of soap, a gesture that costs the seller almost nothing and buys loyalty no discount code can. It's older than e-commerce, and better at retention.</p>
+        <p class="lede">MyJara builds that gesture into the transaction itself. Not a marketing label — every order line item on the platform carries an actual bonus quantity alongside what was paid for.</p>
+      </div>
+      <div class="receipt">
+        <div class="row"><span>Pure Water (12 sachets)</span><span>x10</span></div>
+        <div class="row jara"><span>+ Jara</span><span>x2</span></div>
+        <div class="rule"></div>
+        <div class="row total"><span>Total</span><span>₦1,200</span></div>
+      </div>
+    </div>
+    <span class="slide-index">02 / 16</span>
+  </section>
+
+  <!-- 3. THE PROBLEM -->
+  <section class="slide">
+    <span class="eyebrow">02 — The Problem</span>
+    <h2>Nigeria's retail economy runs on relationships marketplaces can't see.</h2>
+    <div class="problem-grid">
+      <div class="cell">
+        <span class="tag">Buyers</span>
+        <h4>Discovery is word-of-mouth</h4>
+        <p>Market-day traders and neighborhood shops rarely have any online presence at all — finding one still means asking someone who knows somebody.</p>
+      </div>
+      <div class="cell">
+        <span class="tag">Wholesalers</span>
+        <h4>No digital storefront</h4>
+        <p>Brands selling in bulk to retailers have no way to be found beyond who already has their number, and no visibility into who keeps buying.</p>
+      </div>
+      <div class="cell">
+        <span class="tag">Platforms</span>
+        <h4>One template, four realities</h4>
+        <p>A physical shop, an online-only seller, and a market-day trader don't operate the same way — generic marketplaces force all three into one listing shape.</p>
+      </div>
+    </div>
+    <span class="slide-index">03 / 16</span>
+  </section>
+
+  <!-- 4. THE SOLUTION -->
+  <section class="slide">
+    <span class="eyebrow">03 — The Solution</span>
+    <h2>One marketplace, four kinds of sellers, one bonus culture holding it together.</h2>
+    <p class="lede content-block">MyJara is a multi-tenant marketplace built for how Nigerian commerce actually works: physical shops, online-only stores, market-day traders, and wholesale brands, each with their own dashboard — connected to buyers through search, direct chat, and the jara they already expect from a seller worth trusting.</p>
+    <span class="slide-index">04 / 16</span>
+  </section>
+
+  <!-- 5. HOW IT WORKS -->
+  <section class="slide">
+    <span class="eyebrow">04 — The Flow</span>
+    <h2>How it works, from both sides of the counter.</h2>
+    <div class="two-col content-block">
+      <div class="flow-col">
+        <h3>For Buyers</h3>
+        <ol class="flow-steps">
+          <li><span class="n">01</span>Discover a store or product by category, market, or search</li>
+          <li><span class="n">02</span>Chat directly with the seller about it</li>
+          <li><span class="n">03</span>Pay by card, transfer, or wallet</li>
+          <li><span class="n">04</span>Receive the order — and the jara that came with it</li>
+          <li><span class="n">05</span>Favorite the store. Come back.</li>
+        </ol>
+      </div>
+      <div class="flow-col">
+        <h3>For Sellers</h3>
+        <ol class="flow-steps">
+          <li><span class="n">01</span>Set up shop — physical address, online-only, or a market day</li>
+          <li><span class="n">02</span>Get discovered by location and category</li>
+          <li><span class="n">03</span>Chat with buyers and fulfil orders</li>
+          <li><span class="n">04</span>Get paid into a platform wallet</li>
+          <li><span class="n">05</span>See, for the first time, who keeps coming back</li>
+        </ol>
+      </div>
+    </div>
+    <span class="slide-index">05 / 16</span>
+  </section>
+
+  <!-- 6. FOUR SELLER FORMATS -->
+  <section class="slide">
+    <span class="eyebrow">05 — Seller Formats</span>
+    <h2>Every kind of Nigerian seller gets a real listing, not a workaround.</h2>
+    <div class="format-grid">
+      <div class="cell">
+        <span class="badge">P</span>
+        <h4>Physical Shop</h4>
+        <p>A real address, a photo gallery, pickup and delivery logistics configured per location.</p>
+      </div>
+      <div class="cell">
+        <span class="badge">O</span>
+        <h4>Online Store</h4>
+        <p>No storefront needed — sells anywhere delivery logistics can reach.</p>
+      </div>
+      <div class="cell">
+        <span class="badge">M</span>
+        <h4>Market-Day Trader</h4>
+        <p>Sells on specific market days rather than every day — the platform tracks each trader's actual schedule instead of forcing a "always open" listing.</p>
+      </div>
+      <div class="cell">
+        <span class="badge">W</span>
+        <h4>Wholesaler / Brand</h4>
+        <p>A bulk-facing dashboard for brands selling to retailers and power buyers, priced on its own tier.</p>
+      </div>
+    </div>
+    <span class="slide-index">06 / 16</span>
+  </section>
+
+  <!-- 7. TRUST -->
+  <section class="slide">
+    <span class="eyebrow">06 — Trust &amp; Safety</span>
+    <h2>Trust isn't a badge. It's enforced in the schema.</h2>
+    <ul class="list-plain content-block">
+      <li><strong>Every store is verified before it goes live.</strong> <span>New stores sit in a pending queue and become active only on a human admin decision — not an autosign-up.</span></li>
+      <li><strong>Disputes have a structured pipeline.</strong> <span>Buyers and sellers resolve problems through a real dispute process with admin resolution, not a review that just makes the seller disappear.</span></li>
+      <li><strong>Chat is tied to the order, not a phone number in a bio.</strong> <span>Conversations reference the actual product or order, so context isn't lost off-platform.</span></li>
+      <li><strong>Personal data is locked down by default.</strong> <span>Row-level security ensures a customer's own bank details and home address are visible only to them — enforced at the database, not just the UI.</span></li>
+    </ul>
+    <span class="slide-index">07 / 16</span>
+  </section>
+
+  <!-- 8. THE JARA STANDARD -->
+  <section class="slide">
+    <span class="eyebrow">08 — The Jara Standard</span>
+    <h2>Jara isn't optional marketing copy. It's a governed commitment — built to become a verified one.</h2>
+    <p class="lede content-block">Any seller can claim they offer value. MyJara is built to make that claim checkable: every product carries a structured jara field, not a description a seller writes and nobody confirms. A wholesaler selling phones can jara the same phone, or choose a different form of equivalent value — the platform's job is to make "equivalent" mean something, not let the word do the work discounts and ad spend used to.</p>
+    <div class="model-grid">
+      <div class="model-row">
+        <div class="status live">Live</div>
+        <div><strong>A structured jara field on every product</strong> — a buy-X-get-Y bonus quantity, computed straight into cart, checkout, and order totals, not a promotional label.</div>
+      </div>
+      <div class="model-row">
+        <div class="status live">Live</div>
+        <div><strong>Sellers already choose the value type</strong> — more of the same product, or a named, described, imaged substitute item of the seller's choosing.</div>
+      </div>
+      <div class="model-row">
+        <div class="status next">Next</div>
+        <div><strong>Making jara a requirement, not a default of zero</strong> — today a listing can go live with no jara at all; the governance version of this ties jara presence into store/listing verification, the same review queue that already gates a store going live.</div>
+      </div>
+      <div class="model-row">
+        <div class="status next">Next</div>
+        <div><strong>Equivalence checked, not self-reported</strong> — for categories like phones and other high-value goods, defining what counts as an equivalent substitute (so "extra value" can't be a token gesture) is the next scoping question, the same category of decision as the wholesaler billing mechanics.</div>
+      </div>
+    </div>
+    <p class="footnote">This is the platform's central differentiator, not a side feature — everything else (verification, disputes, analytics) exists to make jara a claim the platform can stand behind.</p>
+    <span class="slide-index">08 / 16</span>
+  </section>
+
+  <!-- 9. THE JARA LOOP -->
+  <section class="slide">
+    <span class="eyebrow">09 — Why It Retains</span>
+    <h2>The bonus is the loop, not the pitch.</h2>
+    <p class="lede content-block">Jara isn't a one-time hook — it's what turns a single purchase into a habit, and that habit is something MyJara can actually measure, store by store.</p>
+    <div class="loop-flow">
+      <span class="step">Buyer gets jara</span>
+      <span class="arrow">→</span>
+      <span class="step">Favorites the store</span>
+      <span class="arrow">→</span>
+      <span class="step">Comes back</span>
+      <span class="arrow">→</span>
+      <span class="step">Shows up in repeat-purchase analytics</span>
+    </div>
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="label">Repeat-Purchase Rate</div>
+        <div class="value">— %</div>
+        <div class="sub">Selectable 7 / 30 / 90-day window, live in the admin panel</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Avg. Sales / Customer</div>
+        <div class="value">₦ —</div>
+        <div class="sub">Tracked per paying customer, all-time</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Most Loyal Customers</div>
+        <div class="value">per brand</div>
+        <div class="sub">Who's buying twice or more from the same wholesaler</div>
+      </div>
+    </div>
+    <p class="footnote">These are real widgets in MyJara's own admin analytics — values shown blank here since this deck isn't wired to live data.</p>
+    <span class="slide-index">09 / 16</span>
+  </section>
+
+  <!-- 10. WHOLESALERS -->
+  <section class="slide">
+    <span class="eyebrow">10 — The B2B Engine</span>
+    <h2>Brands get a storefront and a growth number, not just a bulk order sheet.</h2>
+    <ul class="list-plain content-block">
+      <li><strong>A dedicated brand dashboard,</strong> <span>separate from retail sellers, built around bulk relationships instead of single-item listings.</span></li>
+      <li><strong>A subscription tier priced for wholesale,</strong> <span>and adjustable by the platform without a redeploy.</span></li>
+      <li><strong>Next: billing tied to actual conversions.</strong> <span>Moving from a flat monthly fee toward paying per completed sale — brands pay for growth, not for a login.</span></li>
+    </ul>
+    <span class="slide-index">10 / 16</span>
+  </section>
+
+  <!-- 11. MARKET -->
+  <section class="slide">
+    <span class="eyebrow">11 — Where We Start</span>
+    <h2>Abuja first, market by market.</h2>
+    <p class="lede content-block">Nigeria's retail economy is still overwhelmingly built around physical and open-air markets, even as mobile internet use keeps growing — that gap between how people actually shop and what's actually online is the opportunity.</p>
+    <p class="lede">MyJara launches area by area across Abuja's own local government areas — AMAC, Bwari, Gwagwalada, Kuje, Abaji, and Kwali — mapping the marketplace onto markets that already exist, instead of asking sellers to abandon them for a generic national listing.</p>
+    <p class="footnote">Directional market context, not sourced figures — firm up with real market-sizing data before external investor use.</p>
+    <span class="slide-index">11 / 16</span>
+  </section>
+
+  <!-- 12. BUSINESS MODEL -->
+  <section class="slide">
+    <span class="eyebrow">12 — How MyJara Makes Money</span>
+    <h2>Three layers, one live, two sequenced on purpose.</h2>
+    <div class="model-grid">
+      <div class="model-row">
+        <div class="status live">Live</div>
+        <div><strong>Seller subscriptions</strong> — priced differently by format (physical, online, market-day, wholesale), fully admin-adjustable.</div>
+      </div>
+      <div class="model-row">
+        <div class="status next">Next</div>
+        <div><strong>Per-conversion wholesaler billing</strong> — replacing the flat wholesale tier with a rate tied to completed sales.</div>
+      </div>
+      <div class="model-row">
+        <div class="status next">Next</div>
+        <div><strong>Seller-funded ads</strong> — paid visibility for sellers who want more reach than organic discovery gives them.</div>
+      </div>
+      <div class="model-row">
+        <div class="status next">Next</div>
+        <div><strong>A premium buyer tier</strong> — a paid layer for buyers who want more than the default marketplace experience.</div>
+      </div>
+    </div>
+    <p class="footnote">Not built until the mechanics are right: exact conversion definition, rate, and collection method are deliberate open decisions, not oversights.</p>
+    <span class="slide-index">12 / 16</span>
+  </section>
+
+  <!-- 13. UNDER THE HOOD -->
+  <section class="slide">
+    <span class="eyebrow">13 — How We Operate</span>
+    <h2>The unglamorous parts are built too.</h2>
+    <div class="under-hood-grid">
+      <div class="cell">
+        <span class="tag">Analytics</span>
+        <h4>Platform-wide, not vanity</h4>
+        <p>Conversion, repeat-purchase rate, and sales by real market location — figures the team actually watches.</p>
+      </div>
+      <div class="cell">
+        <span class="tag">Verification</span>
+        <h4>Every store, a decision</h4>
+        <p>A review queue stands between "signed up" and "live," so buyers aren't discovering shells.</p>
+      </div>
+      <div class="cell">
+        <span class="tag">Disputes</span>
+        <h4>The loop actually closes</h4>
+        <p>A structured pipeline with admin resolution, so a bad order has somewhere to go besides a one-star review.</p>
+      </div>
+    </div>
+    <span class="slide-index">13 / 16</span>
+  </section>
+
+  <!-- 14. ROADMAP -->
+  <section class="slide">
+    <span class="eyebrow">14 — What's Next</span>
+    <h2>Built in phases, by risk — not by what demos best.</h2>
+    <div class="roadmap">
+      <div class="rm-item">
+        <span class="rm-phase">Phase 0–1</span>
+        <div class="rm-body"><strong>Stabilize &amp; secure the foundation</strong><span>Data-integrity and access-control fixes, core admin visibility.</span></div>
+        <span class="rm-state done">Done</span>
+      </div>
+      <div class="rm-item">
+        <span class="rm-phase">Phase 2</span>
+        <div class="rm-body"><strong>Wholesaler tools &amp; monetization</strong><span>Brand dashboard, subscription tiers, multi-location retail, per-conversion billing.</span></div>
+        <span class="rm-state progress">In progress</span>
+      </div>
+      <div class="rm-item">
+        <span class="rm-phase">Phase 2.7</span>
+        <div class="rm-body"><strong>The Jara Standard — enforcement</strong><span>Require jara presence at listing/store verification and define checkable equivalence for substitute-value offers, starting with high-value categories like phones.</span></div>
+        <span class="rm-state next">Next</span>
+      </div>
+      <div class="rm-item">
+        <span class="rm-phase">Phase 3</span>
+        <div class="rm-body"><strong>Ads platform</strong><span>Paid visibility for sellers — pricing and targeting model still to be scoped.</span></div>
+        <span class="rm-state next">Next</span>
+      </div>
+      <div class="rm-item">
+        <span class="rm-phase">Phase 4</span>
+        <div class="rm-body"><strong>UI/UX &amp; premium buyer tier</strong><span>Visual redesign across the platform, plus a paid tier for buyers.</span></div>
+        <span class="rm-state progress">In progress</span>
+      </div>
+    </div>
+    <span class="slide-index">14 / 16</span>
+  </section>
+
+  <!-- 15. THE ASK -->
+  <section class="slide">
+    <span class="eyebrow">15 — Where We Need You</span>
+    <h2>This deck was built from the platform. This part is yours to fill in.</h2>
+    <div class="placeholder-grid">
+      <div class="placeholder-card">
+        <div>
+          <h4>Founding Team</h4>
+          <p>Names, roles, and why this team is the one to build MyJara.</p>
+        </div>
+        <span class="fill">Add before sharing</span>
+      </div>
+      <div class="placeholder-card">
+        <div>
+          <h4>The Ask</h4>
+          <p>Raise amount, use of funds, and what the next milestone unlocks.</p>
+        </div>
+        <span class="fill">Add before sharing</span>
+      </div>
+    </div>
+    <span class="slide-index">15 / 16</span>
+  </section>
+
+  <!-- 16. CLOSE -->
+  <section class="slide slide--statement">
+    <span class="eyebrow">MyJara</span>
+    <p class="close-line">Every market has its regulars. We're building the app that <em>remembers</em> them — and the system that makes sure the jara they get back is real.</p>
+    <div class="cover-meta">
+      <span>myjara.com.ng</span>
+      <span>Abuja → Nigeria</span>
+    </div>
+    <span class="slide-index">16 / 16</span>
+  </section>
+
+</div>
+
+<script>
+  (function () {
+    var bar = document.getElementById('progress');
+    function updateProgress() {
+      var h = document.documentElement;
+      var scrolled = h.scrollTop;
+      var max = h.scrollHeight - h.clientHeight;
+      bar.style.width = (max > 0 ? (scrolled / max) * 100 : 0) + '%';
+    }
+    document.addEventListener('scroll', updateProgress, { passive: true });
+    updateProgress();
+
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var slides = document.querySelectorAll('.slide');
+    if (reduced || !('IntersectionObserver' in window)) {
+      slides.forEach(function (s) { s.classList.add('is-visible'); });
+    } else {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15 });
+      slides.forEach(function (s) { io.observe(s); });
+    }
+  })();
+</script>

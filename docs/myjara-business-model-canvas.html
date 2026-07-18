@@ -1,0 +1,340 @@
+<title>MyJara — Business Model Canvas</title>
+<style>
+  :root {
+    --bg: #f3ede2;
+    --paper: #fbf8f2;
+    --card: #ffffff;
+    --border: #ddd2bd;
+    --ink: #211d17;
+    --ink-dim: #6b6255;
+    --accent: #0f7a5c;
+    --accent-soft: #e2f2ea;
+    --next: #a2620a;
+    --next-soft: #f6ead2;
+    --rule: #e7ddc8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161b;
+      --paper: #181b21;
+      --card: #1e222a;
+      --border: #2c313b;
+      --ink: #eef0f4;
+      --ink-dim: #9aa1b0;
+      --accent: #2ee6a8;
+      --accent-soft: #17342c;
+      --next: #e8c468;
+      --next-soft: #35301c;
+      --rule: #2a2f38;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161b;
+    --paper: #181b21;
+    --card: #1e222a;
+    --border: #2c313b;
+    --ink: #eef0f4;
+    --ink-dim: #9aa1b0;
+    --accent: #2ee6a8;
+    --accent-soft: #17342c;
+    --next: #e8c468;
+    --next-soft: #35301c;
+    --rule: #2a2f38;
+  }
+  :root[data-theme="light"] {
+    --bg: #f3ede2;
+    --paper: #fbf8f2;
+    --card: #ffffff;
+    --border: #ddd2bd;
+    --ink: #211d17;
+    --ink-dim: #6b6255;
+    --accent: #0f7a5c;
+    --accent-soft: #e2f2ea;
+    --next: #a2620a;
+    --next-soft: #f6ead2;
+    --rule: #e7ddc8;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: Calibri, "Segoe UI", system-ui, sans-serif;
+    margin: 0;
+  }
+  body { padding: 2.5rem clamp(1rem, 4vw, 3rem) 3.5rem; }
+
+  .sheet { max-width: 1500px; margin: 0 auto; }
+
+  .masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 1.1rem;
+    margin-bottom: 1.4rem;
+  }
+  .masthead-left { max-width: 62ch; }
+  .eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin: 0 0 0.4rem;
+  }
+  h1 {
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-size: clamp(1.5rem, 2.6vw, 2.15rem);
+    font-weight: 400;
+    margin: 0 0 0.3rem;
+    text-wrap: balance;
+  }
+  h1 em { color: var(--accent); font-style: italic; }
+  .thesis {
+    font-size: 0.95rem;
+    color: var(--ink-dim);
+    margin: 0;
+    max-width: 58ch;
+  }
+  .meta {
+    text-align: right;
+    font-size: 0.78rem;
+    color: var(--ink-dim);
+    line-height: 1.6;
+    white-space: nowrap;
+  }
+
+  .legend {
+    display: flex;
+    gap: 1.4rem;
+    align-items: center;
+    margin-bottom: 1.1rem;
+    font-size: 0.75rem;
+    color: var(--ink-dim);
+  }
+  .legend-item { display: flex; align-items: center; gap: 0.4rem; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .dot.live { background: var(--accent); }
+  .dot.next { background: var(--next); }
+
+  .canvas {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.15fr 1fr 1fr;
+    grid-template-rows: minmax(150px, auto) minmax(150px, auto) minmax(120px, auto);
+    grid-template-areas:
+      "partners activities value relationships segments"
+      "partners resources  value channels      segments"
+      "cost     cost       cost  revenue        revenue";
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .block {
+    background: var(--card);
+    padding: 1rem 1.05rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .block.value {
+    background: var(--accent-soft);
+  }
+  .block-label {
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 0.98rem;
+    color: var(--ink);
+    margin: 0 0 0.65rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .block.value .block-label { border-bottom-color: rgba(0,0,0,0.08); }
+
+  .items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+  .items li {
+    font-size: 0.8rem;
+    line-height: 1.42;
+    color: var(--ink);
+    padding-left: 0.85rem;
+    position: relative;
+  }
+  .items li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.5em;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--ink-dim);
+    opacity: 0.6;
+  }
+  .value .items li { font-size: 0.83rem; }
+
+  .tag {
+    display: inline-block;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 0.08em 0.4em;
+    border-radius: 3px;
+    margin-right: 0.4em;
+    vertical-align: 1px;
+  }
+  .tag.live { background: var(--accent-soft); color: var(--accent); }
+  .tag.next { background: var(--next-soft); color: var(--next); }
+
+  .cost .items, .revenue .items { flex-direction: row; flex-wrap: wrap; gap: 0.5rem 1.6rem; }
+  .cost .items li, .revenue .items li { flex: 1 1 220px; }
+
+  .footnote {
+    margin-top: 1.1rem;
+    font-size: 0.75rem;
+    color: var(--ink-dim);
+    text-align: right;
+  }
+
+  @media (max-width: 980px) {
+    .canvas {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        "partners"
+        "activities"
+        "resources"
+        "value"
+        "relationships"
+        "channels"
+        "segments"
+        "cost"
+        "revenue";
+    }
+  }
+</style>
+
+<div class="sheet">
+  <div class="masthead">
+    <div class="masthead-left">
+      <p class="eyebrow">MyJara — Business Model Canvas</p>
+      <h1>How governed <em>jara</em> turns retention into revenue</h1>
+      <p class="thesis">Nine blocks, grounded in what's actually built (docs/ROADMAP.md) and what's next — not an aspirational rewrite.</p>
+    </div>
+    <div class="meta">Abuja, Nigeria<br>17 July 2026</div>
+  </div>
+
+  <div class="legend">
+    <span class="legend-item"><span class="dot live"></span>Live today</span>
+    <span class="legend-item"><span class="dot next"></span>Next / planned</span>
+  </div>
+
+  <div class="canvas">
+    <div class="block" style="grid-area: partners;">
+      <p class="block-label">Key Partners</p>
+      <ul class="items">
+        <li>Flutterwave — card, transfer, and mobile money processing</li>
+        <li>Abuja market associations & LGA contacts across AMAC, Bwari, Gwagwalada, Kuje, Abaji, Kwali — ground-level trust for market-day trader onboarding</li>
+        <li>Early wholesaler/brand partners — first sellers to operate under a governed jara standard</li>
+        <li><span class="tag next">NEXT</span>Logistics/delivery partners — not yet scoped</li>
+      </ul>
+    </div>
+
+    <div class="block" style="grid-area: activities;">
+      <p class="block-label">Key Activities</p>
+      <ul class="items">
+        <li>Building and enforcing the Jara Standard — structured value fields, verification gates</li>
+        <li>Operating four seller-format dashboards: physical shop, online store, market trader, wholesaler/brand</li>
+        <li>Store verification and dispute resolution</li>
+        <li>LGA-by-LGA rollout across Abuja</li>
+      </ul>
+    </div>
+
+    <div class="block" style="grid-area: resources;">
+      <p class="block-label">Key Resources</p>
+      <ul class="items">
+        <li>The Jara Standard engine — buy-X-get-Y logic and substitute-value fields (core IP)</li>
+        <li>Multi-tenant marketplace platform with row-level-security data isolation</li>
+        <li>Flutterwave payment integration</li>
+        <li>Founding team — Isaac-Christ Ikpe, Damilola Thompson</li>
+      </ul>
+    </div>
+
+    <div class="block value" style="grid-area: value;">
+      <p class="block-label">Value Propositions</p>
+      <ul class="items">
+        <li><strong>Buyers:</strong> jara you can trust — a structured, real bonus, not a marketing claim</li>
+        <li><strong>Sellers:</strong> retain customers without burning margin on discounts or ad spend</li>
+        <li><strong>Wholesalers/retailers:</strong> compete on differentiated value, not price wars — choose what extra value looks like, prove it was given</li>
+        <li><strong>Everyone:</strong> trust built into the platform — verified stores, real disputes, secured personal data</li>
+        <li>Built for every seller format Nigerian commerce actually uses, not one generic template</li>
+      </ul>
+    </div>
+
+    <div class="block" style="grid-area: relationships;">
+      <p class="block-label">Customer Relationships</p>
+      <ul class="items">
+        <li>Self-service dashboards per seller format</li>
+        <li>Buyer-seller chat tied to orders and products</li>
+        <li>Admin-mediated dispute resolution</li>
+        <li>Community trust via familiar market-day traders</li>
+        <li><span class="tag next">NEXT</span>Premium relationship tier for buyers</li>
+      </ul>
+    </div>
+
+    <div class="block" style="grid-area: channels;">
+      <p class="block-label">Channels</p>
+      <ul class="items">
+        <li>myjara.com.ng — direct platform</li>
+        <li>Custom domains for wholesaler/brand stores</li>
+        <li>On-the-ground onboarding in physical markets</li>
+        <li>Word of mouth and local market reputation</li>
+        <li><span class="tag next">NEXT</span>Seller-funded ads for in-marketplace visibility</li>
+      </ul>
+    </div>
+
+    <div class="block" style="grid-area: segments;">
+      <p class="block-label">Customer Segments</p>
+      <ul class="items">
+        <li>Buyers — Abuja shoppers seeking verifiable value, not just low prices</li>
+        <li>Physical shop owners</li>
+        <li>Online store owners</li>
+        <li>Market-day traders</li>
+        <li>Wholesalers / brand sellers — highest-value, most differentiated segment</li>
+      </ul>
+    </div>
+
+    <div class="block cost" style="grid-area: cost;">
+      <p class="block-label">Cost Structure</p>
+      <ul class="items">
+        <li>Platform engineering and hosting</li>
+        <li>Flutterwave transaction and processing fees</li>
+        <li>Store verification and dispute-resolution operations</li>
+        <li>Market-by-market growth and onboarding costs across Abuja LGAs</li>
+        <li><span class="tag next">NEXT</span>Ads-platform infrastructure and wholesaler-billing engine development</li>
+      </ul>
+    </div>
+
+    <div class="block revenue" style="grid-area: revenue;">
+      <p class="block-label">Revenue Streams</p>
+      <ul class="items">
+        <li><span class="tag live">LIVE</span>Seller subscriptions — admin-editable pricing per shop type</li>
+        <li><span class="tag next">NEXT</span>Per-conversion wholesaler billing — pay-per-completed-sale, replacing flat tiers</li>
+        <li><span class="tag next">NEXT</span>Seller-funded ads — paid visibility inside the marketplace</li>
+        <li><span class="tag next">NEXT</span>Premium buyer tier — paid access layer for buyers</li>
+      </ul>
+    </div>
+  </div>
+
+  <p class="footnote">Grounded in docs/ROADMAP.md and the live schema — not an aspirational rewrite.</p>
+</div>
