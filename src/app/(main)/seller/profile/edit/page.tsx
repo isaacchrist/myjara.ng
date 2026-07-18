@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Save, Plus, Trash2, MapPin, Store, Tag, Check, CreditCard, ImageIcon, Calendar, Share2 } from 'lucide-react'
+import { ArrowLeft, Save, Plus, Trash2, MapPin, Store, Tag, Check, CreditCard, ImageIcon, Calendar, Share2, Lock, Briefcase, User } from 'lucide-react'
 import { toast } from 'sonner'
 import { ABUJA_MARKETS } from '@/lib/constants'
 import { ProfilePictureUpload } from '@/components/shared/profile-picture-upload'
@@ -25,6 +25,9 @@ const PLAN_LIMITS: Record<string, number> = {
     exclusive: 30
 }
 
+// Kept in sync with the brand-registration bracket list (register/brand/page.tsx)
+const ORDER_VOLUME_BRACKETS = ['Under 50/mo', '50-200/mo', '200-500/mo', '500+/mo']
+
 export default function EditProfilePage() {
     const router = useRouter()
     const { store } = useSellerStore()
@@ -34,8 +37,23 @@ export default function EditProfilePage() {
     // const [store, setStore] = useState<any>(null)
 
     // Form States
+    // Personal identity (editable). email / date_of_birth / business name stay
+    // locked and are rendered read-only from `user`/`store` below.
+    const [fullName, setFullName] = useState('')
+    const [sex, setSex] = useState('')
     const [phone, setPhone] = useState('')
     const [address, setAddress] = useState('')
+
+    // Brand/wholesaler trading profile (editable). Legal-identity fields
+    // (legal_name, registration_type, rc_number, tax_id_number, nafdac_number)
+    // are shown locked/read-only, not edited here.
+    const [salesModel, setSalesModel] = useState('')
+    const [expectedOrderVolume, setExpectedOrderVolume] = useState('')
+    const [minimumOrderQuantity, setMinimumOrderQuantity] = useState('')
+    const [offersDelivery, setOffersDelivery] = useState('')
+    const [deliveryCoverageArea, setDeliveryCoverageArea] = useState('')
+    const [paymentTerms, setPaymentTerms] = useState('')
+    const [yearsInBusiness, setYearsInBusiness] = useState('')
     const [contacts, setContacts] = useState<{ name: string, number: string }[]>([])
     const [storeDescription, setStoreDescription] = useState('')
     const [selectedCategories, setSelectedCategories] = useState<string[]>([])
@@ -88,6 +106,8 @@ export default function EditProfilePage() {
 
             // Populate Form
             if (userData) {
+                setFullName(userData.full_name || '')
+                setSex(userData.sex || '')
                 setPhone(userData.phone || '')
                 setAddress(userData.residential_address || '')
                 setContacts(userData.emergency_contacts || [])
@@ -101,6 +121,13 @@ export default function EditProfilePage() {
                 setBankName((store as any).bank_name || '')
                 setAccountNumber((store as any).account_number || '')
                 setAccountName((store as any).account_name || '')
+                setSalesModel((store as any).sales_model || '')
+                setExpectedOrderVolume((store as any).expected_order_volume || '')
+                setMinimumOrderQuantity((store as any).minimum_order_quantity || '')
+                setOffersDelivery((store as any).offers_delivery || '')
+                setDeliveryCoverageArea((store as any).delivery_coverage_area || '')
+                setPaymentTerms((store as any).payment_terms || '')
+                setYearsInBusiness((store as any).years_in_business != null ? String((store as any).years_in_business) : '')
                 setGalleryUrls(Array.isArray((store as any).gallery_urls) ? (store as any).gallery_urls : [])
                 setFrequentMarkets(Array.isArray((store as any).frequent_markets) ? (store as any).frequent_markets : [])
                 const social = ((store as any).settings as any)?.social || {}
@@ -175,7 +202,11 @@ export default function EditProfilePage() {
         // Validate Contacts
         const validContacts = contacts.filter(c => c.number.trim().length > 0)
 
+        const isBrand = store?.shop_type === 'brand'
+
         const result = await updateProfile({
+            fullName,
+            sex,
             phone,
             residentialAddress: address,
             emergencyContacts: validContacts,
@@ -189,7 +220,17 @@ export default function EditProfilePage() {
             accountName,
             galleryUrls,
             frequentMarkets,
-            socialLinks
+            socialLinks,
+            // Trading-profile fields only apply to brands/wholesalers.
+            ...(isBrand ? {
+                salesModel,
+                expectedOrderVolume,
+                minimumOrderQuantity,
+                offersDelivery,
+                deliveryCoverageArea,
+                paymentTerms,
+                yearsInBusiness: yearsInBusiness.trim() === '' ? null : Number(yearsInBusiness),
+            } : {})
         })
 
         setSaving(false)
@@ -205,6 +246,7 @@ export default function EditProfilePage() {
     if (loading) return <div className="p-8 flex justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-600 border-t-transparent" /></div>
 
     const isMarketDayRetailer = store?.shop_type === 'market_day'
+    const isBrand = store?.shop_type === 'brand'
     const categoryLimit = PLAN_LIMITS[store?.subscription_plan || 'basic'] || 5
 
     return (
@@ -227,6 +269,65 @@ export default function EditProfilePage() {
                         />
                     </div>
                 </div>
+
+                {/* Personal Information */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <User className="h-5 w-5" />
+                            Personal Information
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Full Name</Label>
+                            <Input
+                                value={fullName}
+                                onChange={(e) => setFullName(e.target.value)}
+                                placeholder="Your full name"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Sex</Label>
+                            <div className="flex gap-6">
+                                {['male', 'female'].map(v => (
+                                    <label key={v} className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            name="sex"
+                                            checked={sex === v}
+                                            onChange={() => setSex(v)}
+                                            className="w-4 h-4 text-emerald-600"
+                                        />
+                                        <span className="text-sm capitalize">{v}</span>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Locked identity fields -- change only via support */}
+                        <div className="pt-4 border-t space-y-3">
+                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                                <Lock className="h-3.5 w-3.5" />
+                                <span>Locked for security. Contact support to change these.</span>
+                            </div>
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <Label className="text-gray-500">Email</Label>
+                                    <p className="text-sm font-medium text-gray-700 break-all">{user?.email || '—'}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-gray-500">Date of Birth</Label>
+                                    <p className="text-sm font-medium text-gray-700">{user?.date_of_birth || 'Not provided'}</p>
+                                </div>
+                                <div className="space-y-1 md:col-span-2">
+                                    <Label className="text-gray-500">Business / Store Name</Label>
+                                    <p className="text-sm font-medium text-gray-700">{store?.name || '—'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
 
                 {/* Contact Information */}
                 <Card>
@@ -582,6 +683,155 @@ export default function EditProfilePage() {
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* Trading Profile (brands/wholesalers only -- editable) */}
+                {isBrand && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Briefcase className="h-5 w-5 text-emerald-500" />
+                                Trading Profile
+                            </CardTitle>
+                            <CardDescription>
+                                How your business trades. Keep this up to date as your operations change.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <Label>Who Do You Sell To?</Label>
+                                <div className="flex gap-6 flex-wrap">
+                                    {(['b2b', 'b2c', 'both'] as const).map(v => (
+                                        <label key={v} className="flex items-center gap-2 cursor-pointer">
+                                            <input
+                                                type="radio"
+                                                name="salesModel"
+                                                checked={salesModel === v}
+                                                onChange={() => setSalesModel(v)}
+                                                className="w-4 h-4 text-emerald-600"
+                                            />
+                                            <span className="text-sm">{v === 'b2b' ? 'Businesses (B2B)' : v === 'b2c' ? 'Consumers (B2C)' : 'Both'}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>Expected Monthly Order Volume</Label>
+                                    <select
+                                        value={expectedOrderVolume}
+                                        onChange={(e) => setExpectedOrderVolume(e.target.value)}
+                                        className="w-full rounded-md border border-input px-3 py-2 text-sm bg-white"
+                                    >
+                                        <option value="">Select a range</option>
+                                        {ORDER_VOLUME_BRACKETS.map(b => <option key={b} value={b}>{b}</option>)}
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Minimum Order Quantity</Label>
+                                    <Input
+                                        value={minimumOrderQuantity}
+                                        onChange={(e) => setMinimumOrderQuantity(e.target.value)}
+                                        placeholder="e.g. 50 units, 1 carton"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Delivery Capability</Label>
+                                <div className="flex gap-6 flex-wrap">
+                                    {(['delivery', 'pickup_only', 'both'] as const).map(v => (
+                                        <label key={v} className="flex items-center gap-2 cursor-pointer">
+                                            <input
+                                                type="radio"
+                                                name="offersDelivery"
+                                                checked={offersDelivery === v}
+                                                onChange={() => setOffersDelivery(v)}
+                                                className="w-4 h-4 text-emerald-600"
+                                            />
+                                            <span className="text-sm">{v === 'delivery' ? 'We Deliver' : v === 'pickup_only' ? 'Pickup Only' : 'Both'}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {offersDelivery && offersDelivery !== 'pickup_only' && (
+                                <div className="space-y-2">
+                                    <Label>Delivery Coverage Area</Label>
+                                    <Input
+                                        value={deliveryCoverageArea}
+                                        onChange={(e) => setDeliveryCoverageArea(e.target.value)}
+                                        placeholder="e.g. Abuja and surrounding LGAs"
+                                    />
+                                </div>
+                            )}
+
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>Payment Terms You Offer</Label>
+                                    <Input
+                                        value={paymentTerms}
+                                        onChange={(e) => setPaymentTerms(e.target.value)}
+                                        placeholder="e.g. COD, Net-30, Prepayment"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Years in Business</Label>
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        value={yearsInBusiness}
+                                        onChange={(e) => setYearsInBusiness(e.target.value)}
+                                        placeholder="e.g. 5"
+                                    />
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* Legal & Business Identity (brands/wholesalers -- locked) */}
+                {isBrand && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Lock className="h-5 w-5 text-gray-400" />
+                                Legal & Business Identity
+                            </CardTitle>
+                            <CardDescription>
+                                Verified at registration. Contact support to change any of these.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <Label className="text-gray-500">Legal Name</Label>
+                                    <p className="text-sm font-medium text-gray-700">{(store as any)?.legal_name || 'Not provided'}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-gray-500">Registration Type</Label>
+                                    <p className="text-sm font-medium text-gray-700">
+                                        {(store as any)?.registration_type === 'limited_company' ? 'Limited Company (RC)'
+                                            : (store as any)?.registration_type === 'business_name' ? 'Business Name (BN)'
+                                            : 'Not provided'}
+                                    </p>
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-gray-500">RC / BN Number</Label>
+                                    <p className="text-sm font-medium text-gray-700">{user?.rc_number || 'Not provided'}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-gray-500">Tax ID (TIN)</Label>
+                                    <p className="text-sm font-medium text-gray-700">{user?.tax_id_number || 'Not provided'}</p>
+                                </div>
+                                <div className="space-y-1 md:col-span-2">
+                                    <Label className="text-gray-500">NAFDAC Number</Label>
+                                    <p className="text-sm font-medium text-gray-700">{(store as any)?.nafdac_number || 'Not provided'}</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
 
                 <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={saving}>
                     {saving ? 'Saving...' : 'Save Changes'}

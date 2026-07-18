@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import { Loader2, Save, User, MapPin, Phone } from 'lucide-react'
+import { Loader2, Save, User, MapPin, Phone, Lock } from 'lucide-react'
 
 interface SettingsFormProps {
     user: {
@@ -61,11 +61,17 @@ export function SettingsForm({ user }: SettingsFormProps) {
                 description: 'Your changes have been saved successfully.',
             })
             router.refresh()
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error updating profile:', error)
+            // 23505 = unique_violation; the only unique user-editable field here
+            // is phone (users_phone_key), so surface a friendly message instead
+            // of a raw DB error.
+            const isDuplicatePhone = error?.code === '23505'
             toast({
                 title: 'Error',
-                description: 'Failed to update profile. Please try again.',
+                description: isDuplicatePhone
+                    ? 'That phone number is already in use by another account.'
+                    : 'Failed to update profile. Please try again.',
                 variant: 'destructive',
             })
         } finally {
@@ -115,6 +121,16 @@ export function SettingsForm({ user }: SettingsFormProps) {
                                 />
                             </div>
                         </div>
+                    </div>
+
+                    {/* Email is the account identity -- locked here, changed via support */}
+                    <div className="space-y-2">
+                        <Label className="flex items-center gap-1.5 text-gray-500">
+                            <Lock className="h-3.5 w-3.5" />
+                            Email
+                        </Label>
+                        <p className="text-sm font-medium text-gray-700 break-all">{user.email}</p>
+                        <p className="text-xs text-gray-400">Contact support to change your email address.</p>
                     </div>
                 </CardContent>
             </Card>

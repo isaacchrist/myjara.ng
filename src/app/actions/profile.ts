@@ -4,6 +4,12 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 export interface ProfileUpdateData {
+    // Personal identity (users) -- registration-collected, now editable.
+    // email / date_of_birth are deliberately NOT here: they stay locked and
+    // change only through support (email is the auth identity, DOB is KYC data).
+    fullName?: string;
+    sex?: string;
+
     phone?: string;
     residentialAddress?: string;
     emergencyContacts?: { name: string, number: string }[];
@@ -14,6 +20,18 @@ export interface ProfileUpdateData {
     longitude?: number | null;
     storeDescription?: string;
     categories?: string[]; // Array of category IDs (parents and/or subcategories, flat)
+
+    // Brand/wholesaler trading profile -- operational data that legitimately
+    // changes over time, so editable here. The legal-identity fields
+    // (legal_name, registration_type, rc_number, tax_id_number, nafdac_number)
+    // are intentionally NOT editable -- those route through support.
+    salesModel?: string;
+    expectedOrderVolume?: string;
+    minimumOrderQuantity?: string;
+    offersDelivery?: string;
+    deliveryCoverageArea?: string;
+    paymentTerms?: string;
+    yearsInBusiness?: number | null;
 
     // Settlement Account
     bankName?: string;
@@ -56,6 +74,8 @@ export async function updateProfile(formData: ProfileUpdateData) {
 
     // 1. Update User Data
     const updateData: Record<string, any> = {}
+    if (formData.fullName !== undefined) updateData.full_name = formData.fullName
+    if (formData.sex !== undefined) updateData.sex = formData.sex
     if (formData.phone !== undefined) updateData.phone = formData.phone
     if (formData.residentialAddress !== undefined) updateData.residential_address = formData.residentialAddress
     if (formData.emergencyContacts !== undefined) updateData.emergency_contacts = formData.emergencyContacts
@@ -103,6 +123,17 @@ export async function updateProfile(formData: ProfileUpdateData) {
 
     // Market Day Locations
     if (formData.frequentMarkets !== undefined) storeUpdate.frequent_markets = formData.frequentMarkets
+
+    // Brand/wholesaler trading profile (operational, editable). DB CHECK
+    // constraints (035) restrict sales_model to b2b|b2c|both and offers_delivery
+    // to delivery|pickup_only|both -- the edit UI only offers those values.
+    if (formData.salesModel !== undefined) storeUpdate.sales_model = formData.salesModel || null
+    if (formData.expectedOrderVolume !== undefined) storeUpdate.expected_order_volume = formData.expectedOrderVolume || null
+    if (formData.minimumOrderQuantity !== undefined) storeUpdate.minimum_order_quantity = formData.minimumOrderQuantity || null
+    if (formData.offersDelivery !== undefined) storeUpdate.offers_delivery = formData.offersDelivery || null
+    if (formData.deliveryCoverageArea !== undefined) storeUpdate.delivery_coverage_area = formData.deliveryCoverageArea || null
+    if (formData.paymentTerms !== undefined) storeUpdate.payment_terms = formData.paymentTerms || null
+    if (formData.yearsInBusiness !== undefined) storeUpdate.years_in_business = formData.yearsInBusiness
 
     // Social Links / theme color -- settings is a shared JSONB blob, so merge
     // rather than overwrite. Both share one fetch so setting both in the same
