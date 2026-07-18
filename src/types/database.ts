@@ -376,61 +376,9 @@ export interface Database {
                     created_at?: string
                 }
             }
-            chat_conversations: {
-                Row: {
-                    id: string
-                    user_id: string
-                    store_id: string
-                    product_id: string | null
-                    last_message_at: string | null
-                    created_at: string
-                }
-                Insert: {
-                    id?: string
-                    user_id: string
-                    store_id: string
-                    product_id?: string | null
-                    last_message_at?: string | null
-                    created_at?: string
-                }
-                Update: {
-                    id?: string
-                    user_id?: string
-                    store_id?: string
-                    product_id?: string | null
-                    last_message_at?: string | null
-                    created_at?: string
-                }
-            }
-            chat_messages: {
-                Row: {
-                    id: string
-                    conversation_id: string
-                    sender_id: string
-                    message: string
-                    sender_type: MessageSenderType
-                    is_read: boolean
-                    created_at: string
-                }
-                Insert: {
-                    id?: string
-                    conversation_id: string
-                    sender_id: string
-                    message: string
-                    sender_type: MessageSenderType
-                    is_read?: boolean
-                    created_at?: string
-                }
-                Update: {
-                    id?: string
-                    conversation_id?: string
-                    sender_id?: string
-                    message?: string
-                    sender_type?: MessageSenderType
-                    is_read?: boolean
-                    created_at?: string
-                }
-            }
+            // chat_conversations / chat_messages: the legacy chat schema was
+            // dropped in migration 036_drop_legacy_chat_tables.sql. The live
+            // chat schema is chat_rooms/messages (see 012_chat_system.sql).
         }
         Views: {
             [_ in never]: never
@@ -491,5 +439,3 @@ export type StoreLogistics = Tables<'store_logistics'>
 export type Order = Tables<'orders'>
 export type OrderItem = Tables<'order_items'>
 export type Transaction = Tables<'transactions'>
-export type ChatConversation = Tables<'chat_conversations'>
-export type ChatMessage = Tables<'chat_messages'>

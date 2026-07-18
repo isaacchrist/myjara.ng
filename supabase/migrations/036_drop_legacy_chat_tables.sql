@@ -1,0 +1,35 @@
+-- Drop the orphaned legacy chat schema.
+--
+-- Background: three chat schemas historically coexisted. The live one is
+-- chat_rooms/messages (012_chat_system.sql) -- everything in src/app/actions/chat.ts
+-- and all real chat UI uses it. The other two were dead:
+--   * public.chat_conversations / public.chat_messages (created in
+--     001_initial_schema.sql, extended in 002_chat_and_customization.sql)
+--   * public.conversations (never created by any migration -- only the old,
+--     since-rebuilt admin/messages page ever referenced it, so there is
+--     nothing to drop for it)
+--
+-- 023_chat_rooms_store_initiated.sql deferred dropping chat_conversations/
+-- chat_messages until a human confirmed the live rows held nothing worth
+-- preserving -- that was a live-data judgment call. The site owner has now
+-- given the go-ahead (nothing worth keeping), so we drop them here.
+--
+-- A codebase grep confirms no remaining callers: the only references left were
+-- unused type aliases in src/types/database.ts (removed alongside this
+-- migration). No .from('chat_conversations') / .from('chat_messages') queries
+-- exist anywhere in src.
+--
+-- CASCADE cleans up the dependent objects created in 001/002 automatically:
+--   indexes  idx_chat_conversations_user, idx_chat_conversations_store,
+--            idx_chat_messages_conversation, idx_chat_messages_created,
+--            idx_chat_conversations_unique_general,
+--            idx_chat_conversations_unique_product
+--   the chat_messages -> chat_conversations FK, all RLS policies on both
+--   tables, and their membership in any realtime publication.
+--
+-- Idempotent (IF EXISTS) so it is safe to run against a database where these
+-- tables were already dropped manually. Drop the child (chat_messages) first,
+-- though CASCADE makes the order immaterial.
+
+DROP TABLE IF EXISTS public.chat_messages CASCADE;
+DROP TABLE IF EXISTS public.chat_conversations CASCADE;
