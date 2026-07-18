@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
+import { BrandLogo } from '@/components/shared/brand-logo'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, ShoppingBag, User, LogOut, LayoutDashboard, MessageSquare, ChevronDown, Heart, Store } from 'lucide-react'
@@ -75,7 +75,7 @@ export function Header() {
                 <div className="flex h-16 items-center justify-between">
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2">
-                        <Image src="/logo.png" alt="MyJara Logo" width={140} height={40} className="h-10 w-auto" priority />
+                        <BrandLogo size={38} priority />
                     </Link>
 
                     {/* Desktop Navigation */}

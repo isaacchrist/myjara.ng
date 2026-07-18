@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
+import { BrandLogo } from '@/components/shared/brand-logo'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -22,7 +22,7 @@ export function Footer() {
                     {/* Brand */}
                     <div className="md:col-span-1">
                         <Link href="/" className="flex items-center gap-2">
-                            <Image src="/logo.png" alt="MyJara Logo" width={140} height={40} className="h-10 w-auto" />
+                            <BrandLogo size={38} />
                         </Link>
                         <p className="mt-4 text-sm text-gray-500">
                             Discover products. Enjoy more.

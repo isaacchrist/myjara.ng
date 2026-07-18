@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import { BrandLogo } from '@/components/shared/brand-logo'
 import {
     LayoutDashboard,
     Store,
@@ -112,7 +112,7 @@ export function AdminShell({ children, pendingVerifications = 0, identity = null
                 {/* Logo & Close Button */}
                 <div className="flex h-16 shrink-0 items-center justify-between border-b border-gray-800 px-6">
                     <Link href="/admin" className="flex items-center gap-2">
-                        <Image src="/logo.png" alt="MyJara Logo" width={120} height={40} className="h-8 w-auto brightness-0 invert" />
+                        <BrandLogo size={32} dark />
                     </Link>
                     <button
                         onClick={() => setSidebarOpen(false)}
