@@ -129,7 +129,6 @@ const RETAILER_TOOLKIT = [
     { icon: Package, title: 'Order management', desc: 'Track every order from paid through delivered, with packing reminders for Jara bonus items.' },
     { icon: MessageCircle, title: 'Direct chat', desc: 'Answer pre-purchase questions and support requests in real time, right from the order page.' },
     { icon: BarChart3, title: 'Jara analytics', desc: 'See revenue plus which Jara offers actually move units, broken down by category and location.' },
-    { icon: Globe, title: 'Custom domain', desc: 'Point your own domain at your store instead of using the default myjara.com.ng subdomain.' },
 ]
 
 const FAQ_ITEMS = [
@@ -163,7 +162,7 @@ const FAQ_ITEMS = [
     },
     {
         q: 'Can I use my own domain for my store?',
-        a: 'Yes. Every store gets a free storename.myjara.com.ng subdomain, and you can connect your own domain once you verify ownership of it.',
+        a: 'Every store gets a free storename.myjara.com.ng subdomain. Wholesalers can additionally connect their own domain once they verify ownership of it; this isn\'t yet available for retailer accounts.',
     },
 ]
 
@@ -451,9 +450,10 @@ function WholesalerSection() {
             <div>
                 <h3 className="mb-6 text-2xl font-bold text-gray-900">Once you&apos;re live</h3>
                 <p className="mb-6 text-gray-500">
-                    Wholesalers get the same core dashboard as retailers — product listings with Jara offers,
-                    order management, real-time chat with buyers, revenue and Jara analytics, and an optional
-                    custom domain — framed around bulk, business-to-business trading.
+                    Wholesalers get product listings with Jara offers, order management, real-time chat with
+                    buyers, and revenue and Jara analytics — plus a capability retailers don&apos;t have: connecting
+                    your own domain, so your storefront can run under your brand&apos;s own web address instead of
+                    a myjara.com.ng subdomain.
                 </p>
             </div>
         </div>
