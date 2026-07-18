@@ -200,9 +200,9 @@ function JaraCalculator() {
                     ))}
                 </div>
 
-                <div className="grid gap-6 sm:grid-cols-3">
+                <div className="grid gap-6 sm:grid-cols-2">
                     <label className="block">
-                        <span className="mb-2 block text-sm font-medium text-gray-500">Buy quantity</span>
+                        <span className="mb-2 block text-sm font-medium text-gray-500">Buy this many</span>
                         <input
                             type="number"
                             min={1}
@@ -212,7 +212,7 @@ function JaraCalculator() {
                         />
                     </label>
                     <label className="block">
-                        <span className="mb-2 block text-sm font-medium text-gray-500">Get free</span>
+                        <span className="mb-2 block text-sm font-medium text-gray-500">Get this many free</span>
                         <input
                             type="number"
                             min={1}
@@ -221,26 +221,55 @@ function JaraCalculator() {
                             className="w-full rounded-xl border border-gray-200 px-4 py-3 text-lg font-bold text-gray-900 focus:border-emerald-500 focus:outline-none"
                         />
                     </label>
-                    <label className="block">
-                        <span className="mb-2 block text-sm font-medium text-gray-500">Items in your cart</span>
-                        <input
-                            type="number"
-                            min={1}
-                            value={quantity}
-                            onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
-                            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-lg font-bold text-gray-900 focus:border-emerald-500 focus:outline-none"
-                        />
-                    </label>
                 </div>
 
-                <div className="mt-8 flex flex-col items-center justify-center gap-2 rounded-2xl bg-emerald-950 p-8 text-center text-white">
-                    <Gift className="h-8 w-8 text-emerald-400" />
-                    <p className="text-3xl font-extrabold">
-                        +{bonus} Jara {bonus === 1 ? 'item' : 'items'} free
-                    </p>
-                    <p className="text-emerald-100/70">
-                        That&apos;s {extraValuePct}% more items for the same money, on top of the {quantity} you paid for.
-                    </p>
+                {/* Cart quantity is a live slider — it drives every number below */}
+                <label className="mt-6 block">
+                    <span className="mb-2 flex items-center justify-between text-sm font-medium text-gray-500">
+                        <span>Items in your cart</span>
+                        <span className="text-lg font-extrabold text-emerald-700 tabular-nums">{quantity}</span>
+                    </span>
+                    <input
+                        type="range"
+                        min={1}
+                        max={30}
+                        value={Math.min(quantity, 30)}
+                        onChange={(e) => setQuantity(Number(e.target.value))}
+                        className="w-full accent-emerald-600"
+                    />
+                    <span className="mt-1 flex justify-between text-xs text-gray-400">
+                        <span>1</span>
+                        <span>drag &mdash; everything below updates live</span>
+                        <span>30</span>
+                    </span>
+                </label>
+
+                {/* Live result: paid + jara = total, with the true running percentage */}
+                <div className="mt-8 rounded-2xl bg-emerald-950 p-8 text-white">
+                    <div className="grid grid-cols-3 gap-3 text-center">
+                        <div>
+                            <div className="text-3xl font-extrabold tabular-nums">{quantity}</div>
+                            <div className="mt-1 text-[11px] uppercase tracking-wide text-emerald-100/50">You pay for</div>
+                        </div>
+                        <div>
+                            <div className="text-3xl font-extrabold tabular-nums text-amber-400">+{bonus}</div>
+                            <div className="mt-1 text-[11px] uppercase tracking-wide text-emerald-100/50">Jara, free</div>
+                        </div>
+                        <div>
+                            <div className="text-3xl font-extrabold tabular-nums text-emerald-300">{quantity + bonus}</div>
+                            <div className="mt-1 text-[11px] uppercase tracking-wide text-emerald-100/50">In your bag</div>
+                        </div>
+                    </div>
+                    <div className="mt-6 flex items-center justify-center gap-2 border-t border-white/10 pt-5 text-center">
+                        <Gift className="h-5 w-5 shrink-0 text-emerald-400" />
+                        <p className="text-sm text-emerald-100/80">
+                            {bonus > 0 ? (
+                                <>That&apos;s <span className="font-bold text-amber-400">{extraValuePct}% more</span> for the same money &mdash; recalculated live from your numbers.</>
+                            ) : (
+                                <>Add <span className="font-bold text-amber-400">{buy - quantity}</span> more to unlock your first {get} free.</>
+                            )}
+                        </p>
+                    </div>
                 </div>
             </CardContent>
         </Card>
